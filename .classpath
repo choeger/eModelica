@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src/main/java"/>
+	<classpathentry including="**/*.xml|**/*.xsd" kind="src" path="src/main/xml"/>
+	<classpathentry excluding="**/*.java" kind="src" path="src/main/resources"/>
+	<classpathentry excluding="**/*.java|src/main/xml/" including="plugin.xml" kind="src" path=""/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/java-1.6.0-openjdk-1.6.0.0"/>
+	<classpathentry kind="var" path="M2_REPO/de/tuberlin/uebb/page/generator/0.1.3/generator-0.1.3.jar" sourcepath="/M2_REPO/de/tuberlin/uebb/page/generator/0.1.3/generator-0.1.3-sources.jar"/>
+	<classpathentry kind="var" path="M2_REPO/gnu-getopt/getopt/1.0.12/getopt-1.0.12.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/eclipse/core/org.eclipse.core.commands/3.4.0/org.eclipse.core.commands-3.4.0.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/eclipse/core/org.eclipse.core.contenttype/3.3.0/org.eclipse.core.contenttype-3.3.0.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/eclipse/core/org.eclipse.core.databinding/1.1.1/org.eclipse.core.databinding-1.1.1.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/eclipse/core/org.eclipse.core.expressions/3.4.1/org.eclipse.core.expressions-3.4.1.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/eclipse/core/org.eclipse.core.filebuffers/3.4.0/org.eclipse.core.filebuffers-3.4.0.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/eclipse/core/org.eclipse.core.filesystem/1.2.0/org.eclipse.core.filesystem-1.2.0.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/eclipse/core/org.eclipse.core.jobs/3.4.1/org.eclipse.core.jobs-3.4.1.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/eclipse/core/org.eclipse.core.resources/3.4.2/org.eclipse.core.resources-3.4.2.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/eclipse/core/org.eclipse.core.runtime/3.4.0/org.eclipse.core.runtime-3.4.0.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/eclipse/equinox/org.eclipse.equinox.app/1.1.0/org.eclipse.equinox.app-1.1.0.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/eclipse/equinox/org.eclipse.equinox.common/3.4.0/org.eclipse.equinox.common-3.4.0.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/eclipse/equinox/org.eclipse.equinox.preferences/3.2.201/org.eclipse.equinox.preferences-3.2.201.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/eclipse/equinox/org.eclipse.equinox.registry/3.4.0/org.eclipse.equinox.registry-3.4.0.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/eclipse/help/org.eclipse.help/3.3.102/org.eclipse.help-3.3.102.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/eclipse/jface/org.eclipse.jface/3.4.2/org.eclipse.jface-3.4.2.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/eclipse/jface/org.eclipse.jface.databinding/1.2.1/org.eclipse.jface.databinding-1.2.1.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/eclipse/jface/org.eclipse.jface.text/3.4.2/org.eclipse.jface.text-3.4.2.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/eclipse/osgi/org.eclipse.osgi/3.4.3/org.eclipse.osgi-3.4.3.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/eclipse/swt/org.eclipse.swt/3.4.2/org.eclipse.swt-3.4.2.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/eclipse/swt/org.eclipse.swt.gtk.linux.x86/3.4.1/org.eclipse.swt.gtk.linux.x86-3.4.1.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/eclipse/text/org.eclipse.text/3.4.0/org.eclipse.text-3.4.0.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/eclipse/ui/org.eclipse.ui/3.4.2/org.eclipse.ui-3.4.2.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/eclipse/ui/org.eclipse.ui.editors/3.4.0/org.eclipse.ui.editors-3.4.0.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/eclipse/ui/org.eclipse.ui.ide/3.4.2/org.eclipse.ui.ide-3.4.2.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/eclipse/ui/org.eclipse.ui.views/3.3.1/org.eclipse.ui.views-3.3.1.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/eclipse/ui/org.eclipse.ui.workbench/3.4.2/org.eclipse.ui.workbench-3.4.2.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/eclipse/ui/org.eclipse.ui.workbench.texteditor/3.4.1/org.eclipse.ui.workbench.texteditor-3.4.1.jar"/>
+	<classpathentry kind="var" path="M2_REPO/de/tuberlin/uebb/page/page-runtime/0.1.3/page-runtime-0.1.3.jar" sourcepath="/M2_REPO/de/tuberlin/uebb/page/page-runtime/0.1.3/page-runtime-0.1.3-sources.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/eclipse/ui/org.eclipse.ui.navigator/3.3.102/org.eclipse.ui.navigator-3.3.102.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/eclipse/ui/org.eclipse.ui.console/3.3.1/org.eclipse.ui.console-3.3.1.jar"/>
+	<classpathentry kind="output" path="target/classes"/>
+</classpath>

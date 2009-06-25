@@ -1,0 +1,5 @@
+src/main/java/de/tuberlin/uebb/emodelica/generated/*
+states/*
+.classpath
+.project
+target/

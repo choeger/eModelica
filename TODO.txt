@@ -1,0 +1,19 @@
+#Format:
+#<Task#> : <Status> : <Description>
+1		DONE		Fit simple Editor/Outline to new project
+2		OBSOLETE	Make pure ant build process work
+3		DONE		Add ModelHandler
+4		DONE		Add Reconciler	
+5		WIP			Do some beautification
+6		WIP			Add Error Recovery to Parser Generator
+7		DONE		Modify Lexer for Umlauts (allowed only in strings and comments)
+8		DONE		Lexer Comments
+9		DONE		suppress warnings in generated code
+10		DONE		handle Lexer Expressions in general
+11		DEFERRED	add Type parameter to ListToken -> PaGe development freeze for now
+12		DONE		add Ability to name states.dat <GRAMMAR>.dat to prevent conflicts
+13		DONE		allow multiple Interfaces in generated classes
+# Important for the first alpha release in june 2009
+14		TODO		Simple Actions in Navigator
+15		TODO		Preferences for MOSILAB installation
+16		TODO		Simple Build Process
