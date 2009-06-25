@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mosilab:mosilabProject xmlns:mosilab="http://projects.uebb.tu-berlin.de/mf/emodelica/mosilabSettings" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://projects.uebb.tu-berlin.de/mf/emodelica/mosilabSettings mosilabSettings.xsd ">
+	<mosilab:Environment location="/usr/lib/foo/bar/" name="libfoo" version="11.1.2"/>
+</mosilab:mosilabProject>

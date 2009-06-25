@@ -1,0 +1,16 @@
+eModelica Hacking Howto
+=======================
+
+This is a pom-first project built by maven2, to develop on it you will need to
+
+	a) install your eclipse stuff into a (local) maven repository, by using:
+
+	mvn eclipse:to-maven -DstripQualifier=true -DeclipseDir=<YOUR_ECLIPSE_INSTALLATION>
+
+	b) generate a recent .project and .classpath by invoking:
+
+	mvn eclipse:eclipse -Dpde=true -DdownloadJavadocs=true -DdownloadSources=true
+
+After those steps you can hack on ;)
+
+To build the bundle refer to the file BUILD in the same directory.
