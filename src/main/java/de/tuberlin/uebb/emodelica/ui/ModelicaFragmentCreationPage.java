@@ -105,14 +105,14 @@ public class ModelicaFragmentCreationPage extends Composite {
 
 	protected void browsePackage() {
 		SelectPackageDialog dialog = new SelectPackageDialog(this.getShell(), srcGrp.getText().getText());
-		if (dialog.open() == Dialog.OK);
+		if (dialog.open() == Dialog.OK)
 			pkgGrp.getText().setText(((IModelicaPackage)dialog.getFirstResult()).getFullName());		
 
 	}
 
 	protected void browseSource() {
 		SelectSourceFolderDialog dialog = new SelectSourceFolderDialog(this.getShell());
-		if (dialog.open() == Dialog.OK);
+		if (dialog.open() == Dialog.OK)
 			srcGrp.getText().setText(((IMosilabSource)dialog.getFirstResult()).getBasePath().getFullPath().toOSString());		
 	}
 
