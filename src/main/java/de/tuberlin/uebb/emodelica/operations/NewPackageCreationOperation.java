@@ -1,7 +1,7 @@
 /**
  * 
  */
-package de.tuberlin.uebb.emdodelica.operations;
+package de.tuberlin.uebb.emodelica.operations;
 
 import java.io.IOException;
 import java.io.PipedInputStream;
@@ -16,42 +16,46 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.ui.IEditorDescriptor;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.WorkspaceModifyOperation;
-import org.eclipse.ui.part.FileEditorInput;
 
 import de.tuberlin.uebb.emodelica.EModelicaPlugin;
 
-public class NewFragmentCreationOperation extends WorkspaceModifyOperation {
+/**
+ * @author choeger
+ * 
+ */
+public class NewPackageCreationOperation extends WorkspaceModifyOperation {
 
-	private String packageName;
 	private String sourceFolder;
-	private String typeName;
-	private String kind;
-
-	public NewFragmentCreationOperation(String sourceFolder,
-			String pkgName, String typeName, String kind) {
+	private String packageName;
+	
+	public NewPackageCreationOperation(String sourceFolder, String packageName) {
 		super();
-		this.packageName = pkgName;
 		this.sourceFolder = sourceFolder;
-		this.typeName = typeName;
-		this.kind = kind;
+		this.packageName = packageName;
 	}
 
 	@Override
 	protected void execute(IProgressMonitor arg0) throws CoreException,
 			InvocationTargetException, InterruptedException {
-		IFolder srcFolder = ResourcesPlugin.getWorkspace().getRoot()
-				.getFolder(new Path(sourceFolder));
-		
+		System.err.println("creating a new package!");
+
+		IFolder srcFolder = ResourcesPlugin.getWorkspace().getRoot().getFolder(
+				new Path(sourceFolder));
 		IFolder last = srcFolder;
+
 		for (String fName : packageName.split("\\.")) {
 			last = last.getFolder(fName);
+			System.err.println("handling: " + fName);
+			if (!last.exists()) {
+				System.err.println("creating...");
+				last.create(true, true, null);
+			}
 		}
 
-		IFile sourceFile = last.getFile(typeName + ".mo");
+		IFile packagemo = last.getFile("package.mo");
+		if (packagemo.exists())
+			return;
 		
 		try {
 			PipedInputStream in = new PipedInputStream();
@@ -60,40 +64,38 @@ public class NewFragmentCreationOperation extends WorkspaceModifyOperation {
 
 			StringBuffer buffer = new StringBuffer();
 			buffer.append("within ");
-			buffer.append(packageName);
+			
+			if (packageName.contains("."))
+				buffer.append(packageName
+					.substring(0, packageName.lastIndexOf(".")));
+			else buffer.append(" ");
+			
 			buffer.append(";");
 			buffer.append(newLine);
 
-			buffer.append(kind);
-			buffer.append(" ");
-			buffer.append(typeName);
+			buffer.append("package ");
+			buffer.append(packageName
+					.substring(packageName.lastIndexOf(".") + 1));
 			buffer.append(newLine);
 
 			buffer.append(newLine);
 			buffer.append("end ");
-			buffer.append(typeName);
+			buffer.append(packageName
+					.substring(packageName.lastIndexOf(".") + 1));
 			buffer.append(";");
 			buffer.append(newLine);
 
 			out.write(buffer.toString().getBytes());
 			out.close();
 
-			sourceFile.create(in, true, null);
+			packagemo.create(in, true, null);
 
-			/*
-			 * open that file
-			 */
-			IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-			.getActivePage();
-			IEditorDescriptor desc = PlatformUI.getWorkbench().
-			        getEditorRegistry().getDefaultEditor(sourceFile.getName());
-			page.openEditor(new FileEditorInput(sourceFile), desc.getId());
-			
 		} catch (IOException e) {
 			// TODO change -1 to error constant
 			throw new CoreException(new Status(IStatus.ERROR,
 					EModelicaPlugin.PLUGIN_ID, -1, e.getMessage(), e));
 		}
+
 	}
 
 }

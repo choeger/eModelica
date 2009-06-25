@@ -15,10 +15,10 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.WorkspaceModifyOperation;
 
-import de.tuberlin.uebb.emdodelica.operations.NewFragmentCreationOperation;
-import de.tuberlin.uebb.emdodelica.operations.NewPackageCreationOperation;
 import de.tuberlin.uebb.emodelica.EModelicaPlugin;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabProject;
+import de.tuberlin.uebb.emodelica.operations.NewFragmentCreationOperation;
+import de.tuberlin.uebb.emodelica.operations.NewPackageCreationOperation;
 
 /**
  * @author choeger
