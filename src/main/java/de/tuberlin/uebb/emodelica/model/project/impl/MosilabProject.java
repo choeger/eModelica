@@ -247,6 +247,8 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 				children.addAll(src.getContent());
 			}
 		}
+		
+		notifyListeners();
 	}
 
 	@Override

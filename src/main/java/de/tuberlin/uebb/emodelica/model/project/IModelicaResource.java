@@ -7,6 +7,8 @@ import java.util.List;
 
 import org.eclipse.core.runtime.IAdaptable;
 
+import de.tuberlin.uebb.emodelica.model.IModelChangedListener;
+
 /**
  * @author choeger
  *
@@ -29,4 +31,16 @@ public interface IModelicaResource extends IAdaptable {
 	 * let this IModelicaResource recalculate its children 
 	 */
 	public void syncChildren();
+	
+	/**
+	 * register a listener to be notified on changes
+	 * @param listener the new listener
+	 */
+	public void registerListener(IModelicaResourceChangedListener listener);
+	
+	/**
+	 * remove a listener
+	 * @param listener
+	 */
+	public void removeListener(IModelicaResourceChangedListener listener);
 }

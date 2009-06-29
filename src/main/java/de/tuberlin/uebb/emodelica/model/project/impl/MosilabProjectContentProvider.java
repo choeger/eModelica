@@ -9,6 +9,7 @@ import org.eclipse.jface.viewers.Viewer;
 
 import de.tuberlin.uebb.emodelica.EModelicaPlugin;
 import de.tuberlin.uebb.emodelica.model.project.IModelicaResource;
+import de.tuberlin.uebb.emodelica.model.project.IModelicaResourceChangedListener;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabProject;
 import de.tuberlin.uebb.emodelica.model.project.IProjectManager;
 
@@ -16,7 +17,9 @@ import de.tuberlin.uebb.emodelica.model.project.IProjectManager;
  * @author choeger
  * 
  */
-public class MosilabProjectContentProvider implements ITreeContentProvider {
+public class MosilabProjectContentProvider implements ITreeContentProvider, IModelicaResourceChangedListener {
+
+	private Viewer viewer;
 
 	/*
 	 * (non-Javadoc)
@@ -30,7 +33,9 @@ public class MosilabProjectContentProvider implements ITreeContentProvider {
 		if (arg0 instanceof IProject) {
 			IProjectManager pm = EModelicaPlugin.getDefault().getProjectManager();
 			if (pm.isMosilabProject((IProject)arg0)) {
-				return pm.getMosilabProject((IProject)arg0).getChildren().toArray();
+				final IMosilabProject mosilabProject = pm.getMosilabProject((IProject)arg0);
+				mosilabProject.registerListener(this);
+				return mosilabProject.getChildren().toArray();
 			}
 		}
 		
@@ -105,8 +110,6 @@ public class MosilabProjectContentProvider implements ITreeContentProvider {
 	 */
 	@Override
 	public void dispose() {
-		// TODO Auto-generated method stub
-
 	}
 
 	/*
@@ -117,9 +120,13 @@ public class MosilabProjectContentProvider implements ITreeContentProvider {
 	 * .viewers.Viewer, java.lang.Object, java.lang.Object)
 	 */
 	@Override
-	public void inputChanged(Viewer arg0, Object arg1, Object arg2) {
-		// TODO Auto-generated method stub
-
+	public void inputChanged(Viewer viewer, Object arg1, Object arg2) {
+		this.viewer = viewer;
 	}
 
+	@Override
+	public void resourceChanged(IModelicaResource resource) {
+		if (viewer != null)
+			viewer.refresh();
+	}
 }

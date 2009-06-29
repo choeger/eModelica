@@ -20,7 +20,7 @@ import de.tuberlin.uebb.emodelica.model.project.IModelicaResource;
  * @author choeger
  *
  */
-public class ModelicaPackage implements IModelicaPackage, IAdaptable {
+public class ModelicaPackage extends ModelicaResource  implements IModelicaPackage, IAdaptable {
 
 	private String fullName;
 	private ArrayList<IFile> children;
