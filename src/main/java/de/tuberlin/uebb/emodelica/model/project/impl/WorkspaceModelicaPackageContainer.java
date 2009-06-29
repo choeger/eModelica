@@ -41,11 +41,11 @@ public abstract class WorkspaceModelicaPackageContainer extends ModelicaResource
 	private void syncPackages() {
 		packages.clear();
 		recFind(container);
+		System.err.println("got " + packages.size() + " packages.");
 	}
 	
 	private void recFind(IContainer container) {
 		if (container != null) {
-			packages.clear();
 			System.err.println("Scanning: " + container.getFullPath());
 			try {
 				boolean onlyModelicaResources = true;
