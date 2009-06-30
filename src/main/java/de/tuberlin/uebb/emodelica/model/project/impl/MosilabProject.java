@@ -92,6 +92,9 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 			if (mosilabInstallation == null) {
 				mosilabInstallation = EModelicaPlugin.getDefault()
 						.getDefaultMosilabEnvironment();
+				if (mosilabInstallation == null)
+					return;
+				//TODO: handle no default installation!
 				project.setPersistentProperty(MOSILAB_ENVIRONMENT_KEY,
 						mosilabInstallation.getName());
 			}
@@ -233,7 +236,8 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 	public void syncChildren() {
 		children.clear();
 		System.err.println("adding libs");
-		getMOSILABEnvironment().syncChildren();
+		if (getMOSILABEnvironment() != null)
+			getMOSILABEnvironment().syncChildren();
 		getLibraries().syncChildren();
 		children.add(getMOSILABEnvironment());
 		children.add(getLibraries());
