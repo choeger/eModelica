@@ -40,6 +40,27 @@ import de.tuberlin.uebb.emodelica.ui.wizards.NewEnvironmentWizard;
  */
 public class MosilabEnvironmentTable extends FieldEditor implements IObservable {
 	
+	/**
+	 * @return the newButton
+	 */
+	public Button getNewButton() {
+		return newButton;
+	}
+
+	/**
+	 * @return the delButton
+	 */
+	public Button getDelButton() {
+		return delButton;
+	}
+
+	/**
+	 * @return the editButton
+	 */
+	public Button getEditButton() {
+		return editButton;
+	}
+
 	private IMosilabEnvironment selectedEnv = null;
 	private Set<IChangeListener> listeners = new HashSet<IChangeListener>();
 	

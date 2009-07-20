@@ -35,6 +35,7 @@ public class NewPackageWizardPage extends WizardPage {
 	
 	@Override
 	public void createControl(Composite parent) {
+		initializeDialogUnits(parent);
 		setTitle("new Modelica package");
 		
 		Composite container = new Composite(parent, SWT.NONE);
@@ -75,6 +76,8 @@ public class NewPackageWizardPage extends WizardPage {
 
 		Button browseButton = new Button(container, SWT.PUSH);
 		browseButton.setText(JFaceResources.getString("openBrowse"));
+		setButtonLayoutData(browseButton);
+		
 		browseButton.addSelectionListener(new SelectionListener() {
 			@Override
 			public void widgetDefaultSelected(SelectionEvent arg0) {

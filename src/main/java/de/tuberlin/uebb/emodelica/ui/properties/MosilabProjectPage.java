@@ -83,7 +83,11 @@ public class MosilabProjectPage extends PropertyPage implements IWorkbenchProper
 		sourceFolderComposite.setLayout(masterLayout);
 		
 		SourceFolderSelectionView sourceView = new SourceFolderSelectionView(getShell(), project);
+		
 		Composite sourceViewComp = sourceView.getControl(sourceFolderComposite);
+		setButtonLayoutData(sourceView.getAddButton());
+		setButtonLayoutData(sourceView.getEditButton());
+		setButtonLayoutData(sourceView.getDeleteButton());
 		sourceViewComp.setLayoutData(new GridData(GridData.FILL_BOTH));
 		
 		Composite outputFolderComp = new Composite(sourceFolderComposite, SWT.NONE);
@@ -104,6 +108,7 @@ public class MosilabProjectPage extends PropertyPage implements IWorkbenchProper
 		outFolderText.setLayoutData(textData);
 		Button browseButton = new Button(outputFolderComp, SWT.PUSH);
 		browseButton.setText("Browse...");
+		setButtonLayoutData(browseButton);
 		
 		sourceFolderTab.setControl(sourceFolderComposite);
 	}

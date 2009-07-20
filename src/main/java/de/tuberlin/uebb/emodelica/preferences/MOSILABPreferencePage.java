@@ -28,8 +28,14 @@ public class MOSILABPreferencePage
 	 * restore itself.
 	 */
 	public void createFieldEditors() {
+		initializeDialogUnits(getControl());
 		mosilabEnvironmentTable = new MosilabEnvironmentTable(PreferenceConstants.P_MOSILAB_ENVIRONMENTS,"Installed MOSILAB Environments",getFieldEditorParent());
 		addField(mosilabEnvironmentTable);
+		
+		setButtonLayoutData(mosilabEnvironmentTable.getNewButton());
+		setButtonLayoutData(mosilabEnvironmentTable.getEditButton());
+		setButtonLayoutData(mosilabEnvironmentTable.getDelButton());
+		
 		mosilabEnvironmentTable.addChangeListener(this);
 	}
 

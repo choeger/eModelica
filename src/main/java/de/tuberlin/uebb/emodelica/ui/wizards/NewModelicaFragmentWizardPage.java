@@ -35,6 +35,7 @@ public class NewModelicaFragmentWizardPage extends WizardPage implements ModifyL
 	 */
 	@Override
 	public void createControl(Composite arg0) {
+		initializeDialogUnits(arg0);
 		setTitle("Modelica element");
 		setDescription("Create a new Modelica element");
 		
@@ -49,6 +50,12 @@ public class NewModelicaFragmentWizardPage extends WizardPage implements ModifyL
 			widget.getSrcGrp().getText().setText(defaultSrc.getBasePath().getFullPath().toOSString());
 		if (defaultKind != null)
 			widget.getKindCombo().setText(defaultKind);
+		
+		setButtonLayoutData(widget.getPkgGrp().getButton());
+		setButtonLayoutData(widget.getSrcGrp().getButton());
+		setButtonLayoutData(widget.getTypeGrp().getButton1());
+		setButtonLayoutData(widget.getTypeGrp().getButton2());
+		
 		
 		setControl(widget);
 		updatePageComplete();

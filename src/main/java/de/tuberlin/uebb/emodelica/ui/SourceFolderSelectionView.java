@@ -136,5 +136,32 @@ public class SourceFolderSelectionView implements IUIElement {
 		deleteButton.setLayoutData(buttonData);
 		deleteButton.pack();
 	}
-	
+
+	/**
+	 * @return the project
+	 */
+	public IMosilabProject getProject() {
+		return project;
+	}
+
+	/**
+	 * @return the addButton
+	 */
+	public Button getAddButton() {
+		return addButton;
+	}
+
+	/**
+	 * @return the editButton
+	 */
+	public Button getEditButton() {
+		return editButton;
+	}
+
+	/**
+	 * @return the deleteButton
+	 */
+	public Button getDeleteButton() {
+		return deleteButton;
+	}	
 }

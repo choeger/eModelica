@@ -72,6 +72,7 @@ public class NewEnvironmentWizardPage extends WizardPage {
 	 */
 	@Override
 	public void createControl(Composite parent) {
+		initializeDialogUnits(parent);
 		this.setTitle("Select MOSILAB environment");
 		GridData fillHdata = new GridData(GridData.FILL_HORIZONTAL);
 
@@ -98,6 +99,7 @@ public class NewEnvironmentWizardPage extends WizardPage {
 		changeButton = new Button(container, SWT.PUSH);
 		changeButton.setText(JFaceResources.getString("openChange"));
 		changeButton.addSelectionListener(new MosilabRootChangedListener());
+		setButtonLayoutData(changeButton);
 		
 		Label label2 = new Label(container, SWT.NONE);
 		label2.setText("&Path to mosilac binary:");
@@ -115,6 +117,7 @@ public class NewEnvironmentWizardPage extends WizardPage {
 		mosilacButton = new Button(container, SWT.PUSH);
 		mosilacButton.setText(JFaceResources.getString("openBrowse"));
 		mosilacButton.addSelectionListener(new MosilacChangedListener());
+		setButtonLayoutData(mosilacButton);
 		
 		Label label3 = new Label(container, SWT.NONE);
 		label3.setText("&Environment name:");
