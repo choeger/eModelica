@@ -67,6 +67,8 @@ public class NewProjectWizardPage extends WizardPage {
 	}
 
 	private void createProjectLayoutGroup(Composite container) {
+		initializeDialogUnits(container);
+		
 		Group projectLayout = new Group(container, SWT.NONE);
 		projectLayout.setText("Project layout");
 		final GridData gridData = new GridData(GridData.FILL_HORIZONTAL);
@@ -114,6 +116,7 @@ public class NewProjectWizardPage extends WizardPage {
 		
 		updateDefaultEnvironment();
 		useDefaultEnvironment.setSelection(true);
+		setButtonLayoutData(useDefaultEnvironment);
 		
 		/* TODO: add project specific selection */
 	}
