@@ -1,6 +1,8 @@
 package de.tuberlin.uebb.emodelica.editors;
+
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.TreeMap;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
@@ -35,66 +37,79 @@ import de.tuberlin.uebb.page.parser.ParseError;
 
 /**
  * @author choeger
- *
+ * 
  */
 public class ModelicaEditor extends TextEditor implements IModelChangedListener {
 
 	private ModelicaOutline outlinePage;
-	//TODO: check if this can move to somewhere else
+	// TODO: check if this can move to somewhere else
 	private IModelManager modelManager;
 	private ProjectionSupport projectionSupport;
 	private ProjectionAnnotationModel annotationModel;
-	private Annotation[] oldAnnotations; 
+	private TreeMap<Integer, Annotation> oldAnnotations = new TreeMap<Integer,Annotation>();
+	private ModelicaModelPresentation modelPresentation;
 	
 	/* Methods for code folding support */
 	@Override
 	public void createPartControl(Composite parent) {
 		super.createPartControl(parent);
-		ProjectionViewer viewer =(ProjectionViewer)getSourceViewer();
+		ProjectionViewer viewer = (ProjectionViewer) getSourceViewer();
 
-	    projectionSupport = new ProjectionSupport(viewer,getAnnotationAccess(),getSharedColors());
-	    projectionSupport.install();
+		projectionSupport = new ProjectionSupport(viewer,
+				getAnnotationAccess(), getSharedColors());
+		projectionSupport.install();
 
-	    //turn projection mode on
-	    viewer.doOperation(ProjectionViewer.TOGGLE);
-	    annotationModel = viewer.getProjectionAnnotationModel();
+		// turn projection mode on
+		viewer.doOperation(ProjectionViewer.TOGGLE);
+		annotationModel = viewer.getProjectionAnnotationModel();
 	}
-	
+
 	@Override
 	protected ISourceViewer createSourceViewer(Composite parent,
 			IVerticalRuler ruler, int styles) {
-		ISourceViewer viewer = new ProjectionViewer(parent, ruler,
+		ModelicaSourceViewer viewer = new ModelicaSourceViewer(parent, ruler,
 				getOverviewRuler(), isOverviewRulerVisible(), styles);
 
 		// ensure decoration support has been created and configured.
 		getSourceViewerDecorationSupport(viewer);
-
+		modelPresentation = new ModelicaModelPresentation(viewer);
+		
 		return viewer;
 	}
+
+	public void updateFoldingStructure(ArrayList<Position> positions) {
+		// this will hold the new annotations along
+		// with their corresponding positions
+		HashMap<ProjectionAnnotation, Position> newAnnotations = new HashMap<ProjectionAnnotation, Position>();
+		TreeMap<Integer, Annotation> newMap = new TreeMap<Integer, Annotation>();
+		
+		for (int i = 0; i < positions.size(); i++) {
+			final Position key = positions.get(i);
+			ProjectionAnnotation annotation = new ProjectionAnnotation();
+			annotation.setRangeIndication(true);
+			
+			/*
+			 * try to keep old annotations
+			 */
+			if (oldAnnotations.containsKey(key.offset)) {
+				final Annotation value = oldAnnotations.get(key.offset);
+				if ((value instanceof ProjectionAnnotation) && (annotationModel.getPosition(value).length == key.length)) {
+					annotation = (ProjectionAnnotation) value;
+				} 
+			}
+			
+			newAnnotations.put(annotation, key);
+			newMap.put(key.offset, annotation);
+		}
+
+		// TODO: use this method for incremental stuff
+		// delete old Annotations add all new ones
+		annotationModel.modifyAnnotations(oldAnnotations.values().toArray(new ProjectionAnnotation[] {}), 
+				newAnnotations, null);
 	
-	public void updateFoldingStructure(ArrayList<Position> positions)
-	{
-	   Annotation[] annotations = new Annotation[positions.size()];
-
-	   //this will hold the new annotations along
-	   //with their corresponding positions
-	   HashMap<ProjectionAnnotation, Position> newAnnotations = new HashMap<ProjectionAnnotation, Position>();
-
-	   for(int i = 0; i < positions.size();i++)
-	   {
-	      ProjectionAnnotation annotation = new ProjectionAnnotation();
-	      annotation.setRangeIndication(true);
-	      newAnnotations.put(annotation, positions.get(i));
-
-	      annotations[i] = annotation;
-	   }
-
-	   //TODO: use this method for incremental stuff
-	   annotationModel.modifyAnnotations(oldAnnotations, newAnnotations,null);
-
-	   oldAnnotations = annotations;
+		oldAnnotations = newMap;
 	}
-	
+
 	/**
 	 * 
 	 */
@@ -102,7 +117,8 @@ public class ModelicaEditor extends TextEditor implements IModelChangedListener 
 		super();
 		this.modelManager = new ModelicaModelManager(this);
 		this.modelManager.registerListener(this);
-		this.setSourceViewerConfiguration(new ModelicaSourceViewerConfiguration(this));
+		this.setSourceViewerConfiguration(new ModelicaSourceViewerConfiguration(
+						this));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -113,12 +129,15 @@ public class ModelicaEditor extends TextEditor implements IModelChangedListener 
 				createOutlinePage();
 			return this.outlinePage;
 		}
-		
+
 		return super.getAdapter(key);
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.eclipse.ui.part.EditorPart#init(org.eclipse.ui.IEditorSite, org.eclipse.ui.IEditorInput)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.part.EditorPart#init(org.eclipse.ui.IEditorSite,
+	 * org.eclipse.ui.IEditorInput)
 	 */
 	@Override
 	public void init(IEditorSite site, IEditorInput input)
@@ -126,11 +145,11 @@ public class ModelicaEditor extends TextEditor implements IModelChangedListener 
 		super.init(site, input);
 
 	}
-	
+
 	private void createOutlinePage() {
 		this.outlinePage = new ModelicaOutline(getDocumentProvider(), this);
 		this.modelManager.registerListener(this.outlinePage);
-		//set initial model
+		// set initial model
 		this.outlinePage.modelChanged(null, modelManager.getModel());
 	}
 
@@ -140,40 +159,55 @@ public class ModelicaEditor extends TextEditor implements IModelChangedListener 
 
 	@Override
 	public void modelChanged(Model oldModel, Model newModel) {
-		FileEditorInput input = ((FileEditorInput)this.getEditorInput());
+		FileEditorInput input = ((FileEditorInput) this.getEditorInput());
 		if (input == null)
 			return;
 		try {
-			input.getFile().deleteMarkers(IMarker.PROBLEM, true, 1);		
-			System.err.println("got " + modelManager.getParseErrors().size() + " error markers");
-			for (ParseError parseError : modelManager.getParseErrors()) {
-				int errStart = parseError.getStartOffset();
-				int errEnd   = parseError.getEndOffset();
-				int startOffset = newModel.getInput().get(newModel.getInput().size() - 1).getEndOffset();
-				int endOffset = startOffset;
-				
-				if (errStart >= 0) 
-					startOffset = newModel.getInput().get(errStart).getStartOffset();
-				
-				if (errEnd >= 0)
-					endOffset = newModel.getInput().get(errEnd).getEndOffset();
+			input.getFile().deleteMarkers(IMarker.PROBLEM, true, 1);
+			addErrorMarkers(newModel, input);
 
-				System.err.println("Error! StartOffset: " + startOffset);
-				System.err.println("Error! EndOffset: " + endOffset);
-				IMarker errorMarker = input.getFile().createMarker(IMarker.PROBLEM);
-				errorMarker.setAttribute(IMarker.MESSAGE, parseError.getDescription());
-				errorMarker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
-				errorMarker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
-				errorMarker.setAttribute(IMarker.CHAR_START, startOffset);
-				errorMarker.setAttribute(IMarker.CHAR_END, endOffset);
-			}
-			
 			updateFoldingStructure(newModel.getAllFoldablePositions());
-			
+			Display.getDefault().asyncExec(
+					modelPresentation.getModelPresentationUpdater(
+							newModel));
+
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}
-		
-		Display.getDefault().asyncExec(ModelicaModelPresentation.getModelPresentationUpdater(newModel, this.getSourceViewer()));
+	}
+
+	/**
+	 * @param newModel
+	 * @param input
+	 * @throws CoreException
+	 */
+	private void addErrorMarkers(Model newModel, FileEditorInput input)
+			throws CoreException {
+		System.err.println("got " + modelManager.getParseErrors().size()
+				+ " error markers");
+		for (ParseError parseError : modelManager.getParseErrors()) {
+			int errStart = parseError.getStartOffset();
+			int errEnd = parseError.getEndOffset();
+			int startOffset = newModel.getInput().get(
+					newModel.getInput().size() - 1).getEndOffset();
+			int endOffset = startOffset;
+
+			if (errStart >= 0)
+				startOffset = newModel.getInput().get(errStart)
+						.getStartOffset();
+
+			if (errEnd >= 0)
+				endOffset = newModel.getInput().get(errEnd).getEndOffset();
+
+			System.err.println("Error! StartOffset: " + startOffset);
+			System.err.println("Error! EndOffset: " + endOffset);
+			IMarker errorMarker = input.getFile().createMarker(IMarker.PROBLEM);
+			errorMarker.setAttribute(IMarker.MESSAGE, parseError
+					.getDescription());
+			errorMarker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
+			errorMarker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+			errorMarker.setAttribute(IMarker.CHAR_START, startOffset);
+			errorMarker.setAttribute(IMarker.CHAR_END, endOffset);
+		}
 	}
 }

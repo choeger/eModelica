@@ -3,6 +3,7 @@
  */
 package de.tuberlin.uebb.emodelica.editors.presentation;
 
+import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
@@ -17,7 +18,10 @@ public class ModelicaColors {
 	public static Color commentColor = Display.getCurrent().getSystemColor(SWT.COLOR_DARK_GREEN);
 	public static Color stringColor = Display.getCurrent().getSystemColor(SWT.COLOR_BLUE);
 	public static Color kwTokenColor = Display.getCurrent().getSystemColor(SWT.COLOR_DARK_RED);
-	public static Color stringCommentColor = Display.getCurrent().getSystemColor(SWT.COLOR_GRAY);
+	public static Color stringCommentColor = Display.getCurrent().getSystemColor(SWT.COLOR_DARK_GRAY);
+	public static Color identifierColor = Display.getCurrent().getSystemColor(SWT.COLOR_DARK_BLUE);
 
-
+	
+	public static TextAttribute stringCommentText = new TextAttribute(stringCommentColor);
+	public static TextAttribute identifierText = new TextAttribute(identifierColor);
 }

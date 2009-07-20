@@ -27,5 +27,5 @@ public class ModelicaDocumentPartitioner extends FastPartitioner {
 	
 	public ModelicaDocumentPartitioner() {
 		super(new ModelicaPartitionScanner(),Constants.MODELICA_PART_TYPES);
-	}		
+	}
 }
