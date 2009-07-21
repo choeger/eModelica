@@ -4,3 +4,5 @@ states/*
 .project
 target/
 git_deeppull.sh
+.settings/org.eclipse.jdt.core.prefs
+
