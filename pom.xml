@@ -6,7 +6,7 @@
 	<artifactId>emodelica</artifactId>
 	<packaging>bundle</packaging>
 	<name>eModelica</name>
-	<version>0.1.1</version>
+	<version>0.1.3</version>
 	<description>Modelica Integration for eclipse</description>
 	<properties>
 		<bundle.symbolicName>de.tuberlin.uebb.emodelica</bundle.symbolicName>
