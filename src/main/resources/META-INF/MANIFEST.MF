@@ -24,7 +24,6 @@ Ignore-Package: org.eclipse.jface.text,org.eclipse.ui.texteditor,org.e
  clipse.jface.text.source,org.eclipse.ui.model,org.eclipse.ui,org.ecli
  pse.ui.actions,org.eclipse.ui.dialogs,org.eclipse.ui.part
 Bundle-ActivationPolicy: lazy
-Bundle-ClassPath: .,target/dependency/page-runtime-0.1.4.jar
 Built-By: choeger
 Tool: Bnd-0.0.311
 Bundle-Name: eModelica
@@ -39,7 +38,7 @@ Bnd-LastModified: 1248187634156
 Bundle-Activator: de.tuberlin.uebb.emodelica.EModelicaPlugin
 Bundle-ManifestVersion: 2
 Bundle-Description: Modelica Integration for eclipse
-Bundle-SymbolicName: de.tuberlin.uebb.emodelica;singleton:=true
+Bundle-SymbolicName: emodelica;singleton:=true
 Embed-Dependency: page-runtime;scope=compile|runtime;inline=false
 Import-Package: de.tuberlin.uebb.emodelica,de.tuberlin.uebb.emodelica.
  actions,de.tuberlin.uebb.emodelica.builder,de.tuberlin.uebb.emodelica
@@ -70,3 +69,7 @@ Import-Package: de.tuberlin.uebb.emodelica,de.tuberlin.uebb.emodelica.
  rg.xml.sax
 Originally-Created-By: Apache Maven Bundle Plugin
 
+Bundle-ClassPath: .,
+ generator-0.1.4.jar,
+ page-runtime-0.1.4.jar,
+ getopt-1.0.12.jar
