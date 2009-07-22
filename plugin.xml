@@ -88,7 +88,7 @@
                   <test
                         forcePluginActivation="true"
                         property="org.eclipse.core.resources.projectNature"
-                        value="de.tuberlin.uebb.emodelica.nature">
+                        value="de.tuberlin.uebb.emodelica.nature.mosilab">
                   </test>
                </adapt>
                <instanceof
@@ -147,8 +147,8 @@
       </viewerContentBinding>
    </extension>
    <extension
-         id="de.tuberlin.uebb.emodelica.nature"
-         name="Sample Project Nature"
+         id="de.tuberlin.uebb.emodelica.nature.mosilab"
+         name="MOSILAB project nature"
          point="org.eclipse.core.resources.natures">
       <runtime>
          <run
@@ -164,7 +164,7 @@
       <image
             icon="icons/mod_ovr.png"
             id="de.tuberlin.uebb.emodelica.projectImage"
-            natureId="de.tuberlin.uebb.emodelica.nature">
+            natureId="de.tuberlin.uebb.emodelica.nature.mosilab">
       </image>
    </extension>
    <extension
