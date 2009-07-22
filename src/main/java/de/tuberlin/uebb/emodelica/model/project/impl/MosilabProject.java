@@ -236,10 +236,12 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 	public void syncChildren() {
 		children.clear();
 		System.err.println("adding libs");
-		if (getMOSILABEnvironment() != null)
+		if (getMOSILABEnvironment() != null) {
 			getMOSILABEnvironment().syncChildren();
+			children.add(getMOSILABEnvironment());
+		}
+		
 		getLibraries().syncChildren();
-		children.add(getMOSILABEnvironment());
 		children.add(getLibraries());
 
 		for (IMosilabSource src : getSrcFolders()) {
