@@ -11,7 +11,7 @@
 	<properties>
 		<bundle.symbolicName>de.tuberlin.uebb.emodelica</bundle.symbolicName>
 		<parser.uptodate>false</parser.uptodate>
-		<page.resources.dir>src/main/resources</page.resources.dir>
+		<page.resources.dir>resources</page.resources.dir>
 		<pdeClassPath>/usr/lib/eclipse/plugins/</pdeClassPath>
 	</properties>
 	<profiles>
@@ -112,27 +112,14 @@
 	</dependencies>
 
 	<build>
-		<resources>
-			<resource>
-				<directory>src/main/resources</directory>
-			</resource>
-			<resource>
-				<directory>src/main/xml/</directory>
-			</resource>
-			<resource>
-				<directory>.</directory>
-				<includes>
-					<include>plugin.xml</include>
-					<include>icons/</include>
-				</includes>
-			</resource>
-		</resources>
+
 		<plugins>
 			<plugin>
 				<artifactId>maven-eclipse-plugin</artifactId>
 				<configuration>
 					<pde>true</pde>
-					<manifest>${basedir}/src/main/resources/META-INF/MANIFEST.MF</manifest>
+					<manifest>${basedir}/META-INF/MANIFEST.MF</manifest>
+					<sourceIncludes>src/main/java/**/*.java</sourceIncludes>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -224,6 +211,23 @@
 				</executions>
 			</plugin>
 		</plugins>
+		<resources>
+			<resource>
+				<directory>resources</directory>
+			</resource>
+			<resource>
+				<directory>xml</directory>
+			</resource>
+			<resource>
+				<directory>icons</directory>
+			</resource>
+			<resource>
+				<directory>.</directory>
+				<includes>
+					<include>plugin.xml</include>
+				</includes>
+			</resource>
+		</resources>
 	</build>
 
 </project>

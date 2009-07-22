@@ -68,7 +68,6 @@ Import-Package: de.tuberlin.uebb.emodelica,de.tuberlin.uebb.emodelica.
  org.eclipse.ui.wizards,org.osgi.framework;version="1.4",org.w3c.dom,o
  rg.xml.sax
 Originally-Created-By: Apache Maven Bundle Plugin
-
 Bundle-ClassPath: .,
  generator-0.1.4.jar,
  page-runtime-0.1.4.jar,
