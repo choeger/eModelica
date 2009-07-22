@@ -8,7 +8,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.Stack;
 
-import org.eclipse.core.internal.databinding.Activator;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -21,6 +20,7 @@ import org.eclipse.jface.text.reconciler.IReconcilingStrategy;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.part.FileEditorInput;
 
+import de.tuberlin.uebb.emodelica.EModelicaPlugin;
 import de.tuberlin.uebb.emodelica.ModelRepository;
 import de.tuberlin.uebb.emodelica.editors.ModelicaEditor;
 import de.tuberlin.uebb.emodelica.generated.parser.LexerDefs;
@@ -65,11 +65,11 @@ public class ModelicaModelManager implements IModelManager {
 				}
 			} catch (ParserException e) {
 				System.err.println(e.getMessage());
-				return new Status(Status.ERROR,Activator.PLUGIN_ID,retVal,"parsing failed: " + e.getMessage(),e);
+				return new Status(Status.ERROR,EModelicaPlugin.PLUGIN_ID,retVal,"parsing failed: " + e.getMessage(),e);
 			}
 			System.err.println("parsing done: " + retVal);
 			arg0.done();
-			return new Status(Status.OK,Activator.PLUGIN_ID,retVal,"parsing finished",null);
+			return new Status(Status.OK,EModelicaPlugin.PLUGIN_ID,retVal,"parsing finished",null);
 		}
 	}
 	

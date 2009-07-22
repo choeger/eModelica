@@ -66,7 +66,6 @@ public class MosilabBuilder extends IncrementalProjectBuilder {
 	@Override
 	protected IProject[] build(int kind, Map args, IProgressMonitor monitor)
 			throws CoreException {
-
 		monitor.beginTask("Running mosilac", 100);
 
 		/* incremental build */
