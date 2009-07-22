@@ -281,7 +281,7 @@
       </factory>
    </extension>
    <extension
-         id="mosilacBuilder"
+         id="de.tuberlin.uebb.emodelica.mosilacBuilder"
          name="MOSILAB Builder (mosilac)"
          point="org.eclipse.core.resources.builders">
       <builder

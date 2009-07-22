@@ -10,6 +10,12 @@ This is a pom-first project built by maven2, to develop on it you will need to
 	b) generate a recent .project and .classpath by invoking:
 
 	mvn eclipse:eclipse -Dpde=true -DdownloadJavadocs=true -DdownloadSources=true
+	
+	c) import the newly generated project into eclipse
+	
+	d) in the java build path order tab, set the project folder down to the bottom (this is a bug between maven and pde)
+	
+	e) do not even think of exporting that plugin manually - that is not supported yet
 
 After those steps you can hack on ;)
 
