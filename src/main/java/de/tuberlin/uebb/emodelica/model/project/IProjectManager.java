@@ -14,7 +14,7 @@ import org.eclipse.core.resources.IResourceChangeListener;
  */
 public interface IProjectManager extends IResourceChangeListener {
 	
-	public static final String MOSILAB_PROJECT_NATURE = "de.tuberlin.uebb.emodelica.nature";
+	public static final String MOSILAB_PROJECT_NATURE = "de.tuberlin.uebb.emodelica.nature.mosilab";
 	
 	/**
 	 * 
