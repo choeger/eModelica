@@ -17,7 +17,7 @@ import de.tuberlin.uebb.emodelica.model.project.impl.MosilabEnvironment;
  */
 public class NewEnvironmentWizard extends Wizard {
 	
-	private NewEnvironmentWizardPage newEnvPage = new NewEnvironmentWizardPage(
+	private EditEnvironmentWizardPage newEnvPage = new EditEnvironmentWizardPage(
 			"add environment");
 	
 	private List<IMosilabEnvironment> environments;

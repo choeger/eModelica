@@ -32,6 +32,7 @@ import org.eclipse.swt.widgets.TableItem;
 import de.tuberlin.uebb.emodelica.EModelicaPlugin;
 import de.tuberlin.uebb.emodelica.Images;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabEnvironment;
+import de.tuberlin.uebb.emodelica.ui.wizards.EditEnvironmentWizard;
 import de.tuberlin.uebb.emodelica.ui.wizards.NewEnvironmentWizard;
 
 /**
@@ -129,6 +130,34 @@ public class MosilabEnvironmentTable extends FieldEditor implements IObservable 
 			int index = table.getSelectionIndex();
 			environments.remove(index);
 			updateTableItems();
+			notifyAllListeners();
+		}
+		
+		@Override
+		public void widgetDefaultSelected(SelectionEvent arg0) {
+			onClicked();
+		}
+
+		@Override
+		public void widgetSelected(SelectionEvent arg0) {
+			onClicked();
+		}
+	}
+	
+	class EditButtonSelectionListener implements SelectionListener {
+
+		private final void onClicked() {
+			int index = table.getSelectionIndex();
+			System.err.println("editing: " + index);
+			if (index >= 0) {
+				EditEnvironmentWizard wizard = new EditEnvironmentWizard(environments.get(index));
+				WizardDialog dialog = new WizardDialog(Display.getCurrent().getActiveShell(), wizard);
+				int ret = dialog.open();
+				if (ret == Window.OK) {
+					updateTableItems();
+					notifyAllListeners();
+				}
+			}
 		}
 		
 		@Override
@@ -227,6 +256,7 @@ public class MosilabEnvironmentTable extends FieldEditor implements IObservable 
 		editButton = new Button(buttonGroup, SWT.PUSH);
 		editButton.setText("&Edit...");
 		editButton.setLayoutData(buttonData);
+		editButton.addSelectionListener(new EditButtonSelectionListener());
 		editButton.setEnabled(false);
 		
 		delButton = new Button(buttonGroup, SWT.PUSH);
@@ -249,6 +279,7 @@ public class MosilabEnvironmentTable extends FieldEditor implements IObservable 
 
 	@Override
 	protected void doStore() {
+		System.err.println("doStore()");
 		syncBack();
 		EModelicaPlugin.getDefault().storeMosilabSettings();
 	}
@@ -264,6 +295,8 @@ public class MosilabEnvironmentTable extends FieldEditor implements IObservable 
 	}
 	
 	private void syncBack() {
+		System.err.println("syncBack()");
+
 		EModelicaPlugin.getDefault().getMosilabEnvironments().clear();
 		EModelicaPlugin.getDefault().getMosilabEnvironments().addAll(environments);
 	}
