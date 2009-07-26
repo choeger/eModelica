@@ -85,13 +85,89 @@ public class MosilabBuilder extends IncrementalProjectBuilder {
 			
 			for (IResource resource : affectedResources) {
 				String sourceFile = getLocation(resource);
-				runMosilac(sourceFile, console, out);
+				if (runMosilac(sourceFile, console, out) == 0) {
+					runMakefile(resource, console, out);
+				}
 			}
 		}
 
 		monitor.done();
 
 		return null;
+	}
+
+	private int runMakefile(IResource modelicaSourceFile, MessageConsole console,
+			MessageConsoleStream out) {
+		IMosilabProject mosilabProject = ProjectManager.getDefault()
+		.getMosilabProject(getProject());
+		
+		String srcPath = getLocation(getProject().getFolder(mosilabProject.getOutputFolder()));
+
+		File makefile = new File(mosilabProject.getMOSILABEnvironment().getLocation() 
+				+ File.separator + "lib" + File.separator + "makefile");
+		
+		File ccSourceFile = null;
+		//TODO: adapt file the modelica resource directly, then let go this stuff!
+		for (IMosilabSource sourceFolder : mosilabProject.getSrcFolders())
+			if (sourceFolder.getBasePath().getFullPath().isPrefixOf(modelicaSourceFile.getFullPath())) {
+				IPath packagePart = modelicaSourceFile.getFullPath().
+					removeFirstSegments(sourceFolder.getBasePath().getFullPath().segments().length);
+					String sourceFileName = srcPath + File.separator;
+					for (String seg : packagePart.removeLastSegments(1).segments())
+						sourceFileName += seg + "__";
+					sourceFileName += packagePart.lastSegment().replaceAll("\\.mo", "\\.cc");
+					
+					ccSourceFile = new File(sourceFileName);
+					break;
+			}
+		
+		if (makefile.exists() && ccSourceFile.exists()) {
+			try {
+				console.activate();
+				
+				//TODO: fix source file to c++ file mapping
+				ProcessBuilder processBuilder = new ProcessBuilder("make", "-f", makefile.getAbsolutePath(), 
+						ccSourceFile.getAbsolutePath().replaceAll("\\.cc","\\.o"));
+				
+				processBuilder.environment().put("MOSILAB_ROOT", mosilabProject.getMOSILABEnvironment().getLocation());
+				
+				for (String cmd : processBuilder.command()) {
+					out.write(cmd);
+					out.write(" ");
+				} out.write("\n");				
+				
+				Process proc = processBuilder.start();
+
+				int r = -1;
+				
+				while ((r = proc.getInputStream().read()) > -1)
+					out.write(r);
+
+				try {
+					proc.waitFor();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+					return -1;
+				}				
+				
+				while ((r = proc.getInputStream().read()) > -1)
+					out.write(r);
+
+				System.err.println("make returned with: " + proc.exitValue());
+				out.write("\n make returned with: " + proc.exitValue() + "\n");
+				
+				return proc.exitValue();
+			} catch (IOException e) {
+				// TODO throw CoreException
+				e.printStackTrace();
+			}
+		} else {
+			if (ccSourceFile.exists())
+				System.err.println("Makefile: " + makefile.toString() + " not found!");
+			else
+				System.err.println("Sourcefile: " + ccSourceFile.toString() + " not found!");
+		}
+		return -1;
 	}
 
 	/**
@@ -107,7 +183,7 @@ public class MosilabBuilder extends IncrementalProjectBuilder {
 	 * @param console
 	 * @param out
 	 */
-	private void runMosilac(String sourceFile, MessageConsole console, MessageConsoleStream out) {
+	private int runMosilac(String sourceFile, MessageConsole console, MessageConsoleStream out) {
 		// TODO: move to adapter -> IMosilabProject
 		IMosilabProject mosilabProject = ProjectManager.getDefault()
 		.getMosilabProject(getProject());
@@ -151,7 +227,7 @@ public class MosilabBuilder extends IncrementalProjectBuilder {
 					proc.waitFor();
 				} catch (InterruptedException e) {
 					e.printStackTrace();
-					return;
+					return -1;
 				}				
 				
 				while ((r = proc.getInputStream().read()) > -1)
@@ -160,12 +236,14 @@ public class MosilabBuilder extends IncrementalProjectBuilder {
 				System.err.println("mosilac returned with: " + proc.exitValue());
 				out.write("\n mosilac returned with: " + proc.exitValue() + "\n");
 				
+				return proc.exitValue();
 			} catch (IOException e) {
 				// TODO throw CoreException
 				e.printStackTrace();
 			}
 		} else
 			System.err.println("binary " + binary.toString() + " not found!");
+		return -1;
 	}
 	
 	private List<IFile> collectResources() {
