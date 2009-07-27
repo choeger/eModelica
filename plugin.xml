@@ -291,4 +291,44 @@
          </run>
       </builder>
    </extension>
+   <extension
+         point="org.eclipse.debug.core.launchConfigurationTypes">
+      <launchConfigurationType
+            delegate="de.tuberlin.uebb.emodelica.launch.MOSILABLaunchDelegate"
+            delegateDescription="Runs an experiment"
+            delegateName="Experiment runner"
+            id="de.tuberlin.uebb.emodelica.launchConfiguration.MOSILABLaunchConfiguration"
+            modes="run"
+            name="MOSILAB experiment"
+            public="true">
+      </launchConfigurationType>
+   </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTypeImages">
+      <launchConfigurationTypeImage
+            configTypeID="de.tuberlin.uebb.emodelica.launchConfiguration.MOSILABLaunchConfiguration"
+            icon="icons/emodelica.png"
+            id="de.tuberlin.uebb.emodelica.launchConfiguration.MOSILABLaunchConfiguration.Image">
+      </launchConfigurationTypeImage>
+   </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchShortcuts">
+      <shortcut
+            class="de.tuberlin.uebb.emodelica.launch.LaunchShortcut"
+            description="Starts the experiment"
+            icon="icons/emodelica.png"
+            id="de.tuberlin.uebb.emodelica.launchConfiguration.MOSILABLaunchConfiguration.shortcut"
+            label="experiment"
+            modes="run">
+      </shortcut>
+   </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+      <launchConfigurationTabGroup
+            class="de.tuberlin.uebb.emodelica.launch.MOSILABLaunchConfigurationTabGroup"
+            description="Run a MOSILAB experiment"
+            id="de.tuberlin.uebb.emodelica.launchConfiguration.MOSILABLaunchConfiguration.TabGroup1"
+            type="de.tuberlin.uebb.emodelica.launchConfiguration.MOSILABLaunchConfiguration">
+      </launchConfigurationTabGroup>
+   </extension>
 </plugin>
