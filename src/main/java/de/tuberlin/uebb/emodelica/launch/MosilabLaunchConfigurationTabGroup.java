@@ -29,6 +29,7 @@ public class MosilabLaunchConfigurationTabGroup extends
 	public void createTabs(ILaunchConfigurationDialog dialog, String mode) {
 		ILaunchConfigurationTab[] tabs = new ILaunchConfigurationTab[] {
 				new MosilabMainTab(),
+				new IDASolverTab(),
 				new CommonTab()
 		};
 		setTabs(tabs);

@@ -23,14 +23,20 @@ import org.eclipse.swt.widgets.Text;
 
 import de.tuberlin.uebb.emodelica.EModelicaPlugin;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabProject;
+import de.tuberlin.uebb.emodelica.ui.IWidgetDelegate;
+import de.tuberlin.uebb.emodelica.ui.LabelTextButtonGroup;
+import de.tuberlin.uebb.emodelica.ui.TextButtonGroup;
+import de.tuberlin.uebb.emodelica.ui.dialogs.SelectClassDialog;
 import de.tuberlin.uebb.emodelica.ui.dialogs.SelectProjectDialog;
 
 /**
  * @author choeger
  * 
  */
-public class MosilabMainTab extends AbstractLaunchConfigurationTab {
+public class MosilabMainTab extends AbstractLaunchConfigurationTab implements
+		IWidgetDelegate {
 
+	private Text rootClass;
 	private Text projectName;
 	private Combo solverSelection;
 	private IMosilabProject selectedProject;
@@ -51,8 +57,47 @@ public class MosilabMainTab extends AbstractLaunchConfigurationTab {
 
 		createProjectSelectionGroup(container);
 		createSolverSelectionGroup(container);
+		createRootClassGroup(container);
 
 		container.pack();
+	}
+
+	private void createRootClassGroup(Composite container) {
+		Group rootClassGroup = new Group(container, SWT.NONE);
+		GridData hFillData = new GridData(GridData.FILL_HORIZONTAL);
+		rootClassGroup.setLayoutData(hFillData);
+		GridLayout gridLayout = new GridLayout();
+		gridLayout.numColumns = 2;
+		rootClassGroup.setLayout(gridLayout);
+		rootClassGroup.setText("&Root class");
+
+		TextButtonGroup rootClassSelector = new TextButtonGroup(rootClassGroup,
+				"&Browse...", this);
+		rootClass = rootClassSelector.getText();
+		rootClassSelector.getButton().addSelectionListener(
+				new SelectionListener() {
+
+					@Override
+					public void widgetDefaultSelected(SelectionEvent e) {
+						selectRootClass();
+					}
+
+					@Override
+					public void widgetSelected(SelectionEvent e) {
+						selectRootClass();
+					}
+				});
+	}
+
+	protected void selectRootClass() {
+		SelectClassDialog dlg = new SelectClassDialog(getShell());
+
+		int ret = dlg.open();
+		if (ret == SelectProjectDialog.OK) {
+			// TODO: fix the dialog and use the new DOM for this stuff
+			rootClass.setText("Sorry, not yet implemented");
+			updateLaunchConfigurationDialog();
+		}
 	}
 
 	/**
@@ -66,23 +111,23 @@ public class MosilabMainTab extends AbstractLaunchConfigurationTab {
 		gridLayout.numColumns = 2;
 		projectSelectionGroup.setLayout(gridLayout);
 		projectSelectionGroup.setText("&Project");
-		projectName = new Text(projectSelectionGroup, SWT.BORDER
-				| SWT.READ_ONLY);
-		projectName.setLayoutData(hFillData);
-		Button projectSelector = createPushButton(projectSelectionGroup,
-				"&Browse...", null);
-		projectSelector.addSelectionListener(new SelectionListener() {
+		TextButtonGroup projectTextGroup = new TextButtonGroup(
+				projectSelectionGroup, "&Browse...", this);
+		projectTextGroup.getText().setEditable(false);
+		projectName = projectTextGroup.getText();
+		projectTextGroup.getButton().addSelectionListener(
+				new SelectionListener() {
 
-			@Override
-			public void widgetDefaultSelected(SelectionEvent e) {
-				selectProject();
-			}
+					@Override
+					public void widgetDefaultSelected(SelectionEvent e) {
+						selectProject();
+					}
 
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				selectProject();
-			}
-		});
+					@Override
+					public void widgetSelected(SelectionEvent e) {
+						selectProject();
+					}
+				});
 	}
 
 	/*
@@ -130,11 +175,21 @@ public class MosilabMainTab extends AbstractLaunchConfigurationTab {
 					MosilabLaunchDelegate.PROJECT_KEY, "");
 			this.projectName.setText(projectName);
 
-			if (!projectName.isEmpty()) {
-				IProject eclipseProject = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
-				selectedProject = EModelicaPlugin.getDefault().getProjectManager().getMosilabProject(eclipseProject);
+			String className = configuration.getAttribute(
+					MosilabLaunchDelegate.CLASS_NAME_KEY, "");
+			this.rootClass.setText(className);
+
+			if (!className.isEmpty()) {
+				// TODO: set the DOM
 			}
-			
+
+			if (!projectName.isEmpty()) {
+				IProject eclipseProject = ResourcesPlugin.getWorkspace()
+						.getRoot().getProject(projectName);
+				selectedProject = EModelicaPlugin.getDefault()
+						.getProjectManager().getMosilabProject(eclipseProject);
+			}
+
 			solverName = configuration.getAttribute(
 					MosilabLaunchDelegate.SOLVER_NAME_KEY, solverTypes[0]);
 			for (int i = 0; i < solverTypes.length; i++)
@@ -155,9 +210,12 @@ public class MosilabMainTab extends AbstractLaunchConfigurationTab {
 		configuration.setAttribute(
 				MosilabLaunchDelegate.MAIN_FILE_TEMPLATE_KEY,
 				"/experiments/ida_main.cpp");
+		configuration.setAttribute(MosilabLaunchDelegate.CLASS_NAME_KEY,
+				rootClass.getText());
 
 		if (selectedProject != null) {
-			configuration.setAttribute(MosilabLaunchDelegate.PROJECT_KEY, projectName.getText());
+			configuration.setAttribute(MosilabLaunchDelegate.PROJECT_KEY,
+					projectName.getText());
 			configuration.setAttribute(MosilabLaunchDelegate.OUTPUT_PATH_KEY,
 					selectedProject.getProject().getFolder(
 							selectedProject.getOutputFolder()).getFullPath()
@@ -175,5 +233,10 @@ public class MosilabMainTab extends AbstractLaunchConfigurationTab {
 		// TODO: select active project
 		configuration.setAttribute(MosilabLaunchDelegate.SOLVER_NAME_KEY,
 				solverTypes[0]);
+	}
+
+	@Override
+	public Button createButton(Composite parent, String label) {
+		return createPushButton(parent, label, null);
 	}
 }

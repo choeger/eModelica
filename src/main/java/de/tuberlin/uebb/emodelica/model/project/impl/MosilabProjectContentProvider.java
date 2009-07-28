@@ -8,6 +8,7 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
 import de.tuberlin.uebb.emodelica.EModelicaPlugin;
+import de.tuberlin.uebb.emodelica.model.project.IModelicaPackage;
 import de.tuberlin.uebb.emodelica.model.project.IModelicaResource;
 import de.tuberlin.uebb.emodelica.model.project.IModelicaResourceChangedListener;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabProject;
@@ -20,6 +21,11 @@ import de.tuberlin.uebb.emodelica.model.project.IProjectManager;
 public class MosilabProjectContentProvider implements ITreeContentProvider, IModelicaResourceChangedListener {
 
 	private Viewer viewer;
+	private boolean onlyPackages;
+
+	public MosilabProjectContentProvider(boolean onlyPackages) {
+		this.onlyPackages = onlyPackages;
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -30,6 +36,16 @@ public class MosilabProjectContentProvider implements ITreeContentProvider, IMod
 	 */
 	@Override
 	public Object[] getChildren(Object arg0) {
+		if (arg0 instanceof IProjectManager) {
+			IProjectManager pm = (IProjectManager)arg0;
+			return pm.getAllMosilabProjects().toArray();
+		}
+		
+		if (arg0 instanceof IMosilabProject) {
+			IMosilabProject prj = (IMosilabProject)arg0;
+			return prj.getSrcFolders().toArray();
+		}
+				
 		if (arg0 instanceof IProject) {
 			IProjectManager pm = EModelicaPlugin.getDefault().getProjectManager();
 			if (pm.isMosilabProject((IProject)arg0)) {
@@ -40,6 +56,8 @@ public class MosilabProjectContentProvider implements ITreeContentProvider, IMod
 		}
 		
 		if (arg0 instanceof IModelicaResource) {
+			if (arg0 instanceof IModelicaPackage && onlyPackages)
+				return null;
 			IModelicaResource resource = (IModelicaResource)arg0;
 			return resource.getChildren().toArray();
 		}
@@ -80,6 +98,8 @@ public class MosilabProjectContentProvider implements ITreeContentProvider, IMod
 		}
 		
 		if (arg0 instanceof IModelicaResource) {
+			if (arg0 instanceof IModelicaPackage && onlyPackages)
+				return false;
 			IModelicaResource resource = (IModelicaResource)arg0;
 			return !resource.getChildren().isEmpty();
 		}

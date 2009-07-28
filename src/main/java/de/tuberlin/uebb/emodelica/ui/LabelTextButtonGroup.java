@@ -5,6 +5,7 @@ package de.tuberlin.uebb.emodelica.ui;
 
 import org.eclipse.jface.viewers.CellEditor.LayoutData;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
@@ -22,10 +23,12 @@ public class LabelTextButtonGroup {
 	private Composite parent;
 	private String labelText;
 	private String buttonText;
+	private IWidgetDelegate delegate;
 
 	public LabelTextButtonGroup(Composite parent, String labelText,
-			String buttonText) {
+			String buttonText, IWidgetDelegate delegate) {
 		this.parent = parent;
+		this.delegate = delegate;
 		this.labelText = labelText;
 		this.buttonText = buttonText;
 		initialize();
@@ -35,8 +38,9 @@ public class LabelTextButtonGroup {
 		label = new Label(parent, SWT.NONE);
 		label.setText(labelText);
 		text = new Text(parent, SWT.BORDER);
-			
-		button = new Button(parent, SWT.NONE);
+		text.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		
+		button = delegate.createButton(parent, buttonText);
 		button.setText(buttonText);
 		
 		button.pack();

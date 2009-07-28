@@ -1,4 +1,4 @@
-package de.tuberlin.uebb.emodelica.ui.dialogs;
+package de.tuberlin.uebb.emodelica.model.project.impl;
 
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;

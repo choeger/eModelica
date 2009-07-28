@@ -55,7 +55,7 @@ public class MosilabProjectLabelProvider implements ILabelProvider {
 			return ((IMosilabSource) arg0).getBasePath().getName();
 		} else if (arg0 instanceof ILibraryEntry) {
 			return ((ILibraryEntry) arg0).getName();
-		} 
+		}
 
 		return null;
 	}

@@ -14,12 +14,13 @@ import de.tuberlin.uebb.emodelica.model.project.impl.MosilabProjectLabelProvider
  * @author choeger
  * 
  */
-public class SelectPackageDialog extends ElementTreeSelectionDialog {
+public class SelectClassDialog extends ElementTreeSelectionDialog {
 	
-	public SelectPackageDialog(Shell parent, String sourceFolder) {
-		super(parent, new MosilabProjectLabelProvider(), new MosilabProjectContentProvider(true));
-		setInput(EModelicaPlugin.getDefault().getProjectManager().getMosilabSource(sourceFolder));
-		this.setEmptyListMessage("no valid packages found");
+	public SelectClassDialog(Shell parent) {
+		super(parent, new MosilabProjectLabelProvider(), new MosilabProjectContentProvider(false));
+		
+		setInput(EModelicaPlugin.getDefault().getProjectManager());
+		this.setEmptyListMessage("no source folders found");
 		setMessage("&Choose the package:");
 	}
 }

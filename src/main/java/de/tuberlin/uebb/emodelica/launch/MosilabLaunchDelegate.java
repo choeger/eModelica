@@ -38,6 +38,8 @@ public class MosilabLaunchDelegate implements ILaunchConfigurationDelegate {
 	public static final String SOLVER_NAME_KEY = "SOLVER_NAME";
 	public static final String HEADER_NAME = "eModelicaExperimentDefinitions.h";
 	public static final String PROJECT_KEY = "MOSILAB_PROJECT";
+	public static final String CLASS_NAME_KEY = "ROOT_CLASS_NAME";
+	public static final String OBSERVABLES_KEY = "OBSERVABLES";
 
 	/*
 	 * (non-Javadoc)
@@ -93,7 +95,7 @@ public class MosilabLaunchDelegate implements ILaunchConfigurationDelegate {
 			e.printStackTrace();
 		}
 		
-		String relevantValues = configuration.getAttribute(SOLVER_DEFINES_PREFIX_KEY, "DEFINES_IDA_");
+		String relevantValues = configuration.getAttribute(SOLVER_DEFINES_PREFIX_KEY, IDASolverTab.IDA_PREFIX);
 		
 		IFile definesFile = sourceFolder.getFile(HEADER_NAME);
 		try {
@@ -106,7 +108,16 @@ public class MosilabLaunchDelegate implements ILaunchConfigurationDelegate {
 			writer.write(" */"); writer.newLine();
 			writer.write("#ifndef EMODELICA_DEFINES"); writer.newLine();
 			writer.write("#define EMODELICA_DEFINES"); writer.newLine();
-
+			
+			//root class
+			String className = configuration.getAttribute(CLASS_NAME_KEY, "");
+			writer.write("#define ROOT_OBJECT \""); writer.write(className); writer.write("\""); writer.newLine();
+			
+			//observables
+			String observables = configuration.getAttribute(OBSERVABLES_KEY, "time ");
+			writer.write("#define OBSERVABLES \""); writer.write(observables); writer.write("\""); writer.newLine();
+			
+			//solver special values
 			for (Object key : configuration.getAttributes().keySet()) {
 				if (key instanceof String) {
 					if (((String)key).startsWith(relevantValues)) {

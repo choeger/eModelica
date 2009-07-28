@@ -10,6 +10,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
@@ -31,9 +32,11 @@ public class ModelicaFragmentCreationPage extends Composite {
 	private ButtonTextButtonGroup typeGrp;
 	private Text nameText;
 	private Combo kindCombo;
+	private IWidgetDelegate delegate;
 
-	public ModelicaFragmentCreationPage(Composite parent, int style) {
+	public ModelicaFragmentCreationPage(Composite parent, int style, IWidgetDelegate delegate) {
 		super(parent, style);
+		this.delegate = delegate;
 		initialize();
 	}
 
@@ -44,9 +47,9 @@ public class ModelicaFragmentCreationPage extends Composite {
 		this.setLayout(layout);
 		GridData hFillData = new GridData(GridData.FILL_HORIZONTAL);
 		
-		srcGrp = new LabelTextButtonGroup(this, "&Source Folder:", "Browse...");
+		srcGrp = new LabelTextButtonGroup(this, "&Source Folder:", "Browse...", delegate);
 		srcGrp.getText().setLayoutData(hFillData);
-		pkgGrp = new LabelTextButtonGroup(this, "&Package:", "Browse...");
+		pkgGrp = new LabelTextButtonGroup(this, "&Package:", "Browse...", delegate);
 		pkgGrp.getText().setLayoutData(hFillData);
 		typeGrp = new ButtonTextButtonGroup(this, "&Enclosing type:", "Browse...");
 		typeGrp.getText().setLayoutData(hFillData);

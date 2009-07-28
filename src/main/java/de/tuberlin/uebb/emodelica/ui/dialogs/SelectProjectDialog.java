@@ -8,6 +8,8 @@ import org.eclipse.ui.dialogs.ElementTreeSelectionDialog;
 
 import de.tuberlin.uebb.emodelica.EModelicaPlugin;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabProject;
+import de.tuberlin.uebb.emodelica.model.project.impl.MosilabWorkspaceContentProvider;
+import de.tuberlin.uebb.emodelica.model.project.impl.SourcePathLabelProvider;
 
 /**
  * @author choeger
@@ -17,7 +19,7 @@ public class SelectProjectDialog extends ElementTreeSelectionDialog {
 	
 	public SelectProjectDialog(Shell parent) {
 		//SourcePathLabelProvider is a subset of what we need, see Ticket #29
-		super(parent, new SourcePathLabelProvider(), new MosilabProjectContentProvider());
+		super(parent, new SourcePathLabelProvider(), new MosilabWorkspaceContentProvider());
 		this.setEmptyListMessage("currently there are no MOSILAB projects configured in the workspace");
 		setInput(EModelicaPlugin.getDefault().getProjectManager());
 		setMessage("&Choose the MOSILAB project:");

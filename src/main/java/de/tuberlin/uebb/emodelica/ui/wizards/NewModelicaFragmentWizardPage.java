@@ -9,17 +9,19 @@ import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 
 import de.tuberlin.uebb.emodelica.model.project.IModelicaPackage;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabSource;
+import de.tuberlin.uebb.emodelica.ui.IWidgetDelegate;
 import de.tuberlin.uebb.emodelica.ui.ModelicaFragmentCreationPage;
 
 /**
  * @author choeger
  *
  */
-public class NewModelicaFragmentWizardPage extends WizardPage implements ModifyListener  {
+public class NewModelicaFragmentWizardPage extends WizardPage implements ModifyListener, IWidgetDelegate  {
 
 	private ModelicaFragmentCreationPage widget;
 	private IMosilabSource defaultSrc;
@@ -39,7 +41,7 @@ public class NewModelicaFragmentWizardPage extends WizardPage implements ModifyL
 		setTitle("Modelica element");
 		setDescription("Create a new Modelica element");
 		
-		widget = new ModelicaFragmentCreationPage(arg0, SWT.NONE);
+		widget = new ModelicaFragmentCreationPage(arg0, SWT.NONE, this);
 		widget.getSrcGrp().getText().addModifyListener(this);
 		widget.getPkgGrp().getText().addModifyListener(this);
 		widget.getNameText().addModifyListener(this);
@@ -133,5 +135,13 @@ public class NewModelicaFragmentWizardPage extends WizardPage implements ModifyL
 		
 	public String getFragmentKind() {
 		return widget.getKindCombo().getText();
+	}
+
+	@Override
+	public Button createButton(Composite parent, String label) {
+		Button button = new Button(parent, SWT.NONE);
+		button.setText(label);
+		this.setButtonLayoutData(button);
+		return button;
 	}
 }

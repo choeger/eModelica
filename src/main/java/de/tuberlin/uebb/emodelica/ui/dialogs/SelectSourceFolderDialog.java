@@ -7,6 +7,8 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.dialogs.ElementTreeSelectionDialog;
 
 import de.tuberlin.uebb.emodelica.EModelicaPlugin;
+import de.tuberlin.uebb.emodelica.model.project.impl.SourcePathContentProvider;
+import de.tuberlin.uebb.emodelica.model.project.impl.SourcePathLabelProvider;
 
 /**
  * @author choeger

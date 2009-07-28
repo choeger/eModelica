@@ -19,9 +19,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 
 import de.tuberlin.uebb.emodelica.model.project.IMosilabProject;
+import de.tuberlin.uebb.emodelica.model.project.impl.SourcePathContentProvider;
+import de.tuberlin.uebb.emodelica.model.project.impl.SourcePathLabelProvider;
 import de.tuberlin.uebb.emodelica.ui.dialogs.SelectNewSourceFolderDialog;
-import de.tuberlin.uebb.emodelica.ui.dialogs.SourcePathContentProvider;
-import de.tuberlin.uebb.emodelica.ui.dialogs.SourcePathLabelProvider;
 
 /**
  * @author choeger
