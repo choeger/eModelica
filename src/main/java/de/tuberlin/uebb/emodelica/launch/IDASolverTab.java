@@ -3,6 +3,10 @@
  */
 package de.tuberlin.uebb.emodelica.launch;
 
+import java.text.DecimalFormat;
+import java.util.Locale;
+
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
@@ -21,7 +25,12 @@ import org.eclipse.swt.widgets.Spinner;
  */
 public class IDASolverTab extends AbstractLaunchConfigurationTab {
 
-
+	//privae constants no one should read them
+	private static final String PRIVATE_START_UNITS_KEY = "__IDA_START_UNITS";
+	private static final String PRIVATE_END_UNITS_KEY = "__IDA_END_UNITS";
+	private static final String PRIVATE_START_TIME_KEY = "__IDA_START_TIME";
+	private static final String PRIVATE_END_TIME_KEY = "__IDA_END_TIME";
+	
 	public static final String IDA_PREFIX = "DEFINES_IDA_";
 
 	private String[] timeUnits = {"ms", "s", "m", "h", "d", "w"};
@@ -85,7 +94,6 @@ public class IDASolverTab extends AbstractLaunchConfigurationTab {
 		maxSteps.setLayoutData(hFillData);
 		maxSteps.setDigits(4);
 		maxSteps.setMaximum(Integer.MAX_VALUE);
-
 	}
 	
 	/**
@@ -120,19 +128,73 @@ public class IDASolverTab extends AbstractLaunchConfigurationTab {
 
 	@Override
 	public void initializeFrom(ILaunchConfiguration configuration) {
-		// TODO Auto-generated method stub
+		try {
+			int startTimeUnitsIndex = configuration.getAttribute(PRIVATE_START_UNITS_KEY, 1);
+			int endTimeUnitsIndex = configuration.getAttribute(PRIVATE_END_UNITS_KEY, 1);
+			int startTimeValue = configuration.getAttribute(PRIVATE_START_TIME_KEY, 1);
+			int endTimeValue = configuration.getAttribute(PRIVATE_END_TIME_KEY, 10);
+			
+			startTime.setSelection(startTimeValue);
+			startTimeUnit.select(startTimeUnitsIndex);
+			endTime.setSelection(endTimeValue);
+			endTimeUnit.select(endTimeUnitsIndex);
+			
+			String minStepString = configuration.getAttribute(IDA_PREFIX + "MIN_STEP", "0.1");
+			System.err.println("using minStep: " + minStepString);
+			Integer i = Integer.valueOf(minStepString.replaceAll("\\.",""),10);
+			System.err.println("using int: " + i);
+			if (minStepString.contains(".")) {
+				minSteps.setDigits(minStepString.length() - (minStepString.split("\\.")[0].length() + 1));
+			} else minSteps.setDigits(0);
+			minSteps.setSelection(i);
+
+			String maxStepString = configuration.getAttribute(IDA_PREFIX + "MAX_STEP", "10.0");
+			i = Integer.valueOf(maxStepString.replaceAll("\\.",""),10);
+			if (maxStepString.contains(".")) {
+				maxSteps.setDigits(maxStepString.length() - (maxStepString.split("\\.")[0].length() + 1));
+			} else maxSteps.setDigits(0);
+			maxSteps.setSelection(i);
+
+		} catch (CoreException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
 	public void performApply(ILaunchConfigurationWorkingCopy configuration) {
-		// TODO Auto-generated method stub
+		int startUnit = startTimeUnit.getSelectionIndex();
+		configuration.setAttribute(PRIVATE_START_UNITS_KEY,startUnit);
+		int endUnit = endTimeUnit.getSelectionIndex();
+		configuration.setAttribute(PRIVATE_END_UNITS_KEY,endUnit);
 		
+		int startTimeValue = startTime.getSelection();
+		configuration.setAttribute(PRIVATE_START_TIME_KEY,startTimeValue);
+		int endTimeValue = endTime.getSelection();
+		configuration.setAttribute(PRIVATE_END_TIME_KEY,endTimeValue);
+	
+		configuration.setAttribute(IDA_PREFIX + "TIME_START", "" + startTimeValue + timeFactors[startUnit]);
+		configuration.setAttribute(IDA_PREFIX + "TIME_END", "" + endTimeValue + timeFactors[endUnit]);
+		
+		DecimalFormat df = (DecimalFormat) DecimalFormat.getInstance(Locale.US);
+		df.applyPattern("0.0000");
+		double dMinSteps = this.minSteps.getSelection() / Math.pow(10,this.minSteps.getDigits());
+		configuration.setAttribute(IDA_PREFIX + "MIN_STEP",df.format(dMinSteps));
+		double dMaxSteps = this.maxSteps.getSelection() / Math.pow(10,this.maxSteps.getDigits());
+		configuration.setAttribute(IDA_PREFIX + "MAX_STEP",df.format(dMaxSteps));
 	}
 
 	@Override
 	public void setDefaults(ILaunchConfigurationWorkingCopy configuration) {
-		// TODO Auto-generated method stub
+		configuration.setAttribute(PRIVATE_START_UNITS_KEY,1);
+		configuration.setAttribute(PRIVATE_END_UNITS_KEY,1);
 		
+		configuration.setAttribute(PRIVATE_START_TIME_KEY,1);
+		configuration.setAttribute(PRIVATE_END_TIME_KEY,10);
+		configuration.setAttribute(IDA_PREFIX + "TIME_START", "1.0");
+		configuration.setAttribute(IDA_PREFIX + "TIME_END", "10.0");
+		
+		configuration.setAttribute(IDA_PREFIX + "MIN_STEP","0.1");
+		configuration.setAttribute(IDA_PREFIX + "MAX_STEP","10.0");
 	}
 
 }

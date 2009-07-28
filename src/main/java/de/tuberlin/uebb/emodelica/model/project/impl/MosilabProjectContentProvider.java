@@ -22,6 +22,10 @@ public class MosilabProjectContentProvider implements ITreeContentProvider, IMod
 
 	private Viewer viewer;
 	private boolean onlyPackages;
+	
+	public MosilabProjectContentProvider() {
+		this.onlyPackages = false;
+	}
 
 	public MosilabProjectContentProvider(boolean onlyPackages) {
 		this.onlyPackages = onlyPackages;

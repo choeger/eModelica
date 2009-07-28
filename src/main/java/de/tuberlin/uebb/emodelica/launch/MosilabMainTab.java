@@ -210,6 +210,8 @@ public class MosilabMainTab extends AbstractLaunchConfigurationTab implements
 		configuration.setAttribute(
 				MosilabLaunchDelegate.MAIN_FILE_TEMPLATE_KEY,
 				"/experiments/ida_main.cpp");
+		configuration.setAttribute(MosilabLaunchDelegate.SOLVER_DEFINES_PREFIX_KEY, IDASolverTab.IDA_PREFIX);
+		
 		configuration.setAttribute(MosilabLaunchDelegate.CLASS_NAME_KEY,
 				rootClass.getText());
 

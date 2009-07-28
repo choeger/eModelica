@@ -30,6 +30,7 @@ public class MosilabLaunchConfigurationTabGroup extends
 		ILaunchConfigurationTab[] tabs = new ILaunchConfigurationTab[] {
 				new MosilabMainTab(),
 				new IDASolverTab(),
+				new ObservableTab(),
 				new CommonTab()
 		};
 		setTabs(tabs);

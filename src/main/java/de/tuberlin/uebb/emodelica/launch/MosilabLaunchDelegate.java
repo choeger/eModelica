@@ -123,6 +123,7 @@ public class MosilabLaunchDelegate implements ILaunchConfigurationDelegate {
 					if (((String)key).startsWith(relevantValues)) {
 						writer.write("#define " + ((String)key).replaceFirst(relevantValues, "") + " " +
 								configuration.getAttributes().get(key));
+						writer.newLine();
 					}
 				}
 				monitor.worked(1);
