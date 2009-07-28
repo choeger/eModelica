@@ -7,17 +7,21 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.channels.FileChannel;
+import java.net.URL;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.ILaunchConfigurationDelegate;
@@ -26,12 +30,14 @@ import org.eclipse.debug.core.model.ILaunchConfigurationDelegate;
  * @author choeger
  * 
  */
-public class MOSILABLaunchDelegate implements ILaunchConfigurationDelegate {
+public class MosilabLaunchDelegate implements ILaunchConfigurationDelegate {
 
 	public static final String SOLVER_DEFINES_PREFIX_KEY = "SOLVER_DEFINES_PREFIX";
 	public static final String MAIN_FILE_TEMPLATE_KEY = "MAIN_FILE_TEMPLATE";
+	public static final String OUTPUT_PATH_KEY = "C++_SOURCES_PATH";
 	public static final String SOLVER_NAME_KEY = "SOLVER_NAME";
 	public static final String HEADER_NAME = "eModelicaExperimentDefinitions.h";
+	public static final String PROJECT_KEY = "MOSILAB_PROJECT";
 
 	/*
 	 * (non-Javadoc)
@@ -46,18 +52,39 @@ public class MOSILABLaunchDelegate implements ILaunchConfigurationDelegate {
 	public void launch(ILaunchConfiguration configuration, String mode,
 			ILaunch launch, IProgressMonitor monitor) throws CoreException {
 		monitor.beginTask("launching experiment", configuration.getAttributes().size() + 2);
+		
 		String mainFilePath = configuration.getAttribute(MAIN_FILE_TEMPLATE_KEY, "/experiments/ida_main.cpp");
-		String sourcePath = configuration.getAttribute("C++_PATH", "c++");
+		String sourcePath = configuration.getAttribute(OUTPUT_PATH_KEY, "");
+		
+		if (sourcePath.isEmpty()) {
+			System.err.println("Could not launch. No path for C++ sources given.");
+			return;
+		}
 
+		IFolder sourceFolder = ResourcesPlugin.getWorkspace().getRoot().getFolder(new Path(sourcePath));
+		if (!sourceFolder.exists()) {
+			System.err.println("Could not launch. Path for C++ sources given does not exist.");
+			return;
+		}
+		
 		try {
-			URI uri = FileLocator.resolve(this.getClass().getResource(mainFilePath)).toURI();
+			URL url = this.getClass().getResource(mainFilePath);
+			if (url == null) {
+				System.err.println("Could not launch. Main file template does not exist.");
+				return;
+			}
+				
+			URI uri = FileLocator.resolve(url).toURI();
+			
 			
 			System.err.println("using main file template: " + uri);
 			File mainFile = new File(uri);
-			File outFile = new File(sourcePath + File.separator + "main.cc");
-			if (outFile.delete())
-				outFile.createNewFile();
-			copyFile(mainFile, outFile);
+			IFile outFile = sourceFolder.getFile("main.cc");
+			FileInputStream in = new FileInputStream(mainFile);
+			if (outFile.exists())
+				outFile.setContents(in, true, false, monitor);
+			else outFile.create(in, true, monitor);
+			
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
 		} catch (FileNotFoundException e) {
@@ -68,9 +95,11 @@ public class MOSILABLaunchDelegate implements ILaunchConfigurationDelegate {
 		
 		String relevantValues = configuration.getAttribute(SOLVER_DEFINES_PREFIX_KEY, "DEFINES_IDA_");
 		
-		String definesName = sourcePath + File.separator + HEADER_NAME;
+		IFile definesFile = sourceFolder.getFile(HEADER_NAME);
 		try {
-			BufferedWriter writer = new BufferedWriter(new FileWriter(definesName, false));
+			PipedInputStream in = new PipedInputStream();
+			PipedOutputStream out = new PipedOutputStream(in);
+			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(out));
 			writer.write("/*"); writer.newLine();
 			writer.write(" * " + HEADER_NAME); writer.newLine();
 			writer.write(" * eModelica Experiment definitions - automagically generated, do NOT edit!"); writer.newLine();
@@ -89,7 +118,12 @@ public class MOSILABLaunchDelegate implements ILaunchConfigurationDelegate {
 			}
 			
 			writer.write("#endif  //EMODELICA_DEFINES"); writer.newLine();
-
+			writer.close();
+			out.close();
+			
+			if (definesFile.exists())
+				definesFile.setContents(in, true, false, monitor);
+			else definesFile.create(in, true, monitor);
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -97,21 +131,5 @@ public class MOSILABLaunchDelegate implements ILaunchConfigurationDelegate {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}		
-	}
-
-	/**
-	 * @param inFile
-	 * @param outFile
-	 * @throws FileNotFoundException
-	 * @throws IOException
-	 */
-	private void copyFile(File inFile, File outFile)
-			throws FileNotFoundException, IOException {
-		FileChannel inChannel = new FileInputStream(inFile).getChannel();
-		FileChannel outChannel = new FileOutputStream(outFile).getChannel();
-		inChannel.transferTo(0, inChannel.size(),
-		        outChannel);
-		if (inChannel != null) inChannel.close();
-		if (outChannel != null) outChannel.close();
 	}
 }
