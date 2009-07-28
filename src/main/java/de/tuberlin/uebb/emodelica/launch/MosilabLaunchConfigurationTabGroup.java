@@ -12,13 +12,13 @@ import org.eclipse.debug.ui.ILaunchConfigurationTab;
  * @author choeger
  *
  */
-public class MOSILABLaunchConfigurationTabGroup extends
+public class MosilabLaunchConfigurationTabGroup extends
 		AbstractLaunchConfigurationTabGroup {
 
 	/**
 	 * 
 	 */
-	public MOSILABLaunchConfigurationTabGroup() {
+	public MosilabLaunchConfigurationTabGroup() {
 		// TODO Auto-generated constructor stub
 	}
 
@@ -28,7 +28,7 @@ public class MOSILABLaunchConfigurationTabGroup extends
 	@Override
 	public void createTabs(ILaunchConfigurationDialog dialog, String mode) {
 		ILaunchConfigurationTab[] tabs = new ILaunchConfigurationTab[] {
-				new MOSILABMainTab(),
+				new MosilabMainTab(),
 				new CommonTab()
 		};
 		setTabs(tabs);

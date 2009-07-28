@@ -294,7 +294,7 @@
    <extension
          point="org.eclipse.debug.core.launchConfigurationTypes">
       <launchConfigurationType
-            delegate="de.tuberlin.uebb.emodelica.launch.MOSILABLaunchDelegate"
+            delegate="de.tuberlin.uebb.emodelica.launch.MosilabLaunchDelegate"
             delegateDescription="Runs an experiment"
             delegateName="Experiment runner"
             id="de.tuberlin.uebb.emodelica.launchConfiguration.MOSILABLaunchConfiguration"
@@ -325,7 +325,7 @@
    <extension
          point="org.eclipse.debug.ui.launchConfigurationTabGroups">
       <launchConfigurationTabGroup
-            class="de.tuberlin.uebb.emodelica.launch.MOSILABLaunchConfigurationTabGroup"
+            class="de.tuberlin.uebb.emodelica.launch.MosilabLaunchConfigurationTabGroup"
             description="Run a MOSILAB experiment"
             id="de.tuberlin.uebb.emodelica.launchConfiguration.MOSILABLaunchConfiguration.TabGroup1"
             type="de.tuberlin.uebb.emodelica.launchConfiguration.MOSILABLaunchConfiguration">
