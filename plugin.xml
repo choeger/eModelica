@@ -222,7 +222,7 @@
             description="TODO: add description"
             id="de.tuberlin.uebb.emodelica.actions.actionSet1"
             label="Modelica actions"
-            visible="true">
+            visible="false">
          <action
                class="de.tuberlin.uebb.emodelica.actions.NewModelicaElementActionDelegate"
                icon="icons/emodelica_new.png"
@@ -320,6 +320,40 @@
             id="de.tuberlin.uebb.emodelica.launchConfiguration.MOSILABLaunchConfiguration.shortcut"
             label="experiment"
             modes="run">
+         <contextualLaunch>
+            <contextLabel
+                  label="Run the experiment"
+                  mode="de.tuberlin.uebb.emodelica.launch.contextLabel">
+            </contextLabel>
+            <enablement>
+               <with
+                     variable="selection">
+                  <iterate>
+                     <or>
+                        <and>
+                           <instanceof
+                                 value="org.eclipse.core.resources.IFile">
+                           </instanceof>
+                           <test
+                                 property="org.eclipse.debug.ui.matchesPattern"
+                                 value="*.mo">
+                           </test>
+                        </and>
+                        <and>
+                           <adapt
+                                 type="org.eclipse.core.resources.IProject">
+                           </adapt>
+                           <test
+                                 forcePluginActivation="true"
+                                 property="org.eclipse.core.resources.projectNature"
+                                 value="de.tuberlin.uebb.emodelica.nature.mosilab">
+                           </test>
+                        </and>
+                     </or>
+                  </iterate>
+               </with>
+            </enablement>
+         </contextualLaunch>
       </shortcut>
    </extension>
    <extension
@@ -330,5 +364,14 @@
             id="de.tuberlin.uebb.emodelica.launchConfiguration.MOSILABLaunchConfiguration.TabGroup1"
             type="de.tuberlin.uebb.emodelica.launchConfiguration.MOSILABLaunchConfiguration">
       </launchConfigurationTabGroup>
+   </extension>
+   <extension
+         point="org.eclipse.ui.perspectives">
+      <perspective
+            class="de.tuberlin.uebb.emodelica.ui.ModelicaPerspectiveFactory"
+            icon="icons/emodelica.png"
+            id="de.tuberlin.uebb.emodelica.modelicaPerspective"
+            name="Modelica Perspective">
+      </perspective>
    </extension>
 </plugin>
