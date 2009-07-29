@@ -177,6 +177,7 @@
       <wizard
             category="de.tuberlin.uebb.emodelica.category.mosilab"
             class="de.tuberlin.uebb.emodelica.ui.wizards.NewProjectWizard"
+            finalPerspective="de.tuberlin.uebb.emodelica.modelicaPerspective"
             hasPages="true"
             icon="icons/newmodproj.gif"
             id="de.tuberlin.uebb.emodelica.wizards.newprojectwizard"

@@ -6,24 +6,28 @@ package de.tuberlin.uebb.emodelica.ui.wizards;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IExecutableExtension;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.wizards.newresource.BasicNewProjectResourceWizard;
 
 import de.tuberlin.uebb.emodelica.EModelicaPlugin;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabProject;
 import de.tuberlin.uebb.emodelica.model.project.IProjectManager;
-import de.tuberlin.uebb.emodelica.model.project.impl.MosilabSource;
 
 /**
  * @author choeger
  * 
  */
-public class NewProjectWizard extends Wizard implements INewWizard {
+public class NewProjectWizard extends Wizard implements INewWizard, IExecutableExtension {
 
 	NewProjectWizardPage newProjectPage = new NewProjectWizardPage(
 			"new project");
+
+	private IConfigurationElement configElement;
 
 	@Override
 	public void addPages() {
@@ -68,9 +72,10 @@ public class NewProjectWizard extends Wizard implements INewWizard {
 			newMosilabProject.addSrc("src");
 		}
 		
+		BasicNewProjectResourceWizard.updatePerspective(configElement);
 		return true;
 	}
-
+	
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -81,6 +86,12 @@ public class NewProjectWizard extends Wizard implements INewWizard {
 	public void init(IWorkbench arg0, IStructuredSelection arg1) {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public void setInitializationData(IConfigurationElement config,
+			String propertyName, Object data) throws CoreException {
+		this.configElement = config;		
 	}
 
 }
