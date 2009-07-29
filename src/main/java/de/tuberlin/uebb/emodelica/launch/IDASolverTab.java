@@ -25,7 +25,14 @@ import org.eclipse.swt.widgets.Spinner;
  */
 public class IDASolverTab extends AbstractLaunchConfigurationTab {
 
-	//privae constants no one should read them
+	//private constants no one should have to read them
+
+	private static final String ABSOLUTE_TOLERANCE = "ABSOLUTE_TOLERANCE";
+	private static final String RELATIVE_TOLERANCE = "RELATIVE_TOLERANCE";
+	private static final String MAX_STEP = "MAX_STEP";
+	private static final String MIN_STEP = "MIN_STEP";
+	private static final String TIME_END = "TIME_END";
+	private static final String TIME_START = "TIME_START";
 	private static final String PRIVATE_START_UNITS_KEY = "__IDA_START_UNITS";
 	private static final String PRIVATE_END_UNITS_KEY = "__IDA_END_UNITS";
 	private static final String PRIVATE_START_TIME_KEY = "__IDA_START_TIME";
@@ -41,6 +48,14 @@ public class IDASolverTab extends AbstractLaunchConfigurationTab {
 	private Combo endTimeUnit;
 	private Spinner minSteps;
 	private Spinner maxSteps;
+	private Spinner absoluteTolerance;
+	private Spinner relativeTolerance;
+	private DecimalFormat df;
+	
+	public IDASolverTab() {
+		df = (DecimalFormat) DecimalFormat.getInstance(Locale.US);
+		df.applyPattern("0.0000");
+	}
 	
 	@Override
 	public void createControl(Composite parent) {
@@ -68,6 +83,20 @@ public class IDASolverTab extends AbstractLaunchConfigurationTab {
 		GridData hFillData = new GridData(GridData.FILL_HORIZONTAL);
 		advancedGroup.setLayoutData(hFillData);
 		advancedGroup.setLayout(layout);
+		Label relativeToleranceLabel = new Label(advancedGroup,SWT.NONE);
+		relativeToleranceLabel.setText("Relative Tolerance:");
+		relativeTolerance = new Spinner(advancedGroup, SWT.BORDER);
+		relativeTolerance.setLayoutData(hFillData);
+		relativeTolerance.setDigits(4);
+		relativeTolerance.setMaximum(Integer.MAX_VALUE);
+		
+		Label absoluteToleranceLabel = new Label(advancedGroup,SWT.NONE);
+		absoluteToleranceLabel.setText("Absolute Tolerance:");
+		absoluteTolerance = new Spinner(advancedGroup, SWT.BORDER);
+		absoluteTolerance.setLayoutData(hFillData);
+		absoluteTolerance.setDigits(4);
+		absoluteTolerance.setMaximum(Integer.MAX_VALUE);
+		
 	}
 	
 	/**
@@ -139,25 +168,31 @@ public class IDASolverTab extends AbstractLaunchConfigurationTab {
 			endTime.setSelection(endTimeValue);
 			endTimeUnit.select(endTimeUnitsIndex);
 			
-			String minStepString = configuration.getAttribute(IDA_PREFIX + "MIN_STEP", "0.1");
-			System.err.println("using minStep: " + minStepString);
-			Integer i = Integer.valueOf(minStepString.replaceAll("\\.",""),10);
-			System.err.println("using int: " + i);
-			if (minStepString.contains(".")) {
-				minSteps.setDigits(minStepString.length() - (minStepString.split("\\.")[0].length() + 1));
-			} else minSteps.setDigits(0);
-			minSteps.setSelection(i);
-
-			String maxStepString = configuration.getAttribute(IDA_PREFIX + "MAX_STEP", "10.0");
-			i = Integer.valueOf(maxStepString.replaceAll("\\.",""),10);
-			if (maxStepString.contains(".")) {
-				maxSteps.setDigits(maxStepString.length() - (maxStepString.split("\\.")[0].length() + 1));
-			} else maxSteps.setDigits(0);
-			maxSteps.setSelection(i);
+			initSpinnerFromDoubleConfigValue(configuration, MIN_STEP, minSteps);
+			initSpinnerFromDoubleConfigValue(configuration, MAX_STEP, maxSteps);
+			initSpinnerFromDoubleConfigValue(configuration, RELATIVE_TOLERANCE, relativeTolerance);
+			initSpinnerFromDoubleConfigValue(configuration, ABSOLUTE_TOLERANCE, absoluteTolerance);
 
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}
+	}
+
+	/**
+	 * @param configuration
+	 * @param param TODO
+	 * @param spinner TODO
+	 * @return
+	 * @throws CoreException
+	 */
+	private void initSpinnerFromDoubleConfigValue(
+			ILaunchConfiguration configuration, String param, Spinner spinner) throws CoreException {
+		String valueString = configuration.getAttribute(IDA_PREFIX + param, "0.1");
+		Integer i = Integer.valueOf(valueString.replaceAll("\\.",""),10);
+		if (valueString.contains(".")) {
+			spinner.setDigits(valueString.length() - (valueString.split("\\.")[0].length() + 1));
+		} else spinner.setDigits(0);
+		spinner.setSelection(i);
 	}
 
 	@Override
@@ -172,15 +207,22 @@ public class IDASolverTab extends AbstractLaunchConfigurationTab {
 		int endTimeValue = endTime.getSelection();
 		configuration.setAttribute(PRIVATE_END_TIME_KEY,endTimeValue);
 	
-		configuration.setAttribute(IDA_PREFIX + "TIME_START", "" + startTimeValue + timeFactors[startUnit]);
-		configuration.setAttribute(IDA_PREFIX + "TIME_END", "" + endTimeValue + timeFactors[endUnit]);
+		configuration.setAttribute(IDA_PREFIX + TIME_START, "" + startTimeValue + timeFactors[startUnit]);
+		configuration.setAttribute(IDA_PREFIX + TIME_END, "" + endTimeValue + timeFactors[endUnit]);
 		
-		DecimalFormat df = (DecimalFormat) DecimalFormat.getInstance(Locale.US);
-		df.applyPattern("0.0000");
-		double dMinSteps = this.minSteps.getSelection() / Math.pow(10,this.minSteps.getDigits());
-		configuration.setAttribute(IDA_PREFIX + "MIN_STEP",df.format(dMinSteps));
-		double dMaxSteps = this.maxSteps.getSelection() / Math.pow(10,this.maxSteps.getDigits());
-		configuration.setAttribute(IDA_PREFIX + "MAX_STEP",df.format(dMaxSteps));
+		setDoubleConfigValueFromSpinner(configuration,MIN_STEP,this.minSteps);
+		setDoubleConfigValueFromSpinner(configuration,MAX_STEP,this.maxSteps);
+		setDoubleConfigValueFromSpinner(configuration,RELATIVE_TOLERANCE,this.relativeTolerance);
+		setDoubleConfigValueFromSpinner(configuration,ABSOLUTE_TOLERANCE,this.absoluteTolerance);
+	}
+
+	/**
+	 * @param configuration
+	 */
+	private void setDoubleConfigValueFromSpinner(
+			ILaunchConfigurationWorkingCopy configuration, String param, Spinner spinner) {
+		double value = spinner.getSelection() / Math.pow(10, spinner.getDigits());
+		configuration.setAttribute(IDA_PREFIX + param,df.format(value));
 	}
 
 	@Override
@@ -190,11 +232,14 @@ public class IDASolverTab extends AbstractLaunchConfigurationTab {
 		
 		configuration.setAttribute(PRIVATE_START_TIME_KEY,1);
 		configuration.setAttribute(PRIVATE_END_TIME_KEY,10);
-		configuration.setAttribute(IDA_PREFIX + "TIME_START", "1.0");
-		configuration.setAttribute(IDA_PREFIX + "TIME_END", "10.0");
+		configuration.setAttribute(IDA_PREFIX + TIME_START, "1.0");
+		configuration.setAttribute(IDA_PREFIX + TIME_END, "10.0");
 		
-		configuration.setAttribute(IDA_PREFIX + "MIN_STEP","0.1");
-		configuration.setAttribute(IDA_PREFIX + "MAX_STEP","10.0");
+		configuration.setAttribute(IDA_PREFIX + MIN_STEP,"0.1");
+		configuration.setAttribute(IDA_PREFIX + MAX_STEP,"10.0");
+		
+		configuration.setAttribute(IDA_PREFIX + RELATIVE_TOLERANCE,"0.001");
+		configuration.setAttribute(IDA_PREFIX + ABSOLUTE_TOLERANCE,"1.0");
 	}
 
 }

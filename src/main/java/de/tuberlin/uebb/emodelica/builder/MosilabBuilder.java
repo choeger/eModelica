@@ -74,15 +74,16 @@ public class MosilabBuilder extends IncrementalProjectBuilder {
 			System.err.println("arguments: " + args.keySet());
 
 			monitor.subTask("collecting resources");
-			
+
 			List<IFile> affectedResources = collectResources();
-			
-			System.err.println("got " + affectedResources.size() + " files to compile.");
+
+			System.err.println("got " + affectedResources.size()
+					+ " files to compile.");
 			monitor.subTask("running mosilac");
-			
+
 			MessageConsole console = findConsole("mosilac console");
 			MessageConsoleStream out = console.newMessageStream();
-			
+
 			for (IResource resource : affectedResources) {
 				String sourceFile = getLocation(resource);
 				if (runMosilac(sourceFile, console, out) == 0) {
@@ -96,66 +97,71 @@ public class MosilabBuilder extends IncrementalProjectBuilder {
 		return null;
 	}
 
-	private int runMakefile(IResource modelicaSourceFile, MessageConsole console,
-			MessageConsoleStream out) {
+	private int runMakefile(IResource modelicaSourceFile,
+			MessageConsole console, MessageConsoleStream out) {
 		IMosilabProject mosilabProject = ProjectManager.getDefault()
-		.getMosilabProject(getProject());
-		
-		String srcPath = getLocation(getProject().getFolder(mosilabProject.getOutputFolder()));
+				.getMosilabProject(getProject());
 
-		File makefile = new File(mosilabProject.getMOSILABEnvironment().getLocation() 
+		String srcPath = getLocation(getProject().getFolder(
+				mosilabProject.getOutputFolder()));
+
+		File makefile = new File(mosilabProject.getMOSILABEnvironment()
+				.getLocation()
 				+ File.separator + "lib" + File.separator + "makefile");
-		
+
 		File ccSourceFile = null;
-		//TODO: adapt file the modelica resource directly, then let go this stuff!
+		// TODO: adapt file the modelica resource directly, then let go this
+		// stuff!
 		for (IMosilabSource sourceFolder : mosilabProject.getSrcFolders())
-			if (sourceFolder.getBasePath().getFullPath().isPrefixOf(modelicaSourceFile.getFullPath())) {
-				IPath packagePart = modelicaSourceFile.getFullPath().
-					removeFirstSegments(sourceFolder.getBasePath().getFullPath().segments().length);
-					String sourceFileName = srcPath + File.separator;
-					for (String seg : packagePart.removeLastSegments(1).segments())
-						sourceFileName += seg + "__";
-					sourceFileName += packagePart.lastSegment().replaceAll("\\.mo", "\\.cc");
-					
-					ccSourceFile = new File(sourceFileName);
-					break;
+			if (sourceFolder.getBasePath().getFullPath().isPrefixOf(
+					modelicaSourceFile.getFullPath())) {
+				IPath packagePart = modelicaSourceFile.getFullPath()
+						.removeFirstSegments(
+								sourceFolder.getBasePath().getFullPath()
+										.segments().length);
+				String sourceFileName = srcPath + File.separator;
+				for (String seg : packagePart.removeLastSegments(1).segments())
+					sourceFileName += seg + "__";
+				sourceFileName += packagePart.lastSegment().replaceAll("\\.mo",
+						"\\.cc");
+
+				ccSourceFile = new File(sourceFileName);
+				break;
 			}
-		
+
 		if (makefile.exists() && ccSourceFile.exists()) {
 			try {
 				console.activate();
-				
-				//TODO: fix source file to c++ file mapping
-				ProcessBuilder processBuilder = new ProcessBuilder("make", "-f", makefile.getAbsolutePath(), 
-						ccSourceFile.getAbsolutePath().replaceAll("\\.cc","\\.o"));
-				
-				processBuilder.environment().put("MOSILAB_ROOT", mosilabProject.getMOSILABEnvironment().getLocation());
-				
-				for (String cmd : processBuilder.command()) {
-					out.write(cmd);
-					out.write(" ");
-				} out.write("\n");				
-				
+
+				ProcessBuilder processBuilder = new ProcessBuilder(mosilabProject.getMOSILABEnvironment().getLocation() + 
+						File.separator + "bin" + File.separator + "mkSelector.sh");
+
+				processBuilder.environment().put("MOSILAB_ROOT",
+						mosilabProject.getMOSILABEnvironment().getLocation());
+
 				Process proc = processBuilder.start();
 
-				int r = -1;
-				
-				while ((r = proc.getInputStream().read()) > -1)
-					out.write(r);
+				followOutput(out, processBuilder, proc);
+				out.write("\n mkSelector.sh returned with: " + proc.exitValue() + "\n");
 
-				try {
-					proc.waitFor();
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-					return -1;
-				}				
-				
-				while ((r = proc.getInputStream().read()) > -1)
-					out.write(r);
+				// TODO: fix source file to c++ file mapping
+				processBuilder = new ProcessBuilder("make",
+						"-f", makefile.getAbsolutePath(), ccSourceFile
+								.getAbsolutePath().replaceAll("\\.cc", "\\.o"), srcPath + File.separator + "_selector.o");
 
-				System.err.println("make returned with: " + proc.exitValue());
+				processBuilder.environment().put("MOSILAB_ROOT",
+						mosilabProject.getMOSILABEnvironment().getLocation());
+
+				proc = processBuilder.start();
+
+				followOutput(out, processBuilder, proc);
+
 				out.write("\n make returned with: " + proc.exitValue() + "\n");
-				
+
+				if (proc.exitValue() != 0) {
+					return proc.exitValue();
+				}
+
 				return proc.exitValue();
 			} catch (IOException e) {
 				// TODO throw CoreException
@@ -163,11 +169,42 @@ public class MosilabBuilder extends IncrementalProjectBuilder {
 			}
 		} else {
 			if (ccSourceFile.exists())
-				System.err.println("Makefile: " + makefile.toString() + " not found!");
+				System.err.println("Makefile: " + makefile.toString()
+						+ " not found!");
 			else
-				System.err.println("Sourcefile: " + ccSourceFile.toString() + " not found!");
+				System.err.println("Sourcefile: " + ccSourceFile.toString()
+						+ " not found!");
 		}
 		return -1;
+	}
+
+	/**
+	 * @param out
+	 * @param proc
+	 * @throws IOException
+	 */
+	private void followOutput(MessageConsoleStream out,
+			ProcessBuilder processBuilder, Process proc) throws IOException {
+		for (String cmd : processBuilder.command()) {
+			out.write(cmd);
+			out.write(" ");
+		}
+		out.write("\n");
+
+		int r = -1;
+
+		while ((r = proc.getInputStream().read()) > -1)
+			out.write(r);
+
+		try {
+			proc.waitFor();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+			return;
+		}
+
+		while ((r = proc.getInputStream().read()) > -1)
+			out.write(r);
 	}
 
 	/**
@@ -175,7 +212,8 @@ public class MosilabBuilder extends IncrementalProjectBuilder {
 	 * @return
 	 */
 	private String getLocation(IResource resource) {
-		return ResourcesPlugin.getWorkspace().getRoot().getFile(resource.getFullPath()).getLocation().toOSString();
+		return ResourcesPlugin.getWorkspace().getRoot().getFile(
+				resource.getFullPath()).getLocation().toOSString();
 	}
 
 	/**
@@ -183,59 +221,50 @@ public class MosilabBuilder extends IncrementalProjectBuilder {
 	 * @param console
 	 * @param out
 	 */
-	private int runMosilac(String sourceFile, MessageConsole console, MessageConsoleStream out) {
+	private int runMosilac(String sourceFile, MessageConsole console,
+			MessageConsoleStream out) {
 		// TODO: move to adapter -> IMosilabProject
 		IMosilabProject mosilabProject = ProjectManager.getDefault()
-		.getMosilabProject(getProject());
+				.getMosilabProject(getProject());
 		String mosilac = mosilabProject.getMOSILABEnvironment()
-		.compilerCommand();
-		String outPath = getLocation(getProject().getFolder(mosilabProject.getOutputFolder()));
+				.compilerCommand();
+		String outPath = getLocation(getProject().getFolder(
+				mosilabProject.getOutputFolder()));
 		File binary = new File(mosilac);
-		
+
 		if (binary.exists()) {
 			try {
 				console.activate();
-				
-				ProcessBuilder processBuilder = new ProcessBuilder(mosilac, "--prefix", outPath, sourceFile);
-				
+
+				ProcessBuilder processBuilder = new ProcessBuilder(mosilac,
+						"--prefix", outPath, sourceFile);
+
 				StringBuilder pathBuilder = new StringBuilder();
-				//TODO make MOSILAB_LOADPATH configurable in MOSILAB preferences
-				pathBuilder.append(mosilabProject.getMOSILABEnvironment().getLocation());
+				// TODO make MOSILAB_LOADPATH configurable in MOSILAB
+				// preferences
+				pathBuilder.append(mosilabProject.getMOSILABEnvironment()
+						.getLocation());
 				pathBuilder.append(IPath.SEPARATOR);
 				pathBuilder.append("base-lib");
 				for (IMosilabSource src : mosilabProject.getSrcFolders()) {
 					pathBuilder.append(File.pathSeparator);
 					pathBuilder.append(getLocation(src.getBasePath()));
 				}
-				
-				processBuilder.environment().put("MOSILAB_LOADPATH", pathBuilder.toString());
-				processBuilder.environment().put("MOSILAB_ROOT", mosilabProject.getMOSILABEnvironment().getLocation());
-				
-				for (String cmd : processBuilder.command()) {
-					out.write(cmd);
-					out.write(" ");
-				} out.write("\n");				
-				
+
+				processBuilder.environment().put("MOSILAB_LOADPATH",
+						pathBuilder.toString());
+				processBuilder.environment().put("MOSILAB_ROOT",
+						mosilabProject.getMOSILABEnvironment().getLocation());
+
 				Process proc = processBuilder.start();
 
-				int r = -1;
-				
-				while ((r = proc.getInputStream().read()) > -1)
-					out.write(r);
+				followOutput(out, processBuilder, proc);
 
-				try {
-					proc.waitFor();
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-					return -1;
-				}				
-				
-				while ((r = proc.getInputStream().read()) > -1)
-					out.write(r);
+				System.err
+						.println("mosilac returned with: " + proc.exitValue());
+				out.write("\n mosilac returned with: " + proc.exitValue()
+						+ "\n");
 
-				System.err.println("mosilac returned with: " + proc.exitValue());
-				out.write("\n mosilac returned with: " + proc.exitValue() + "\n");
-				
 				return proc.exitValue();
 			} catch (IOException e) {
 				// TODO throw CoreException
@@ -245,32 +274,36 @@ public class MosilabBuilder extends IncrementalProjectBuilder {
 			System.err.println("binary " + binary.toString() + " not found!");
 		return -1;
 	}
-	
+
 	private List<IFile> collectResources() {
-		//TODO change this to accept() usage before commit
+		// TODO change this to accept() usage before commit
 		final List<IFile> affectedResources = new ArrayList<IFile>();
-		
+
 		try {
 			this.getDelta(getProject()).accept(new IResourceDeltaVisitor() {
 				@Override
 				public boolean visit(IResourceDelta delta) throws CoreException {
-					
-					for (IResourceDelta resourceDelta : delta.getAffectedChildren(IResourceDelta.ADDED | IResourceDelta.CHANGED)) {
+
+					for (IResourceDelta resourceDelta : delta
+							.getAffectedChildren(IResourceDelta.ADDED
+									| IResourceDelta.CHANGED)) {
 						IResource resource = resourceDelta.getResource();
 						System.err.println("checking: " + resource);
 						if (resource instanceof IFile) {
-							//TODO: adapt source or at least make pattern configurable
-							if (((IFile)resource).getName().endsWith(".mo"))
+							// TODO: adapt source or at least make pattern
+							// configurable
+							if (((IFile) resource).getName().endsWith(".mo"))
 								affectedResources.add((IFile) resource);
-								return false;
+							return false;
 						}
 					}
 					return true;
-				}});
+				}
+			});
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}
-		
+
 		return affectedResources;
 	}
 }
