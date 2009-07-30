@@ -8,9 +8,12 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
 
@@ -18,7 +21,7 @@ import org.eclipse.swt.widgets.Text;
  * @author choeger
  *
  */
-public class ObservableTab extends AbstractLaunchConfigurationTab {
+public class ObservableTab extends AbstractLaunchConfigurationTab implements ModifyListener {
 
 	private Text observableText;
 	
@@ -52,6 +55,7 @@ public class ObservableTab extends AbstractLaunchConfigurationTab {
 			
 			observableText = new Text(observableGroup,SWT.BORDER);
 			observableText.setLayoutData(hFillData);
+			observableText.addModifyListener(this);
 		}	
 
 	/* (non-Javadoc)
@@ -90,6 +94,11 @@ public class ObservableTab extends AbstractLaunchConfigurationTab {
 	@Override
 	public void setDefaults(ILaunchConfigurationWorkingCopy configuration) {
 		configuration.setAttribute(MosilabLaunchDelegate.OBSERVABLES_KEY, "time ");
+	}
+
+	@Override
+	public void modifyText(ModifyEvent e) {
+		updateLaunchConfigurationDialog();
 	}
 
 }

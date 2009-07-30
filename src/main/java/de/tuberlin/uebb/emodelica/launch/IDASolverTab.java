@@ -11,6 +11,8 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
@@ -23,7 +25,7 @@ import org.eclipse.swt.widgets.Spinner;
  * @author choeger
  *
  */
-public class IDASolverTab extends AbstractLaunchConfigurationTab {
+public class IDASolverTab extends AbstractLaunchConfigurationTab implements ModifyListener {
 
 	//private constants no one should have to read them
 
@@ -89,6 +91,7 @@ public class IDASolverTab extends AbstractLaunchConfigurationTab {
 		relativeTolerance.setLayoutData(hFillData);
 		relativeTolerance.setDigits(4);
 		relativeTolerance.setMaximum(Integer.MAX_VALUE);
+		relativeTolerance.addModifyListener(this);
 		
 		Label absoluteToleranceLabel = new Label(advancedGroup,SWT.NONE);
 		absoluteToleranceLabel.setText("Absolute Tolerance:");
@@ -96,6 +99,7 @@ public class IDASolverTab extends AbstractLaunchConfigurationTab {
 		absoluteTolerance.setLayoutData(hFillData);
 		absoluteTolerance.setDigits(4);
 		absoluteTolerance.setMaximum(Integer.MAX_VALUE);
+		absoluteTolerance.addModifyListener(this);
 		
 	}
 	
@@ -116,6 +120,7 @@ public class IDASolverTab extends AbstractLaunchConfigurationTab {
 		minSteps.setLayoutData(hFillData);
 		minSteps.setDigits(4);
 		minSteps.setMaximum(Integer.MAX_VALUE);
+		minSteps.addModifyListener(this);
 		
 		Label maxStepsLabel = new Label(stepsGroup,SWT.NONE);
 		maxStepsLabel.setText("Maximum step width:");
@@ -123,6 +128,8 @@ public class IDASolverTab extends AbstractLaunchConfigurationTab {
 		maxSteps.setLayoutData(hFillData);
 		maxSteps.setDigits(4);
 		maxSteps.setMaximum(Integer.MAX_VALUE);
+		maxSteps.addModifyListener(this);
+
 	}
 	
 	/**
@@ -142,12 +149,15 @@ public class IDASolverTab extends AbstractLaunchConfigurationTab {
 		startTime.setLayoutData(hFillData);
 		startTimeUnit = new Combo(timeGroup,SWT.READ_ONLY);
 		startTimeUnit.setItems(timeUnits);
+		startTime.addModifyListener(this);
+		
 		Label endTimeLabel = new Label(timeGroup,SWT.NONE);
 		endTimeLabel.setText("end:");
 		endTime = new Spinner(timeGroup, SWT.BORDER);
 		endTime.setLayoutData(hFillData);
 		endTimeUnit = new Combo(timeGroup,SWT.READ_ONLY);
 		endTimeUnit.setItems(timeUnits);
+		endTime.addModifyListener(this);
 	}
 
 	@Override
@@ -240,6 +250,11 @@ public class IDASolverTab extends AbstractLaunchConfigurationTab {
 		
 		configuration.setAttribute(IDA_PREFIX + RELATIVE_TOLERANCE,"0.001");
 		configuration.setAttribute(IDA_PREFIX + ABSOLUTE_TOLERANCE,"1.0");
+	}
+
+	@Override
+	public void modifyText(ModifyEvent e) {
+		updateLaunchConfigurationDialog();
 	}
 
 }
