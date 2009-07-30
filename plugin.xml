@@ -32,6 +32,14 @@
             id="de.tuberlin.uebb.emodelica.views.StatisticView"
             name="Statistic View">
       </view>
+      <view
+            allowMultiple="true"
+            class="de.tuberlin.uebb.emodelica.views.PlotterView"
+            icon="icons/emodelica.png"
+            id="de.tuberlin.uebb.emodelica.views.graphView"
+            name="Plotter"
+            restorable="true">
+      </view>
    </extension>
    <extension
          point="org.eclipse.ui.navigator.navigatorContent">

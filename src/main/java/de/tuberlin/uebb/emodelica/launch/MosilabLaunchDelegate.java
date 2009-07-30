@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
@@ -27,6 +28,11 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.ILaunchConfigurationDelegate;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleManager;
@@ -35,6 +41,7 @@ import org.eclipse.ui.console.MessageConsoleStream;
 
 import de.tuberlin.uebb.emodelica.EModelicaPlugin;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabProject;
+import de.tuberlin.uebb.emodelica.views.PlotterView;
 
 /**
  * @author choeger
@@ -66,27 +73,31 @@ public class MosilabLaunchDelegate implements ILaunchConfigurationDelegate {
 	@Override
 	public void launch(ILaunchConfiguration configuration, String mode,
 			ILaunch launch, IProgressMonitor monitor) throws CoreException {
-		monitor.beginTask("launching experiment", configuration.getAttributes().size() + 2);
-		
+		monitor.beginTask("launching experiment", configuration.getAttributes()
+				.size() + 2);
+
 		String sourcePath = configuration.getAttribute(OUTPUT_PATH_KEY, "");
-		
+
 		if (sourcePath.isEmpty()) {
-			System.err.println("Could not launch. No path for C++ sources given.");
+			System.err
+					.println("Could not launch. No path for C++ sources given.");
 			return;
 		}
 
-		IFolder sourceFolder = ResourcesPlugin.getWorkspace().getRoot().getFolder(new Path(sourcePath));
+		IFolder sourceFolder = ResourcesPlugin.getWorkspace().getRoot()
+				.getFolder(new Path(sourcePath));
 		if (!sourceFolder.exists()) {
-			System.err.println("Could not launch. Path for C++ sources given does not exist.");
+			System.err
+					.println("Could not launch. Path for C++ sources given does not exist.");
 			return;
 		}
-		
+
 		writeMainFile(configuration, monitor, sourceFolder);
-		
+
 		createDefinitionHeader(configuration, monitor, sourceFolder);
-		
-		runMakefile(configuration,monitor, sourceFolder);
-		
+
+		runMakefile(configuration, monitor, sourceFolder);
+
 		runExperiment(configuration, monitor, sourceFolder);
 	}
 
@@ -97,28 +108,31 @@ public class MosilabLaunchDelegate implements ILaunchConfigurationDelegate {
 	 * @throws CoreException
 	 */
 	private void writeMainFile(ILaunchConfiguration configuration,
-			IProgressMonitor monitor, IFolder sourceFolder) throws CoreException {
+			IProgressMonitor monitor, IFolder sourceFolder)
+			throws CoreException {
 		monitor.subTask("writing main.cpp");
-		String mainFilePath = configuration.getAttribute(MAIN_FILE_TEMPLATE_KEY, "/experiments/ida_main.cpp");
-		
+		String mainFilePath = configuration.getAttribute(
+				MAIN_FILE_TEMPLATE_KEY, "/experiments/ida_main.cpp");
+
 		try {
 			URL url = this.getClass().getResource(mainFilePath);
 			if (url == null) {
-				System.err.println("Could not launch. Main file template does not exist.");
+				System.err
+						.println("Could not launch. Main file template does not exist.");
 				return;
 			}
-				
+
 			URI uri = FileLocator.resolve(url).toURI();
-			
-			
+
 			System.err.println("using main file template: " + uri);
 			File mainFile = new File(uri);
 			IFile outFile = sourceFolder.getFile("main.cpp");
 			FileInputStream in = new FileInputStream(mainFile);
 			if (outFile.exists())
 				outFile.setContents(in, true, false, monitor);
-			else outFile.create(in, true, monitor);
-			
+			else
+				outFile.create(in, true, monitor);
+
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
 		} catch (FileNotFoundException e) {
@@ -138,46 +152,66 @@ public class MosilabLaunchDelegate implements ILaunchConfigurationDelegate {
 			IProgressMonitor monitor, IFolder sourceFolder)
 			throws CoreException {
 		monitor.subTask("writing header");
-		String relevantValues = configuration.getAttribute(SOLVER_DEFINES_PREFIX_KEY, IDASolverTab.IDA_PREFIX);
+		String relevantValues = configuration.getAttribute(
+				SOLVER_DEFINES_PREFIX_KEY, IDASolverTab.IDA_PREFIX);
 		IFile definesFile = sourceFolder.getFile(HEADER_NAME);
 		try {
 			PipedInputStream in = new PipedInputStream();
 			PipedOutputStream out = new PipedOutputStream(in);
-			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(out));
-			writer.write("/*"); writer.newLine();
-			writer.write(" * " + HEADER_NAME); writer.newLine();
-			writer.write(" * eModelica Experiment definitions - automagically generated, do NOT edit!"); writer.newLine();
-			writer.write(" */"); writer.newLine();
-			writer.write("#ifndef EMODELICA_DEFINES"); writer.newLine();
-			writer.write("#define EMODELICA_DEFINES"); writer.newLine();
-			
-			//root class
+			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
+					out));
+			writer.write("/*");
+			writer.newLine();
+			writer.write(" * " + HEADER_NAME);
+			writer.newLine();
+			writer
+					.write(" * eModelica Experiment definitions - automagically generated, do NOT edit!");
+			writer.newLine();
+			writer.write(" */");
+			writer.newLine();
+			writer.write("#ifndef EMODELICA_DEFINES");
+			writer.newLine();
+			writer.write("#define EMODELICA_DEFINES");
+			writer.newLine();
+
+			// root class
 			String className = configuration.getAttribute(CLASS_NAME_KEY, "");
-			writer.write("#define ROOT_OBJECT \""); writer.write(className); writer.write("\""); writer.newLine();
-			
-			//observables
-			String observables = configuration.getAttribute(OBSERVABLES_KEY, "time ");
-			writer.write("#define OBSERVABLES \""); writer.write(observables); writer.write("\""); writer.newLine();
-			
-			//solver special values
+			writer.write("#define ROOT_OBJECT \"");
+			writer.write(className);
+			writer.write("\"");
+			writer.newLine();
+
+			// observables
+			String observables = configuration.getAttribute(OBSERVABLES_KEY,
+					"time ");
+			writer.write("#define OBSERVABLES \"");
+			writer.write(observables);
+			writer.write("\"");
+			writer.newLine();
+
+			// solver special values
 			for (Object key : configuration.getAttributes().keySet()) {
 				if (key instanceof String) {
-					if (((String)key).startsWith(relevantValues)) {
-						writer.write("#define " + ((String)key).replaceFirst(relevantValues, "") + " " +
-								configuration.getAttributes().get(key));
+					if (((String) key).startsWith(relevantValues)) {
+						writer.write("#define "
+								+ ((String) key).replaceFirst(relevantValues,
+										"") + " "
+								+ configuration.getAttributes().get(key));
 						writer.newLine();
 					}
 				}
 				monitor.worked(1);
 			}
-			
-			writer.write("#endif  //EMODELICA_DEFINES"); writer.newLine();
+
+			writer.write("#endif  //EMODELICA_DEFINES");
+			writer.newLine();
 			writer.close();
 			out.close();
-			
+
 			if (definesFile.exists())
 				definesFile.setContents(in, true, false, monitor);
-			else definesFile.create(in, true, monitor);
+			else
+				definesFile.create(in, true, monitor);
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -186,7 +220,7 @@ public class MosilabLaunchDelegate implements ILaunchConfigurationDelegate {
 			e.printStackTrace();
 		}
 	}
-	
+
 	private MessageConsole findConsole(String name) {
 		ConsolePlugin plugin = ConsolePlugin.getDefault();
 		IConsoleManager conMan = plugin.getConsoleManager();
@@ -199,99 +233,123 @@ public class MosilabLaunchDelegate implements ILaunchConfigurationDelegate {
 		conMan.addConsoles(new IConsole[] { myConsole });
 		return myConsole;
 	}
-	
-	private int runExperiment(ILaunchConfiguration configuration, IProgressMonitor monitor, IFolder sourceFolder) {
+
+	private int runExperiment(ILaunchConfiguration configuration,
+			IProgressMonitor monitor, IFolder sourceFolder) {
 		IFile bin = sourceFolder.getFile(MAIN_TARGET);
-		
+
 		if (bin.exists()) {
 			monitor.subTask("running the experiment");
 			try {
 				MessageConsole console = findConsole("running experiment");
 				MessageConsoleStream out = console.newMessageStream();
 				console.activate();
-				
-				//TODO: fix source file to c++ file mapping
-				ProcessBuilder processBuilder = new ProcessBuilder(getLocation(bin));
-				
+
+				// TODO: fix source file to c++ file mapping
+				ProcessBuilder processBuilder = new ProcessBuilder(
+						getLocation(bin));
+
 				for (String cmd : processBuilder.command()) {
 					out.write(cmd);
 					out.write(" ");
-				} out.write("\n");				
-				
-				Process proc = processBuilder.start();
+				}
+				out.write("\n");
 
-				int r = -1;
-				
-				while ((r = proc.getInputStream().read()) > -1)
-					out.write(r);
+				Process proc = processBuilder.start();
 
 				try {
 					proc.waitFor();
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 					return -1;
-				}				
+				}
 				
-				while ((r = proc.getInputStream().read()) > -1)
-					out.write(r);
+				if (proc.exitValue() == 0) {
+					final InputStream inputStream = proc.getInputStream();
+					Display.getDefault().asyncExec(new Runnable() {
+						public void run() {
+							IWorkbenchPage page = PlatformUI.getWorkbench()
+									.getActiveWorkbenchWindow().getActivePage();
+							try {
+								IViewPart part = page
+										.showView("de.tuberlin.uebb.emodelica.views.graphView");
+								if (part instanceof PlotterView) {
+									((PlotterView) part)
+											.setDataFromInputStream(inputStream);
+								}
 
-				out.write("\n experiment returned with: " + proc.exitValue() + "\n");
-				
+							} catch (PartInitException e) {
+								e.printStackTrace();
+							}
+						}
+					});
+
+				}
+				out.write("\n experiment returned with: " + proc.exitValue()
+						+ "\n");
+
 				return proc.exitValue();
 			} catch (IOException e) {
 				// TODO throw CoreException
 				e.printStackTrace();
 			}
 		}
-		System.err.println("Experiment binary: " + bin.toString() + " not found!");
-		return -1; 
+		System.err.println("Experiment binary: " + bin.toString()
+				+ " not found!");
+		return -1;
 	}
-	
-	private int runMakefile(ILaunchConfiguration configuration, IProgressMonitor monitor, IFolder sourceFolder) {
+
+	private int runMakefile(ILaunchConfiguration configuration,
+			IProgressMonitor monitor, IFolder sourceFolder) {
 		try {
-			project = ResourcesPlugin.getWorkspace().getRoot().getProject(configuration.getAttribute(PROJECT_KEY, ""));
+			project = ResourcesPlugin.getWorkspace().getRoot().getProject(
+					configuration.getAttribute(PROJECT_KEY, ""));
 		} catch (CoreException e1) {
 			e1.printStackTrace();
 			return -1;
 		}
-		
+
 		if (!project.exists())
 			return -1;
-		
-		mosilabProject = EModelicaPlugin.getDefault().getProjectManager().getMosilabProject(
-				project);
-		
+
+		mosilabProject = EModelicaPlugin.getDefault().getProjectManager()
+				.getMosilabProject(project);
+
 		if (mosilabProject.getMOSILABEnvironment() == null)
 			return -2;
-		
-		//TODO check for special environment setting
-		File makefile = new File(mosilabProject.getMOSILABEnvironment().getLocation() 
+
+		// TODO check for special environment setting
+		File makefile = new File(mosilabProject.getMOSILABEnvironment()
+				.getLocation()
 				+ File.separator + "lib" + File.separator + "makefile");
-		
+
 		monitor.subTask("running make");
-		
-		
+
 		if (makefile.exists()) {
 			try {
 				MessageConsole console = findConsole("running experiment");
 				MessageConsoleStream out = console.newMessageStream();
 				console.activate();
-				
-				//TODO: fix source file to c++ file mapping
-				ProcessBuilder processBuilder = new ProcessBuilder("make", "-f", makefile.getAbsolutePath(),"-C",
-						getLocation(sourceFolder),"lib",MAIN_TARGET,"P=.","TARGET=main","TARGET_LIB="+project.getName());
-				
-				processBuilder.environment().put("MOSILAB_ROOT", mosilabProject.getMOSILABEnvironment().getLocation());
-				
+
+				// TODO: fix source file to c++ file mapping
+				ProcessBuilder processBuilder = new ProcessBuilder("make",
+						"-f", makefile.getAbsolutePath(), "-C",
+						getLocation(sourceFolder), "lib", MAIN_TARGET, "P=.",
+						"TARGET=main", "TARGET_LIB=" + project.getName());
+
+				processBuilder.environment().put("MOSILAB_ROOT",
+						mosilabProject.getMOSILABEnvironment().getLocation());
+
 				for (String cmd : processBuilder.command()) {
 					out.write(cmd);
 					out.write(" ");
-				} out.write("\n");				
-				
+				}
+				out.write("\n");
+
 				Process proc = processBuilder.start();
 
 				int r = -1;
-				
+
 				while ((r = proc.getInputStream().read()) > -1)
 					out.write(r);
 
@@ -300,25 +358,26 @@ public class MosilabLaunchDelegate implements ILaunchConfigurationDelegate {
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 					return -1;
-				}				
-				
+				}
+
 				while ((r = proc.getInputStream().read()) > -1)
 					out.write(r);
 
 				System.err.println("make returned with: " + proc.exitValue());
 				out.write("\n make returned with: " + proc.exitValue() + "\n");
-				
+
 				return proc.exitValue();
 			} catch (IOException e) {
 				// TODO throw CoreException
 				e.printStackTrace();
 			}
 		} else {
-				System.err.println("Makefile: " + makefile.toString() + " not found!");
+			System.err.println("Makefile: " + makefile.toString()
+					+ " not found!");
 		}
 		return -1;
 	}
-	
+
 	/**
 	 * @param resource
 	 * @return
