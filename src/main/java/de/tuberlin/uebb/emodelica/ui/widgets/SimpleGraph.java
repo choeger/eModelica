@@ -6,82 +6,57 @@ package de.tuberlin.uebb.emodelica.ui.widgets;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.birt.chart.device.IDeviceRenderer;
-import org.eclipse.birt.chart.device.IDisplayServer;
-import org.eclipse.birt.chart.device.swt.SwtDisplayServer;
-import org.eclipse.birt.chart.exception.ChartException;
-import org.eclipse.birt.chart.factory.GeneratedChartState;
-import org.eclipse.birt.chart.factory.Generator;
-import org.eclipse.birt.chart.model.Chart;
-import org.eclipse.birt.chart.model.ChartWithAxes;
-import org.eclipse.birt.chart.model.attribute.Bounds;
-import org.eclipse.birt.chart.model.attribute.ChartDimension;
-import org.eclipse.birt.chart.model.attribute.LegendItemType;
-import org.eclipse.birt.chart.model.attribute.impl.BoundsImpl;
-import org.eclipse.birt.chart.model.attribute.impl.ColorDefinitionImpl;
-import org.eclipse.birt.chart.model.component.Axis;
-import org.eclipse.birt.chart.model.component.Series;
-import org.eclipse.birt.chart.model.component.impl.SeriesImpl;
-import org.eclipse.birt.chart.model.data.NumberDataSet;
-import org.eclipse.birt.chart.model.data.SeriesDefinition;
-import org.eclipse.birt.chart.model.data.TextDataSet;
-import org.eclipse.birt.chart.model.data.impl.NumberDataSetImpl;
-import org.eclipse.birt.chart.model.data.impl.SeriesDefinitionImpl;
-import org.eclipse.birt.chart.model.data.impl.TextDataSetImpl;
-import org.eclipse.birt.chart.model.impl.ChartWithAxesImpl;
-import org.eclipse.birt.chart.model.type.BarSeries;
-import org.eclipse.birt.chart.model.type.impl.BarSeriesImpl;
-import org.eclipse.birt.chart.util.PluginSettings;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseListener;
+import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.LineAttributes;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.graphics.Transform;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Listener;
-
-import com.sun.xml.internal.ws.api.server.Container;
 
 /**
  * @author choeger
  * 
  */
-public class SimpleGraph extends Canvas implements PaintListener, Listener {
+public class SimpleGraph extends Canvas implements PaintListener,
+		MouseListener, MouseMoveListener {
+	private float viewX = 0;
+	private float viewY = 0;
+	private float scaleF = 5.0f;
 
 	private List<Curve> curves = new ArrayList<Curve>();
-	private int squareDist = 100;
+	float mousePos[] = new float[2];
+	private float stepWidth;
 
-	private IDeviceRenderer render;
-	private Image cachedImage;
-	private GeneratedChartState state;
-	private Chart chart;
-	private Axis xAxis;
-	private Axis yAxis;
+	Transform center;
+	Transform view;
+	Transform scale;
+	Transform iCenter;
+	Transform iView;
+	Transform iScale;
+
+	private float startViewX;
+	private float startViewY;
 
 	public SimpleGraph(Composite parent, int style) {
-		super(parent, style);
+		super(parent, style | SWT.DOUBLE_BUFFERED | SWT.NO_BACKGROUND);
 
-		PluginSettings ps = PluginSettings.instance();
-		try {
-			render = ps.getDevice("dv.SWT");
-		} catch (ChartException e) {
-			e.printStackTrace();
-		}
-		createChart();
+		view = new Transform(getDisplay());
+		scale = new Transform(getDisplay());
+		center = new Transform(getDisplay());
+		iView = new Transform(getDisplay());
+		iScale = new Transform(getDisplay());
+		iCenter = new Transform(getDisplay());
+
 		addPaintListener(this);
-		addListener(SWT.Resize, this);
-	}
-
-	@Override
-	public void drawBackground(GC gc, int x, int y, int width, int height) {
-		gc.setBackground(new Color(gc.getDevice(), 255, 255, 255));
-		gc.fillRectangle(x, y, width, height);
+		addMouseListener(this);
 	}
 
 	@Override
@@ -89,47 +64,197 @@ public class SimpleGraph extends Canvas implements PaintListener, Listener {
 		Composite co = (Composite) e.getSource();
 		final Rectangle rect = co.getClientArea();
 
-		if (cachedImage == null) {
-			render.setProperty(IDeviceRenderer.GRAPHICS_CONTEXT, e.gc);
-			buildChart();
-			drawToCachedImage(rect);
-		}
-		e.gc.drawImage(cachedImage, 0, 0, cachedImage.getBounds().width,
-				cachedImage.getBounds().height, 0, 0, rect.width, rect.height);
+		updateScale(rect);
+		updateCenter(rect);
+
+		e.gc.setBackground(new Color(getDisplay(), 255, 255, 255));
+		e.gc.fillRectangle(rect);
+		drawAxes(e.gc, rect);
+		renderCurves(e.gc);
 	}
 
-	private void buildChart() {
-		Point size = getSize();
-		Bounds bo = BoundsImpl.create(0, 0, size.x, size.y);
-		IDisplayServer displayServer = render.getDisplayServer();
-		int resolution = displayServer.getDpiResolution();
-		bo.scale(72d / resolution);
-		try {
-			Generator gr = Generator.instance();
-			state = gr.build(displayServer, chart, bo, null);
-		} catch (ChartException ex) {
-			System.err.println(ex.toString());
+	private void renderCurves(GC gc) {
+		if (curves.size() <= 1)
+			return;
+
+		Curve xCurve = curves.get(0);
+		Curve yCurve = curves.get(1);
+
+		float points[] = new float[xCurve.getPoints().size() * 2];
+		for (int i = 0; i < xCurve.getPoints().size(); i++) {
+			points[i * 2] = xCurve.getPoints().get(i).floatValue();
+			points[i * 2 + 1] = yCurve.getPoints().get(i).floatValue();
+		}
+
+		graphToPixel(points);
+
+		for (int i = 1; i < xCurve.getPoints().size(); i++) {
+			int lastX = (i - 1) * 2;
+			int lastY = (i - 1) * 2 + 1;
+			gc.drawLine((int) points[lastX], (int) points[lastY],
+					(int) points[i * 2], (int) points[i * 2 + 1]);
 		}
 	}
 
-	public void drawToCachedImage(Rectangle size) {
-		GC gc = null;
-		try {
-			if (cachedImage != null)
-				cachedImage.dispose();
-			cachedImage = new Image(Display.getCurrent(), size);
+	private void drawAxes(GC gc, Rectangle rect) {
+		// System.err.println("drawing: " + rect);
+		float zero[] = { 0.0f, 0.0f };
+		graphToPixel(zero);
+		System.err.println("view: " +viewX + ":" +viewY + " zero: " + zero[0] + ":" + zero[1]);
 
-			gc = new GC(cachedImage);
-			render.setProperty(IDeviceRenderer.GRAPHICS_CONTEXT, gc);
+		LineAttributes thick = new LineAttributes(2.0f);
+		LineAttributes thin = new LineAttributes(1.0f);
+		gc.setLineAttributes(thick);
 
-			Generator gr = Generator.instance();
-			gr.render(render, state);
-		} catch (ChartException ex) {
-			System.err.println(ex);
-		} finally {
-			if (gc != null)
-				gc.dispose();
+		gc.setForeground(new Color(this.getDisplay(), 128, 128, 128));
+
+		gc.setLineAttributes(thin);
+		
+		drawGrid(gc, rect, 0.2f);
+
+		gc.setLineAttributes(thick);
+		
+		drawGrid(gc,rect, 1.0f);
+
+		gc.setForeground(new Color(getDisplay(), 0, 0, 0));
+
+		gc.drawLine((int) zero[0], rect.y + rect.height, (int) zero[0], rect.y);
+		gc.drawLine(rect.x, (int) zero[1], rect.x + rect.width, (int) zero[1]);
+
+		drawAxisDeco(gc, rect);
+	}
+
+	private void drawAxisDeco(GC gc, Rectangle rect) {
+		final float viewPort[] = { 0, 0, rect.width, rect.height };
+		pixelsToGraph(viewPort);
+		
+		final float yArrow[] = {0.0f, viewPort[1], -stepWidth / 10.f, viewPort[1] -stepWidth / 5.f , stepWidth / 10.f , viewPort[1]-stepWidth / 5.f};
+		graphToPixel(yArrow);
+		
+		final int yArrowIntPoints[] = new int[6];
+		for (int i = 0; i<6;i++) {
+			yArrowIntPoints[i] = (int)yArrow[i];
 		}
+
+		final float xArrow[] = {viewPort[2], 0.f,viewPort[2] -stepWidth / 5.f, -stepWidth / 10.f ,viewPort[2]-stepWidth/5.f,stepWidth / 10.f};
+		graphToPixel(xArrow);
+		
+		final int xArrowIntPoints[] = new int[6];
+		for (int i = 0; i<6;i++) {
+			xArrowIntPoints[i] = (int)xArrow[i];
+		}
+		
+		gc.drawText("x", xArrowIntPoints[2], xArrowIntPoints[3]+2);
+		gc.drawText("y", yArrowIntPoints[4] +2, yArrowIntPoints[5]);
+		gc.setBackground(new Color(getDisplay(),0,0,0));
+		gc.fillPolygon(yArrowIntPoints);
+		gc.fillPolygon(xArrowIntPoints);
+		gc.setBackground(new Color(getDisplay(),255,255,255));
+	}
+	
+	/**
+	 * @param gc
+	 * @param rect
+	 * @return
+	 */
+	private void drawGrid(GC gc, Rectangle rect,float incrementFactor) {
+		float width = updateStepwidth(rect);
+		float step = 0.0f;
+		float increment = stepWidth * incrementFactor;
+		float startx = (float) Math.floor(viewX / increment)
+				* increment;
+		float starty = (float) Math.floor(viewY / increment)
+				* increment;
+
+		while (step < width) {
+			float point[] = 
+				{ startx + step, starty, startx - step, starty,
+				  startx, starty + step, startx, starty - step};
+			
+			graphToPixel(point);
+			System.err.println("startx: " + startx + " step: " + step + " point: " + point[0]);
+			gc.drawLine((int) point[0], 0, (int) point[0], rect.y + rect.height);
+			gc.drawLine((int) point[2], 0, (int) point[2], rect.y + rect.height);
+			
+			gc.drawLine(0, (int) point[5], rect.x + rect.width, (int) point[5]);
+			gc.drawLine(0, (int) point[7], rect.x + rect.width, (int) point[7]);
+			step += increment;
+		}
+	}
+
+	/**
+	 * @param rect
+	 * @return the maximum size of the visible graph
+	 */
+	private float updateStepwidth(Rectangle rect) {
+		float width[] = { 0, 0, rect.width, rect.height };
+		pixelsToGraph(width);
+		float totalwidth = 0.0f;
+		if (width[2] - width[0] > width[3] - width[1])
+			totalwidth = width[2] - width[0];
+		else
+			totalwidth = width[3] - width[1];
+		stepWidth = calculateStepWidth(totalwidth);
+		//		
+		// System.err.println("totalWidth: " + totalwidth + " stepWidth: " +
+		// stepWidth);
+		return totalwidth;
+	}
+
+	private float calculateStepWidth(float visible) {
+		float log = (float) Math.log10(visible);
+		System.err.println("log: " + log + " floor: " + Math.floor(log)
+				+ " pow: " + Math.pow(10.0, Math.floor(log)));
+		return (float) Math.pow(10.0, Math.floor(log));
+	}
+
+	/**
+	 * @param rect
+	 */
+	private void updateView() {
+		view.identity();
+		view.translate(-viewX, -viewY);
+		iView.identity();
+		iView.multiply(view);
+		iView.invert();
+		// System.err.println("view: " + view);
+		// System.err.println("view^-1: " + iView);
+	}
+
+	/**
+	 * @param rect
+	 */
+	private void updateScale(Rectangle rect) {
+		scale.identity();
+		int min = Math.min(rect.width, rect.height);
+		scale.scale(min / scaleF,- min / scaleF);
+		iScale.identity();
+		iScale.multiply(scale);
+		iScale.invert();
+		// System.err.println("scale: " + scale);
+		// System.err.println("scale^-1: " + iScale);
+	}
+
+	private void updateCenter(Rectangle rect) {
+		center.identity();
+		center.translate(rect.width / 2.0f, rect.height / 2.0f);
+		iCenter.identity();
+		iCenter.multiply(center);
+		iCenter.invert();
+		// System.err.println("center: " + center);
+		// System.err.println("center^-1: " + iCenter);
+	}
+
+	private void graphToPixel(float[] points) {
+		view.transform(points);
+		scale.transform(points);
+		center.transform(points);
+	}
+
+	private void pixelsToGraph(float[] points) {
+		iCenter.transform(points);
+		iScale.transform(points);
+		iView.transform(points);
 	}
 
 	/**
@@ -145,59 +270,53 @@ public class SimpleGraph extends Canvas implements PaintListener, Listener {
 	 */
 	public void setCurves(List<Curve> curves) {
 		this.curves = curves;
-		createChart();
-	}
-
-	private void createChart() {
-		chart = ChartWithAxesImpl.create();
-
-		chart.setDimension(ChartDimension.TWO_DIMENSIONAL_LITERAL);
-		chart.getPlot().setBackground(ColorDefinitionImpl.WHITE());
-		chart.getPlot().getClientArea().setBackground(
-				ColorDefinitionImpl.WHITE());
-		chart.getLegend().setItemType(LegendItemType.CATEGORIES_LITERAL);
-		chart.getLegend().setVisible(true);
-
-		chart.getTitle().getLabel().getCaption().setValue("CharT!");
-		chart.getTitle().getLabel().getCaption().getFont().setSize(14);
-		chart.getTitle().getLabel().getCaption().getFont().setName("Courier");
-
-		xAxis = ((ChartWithAxes) chart).getPrimaryBaseAxes()[0];
-		xAxis.getTitle().setVisible(true);
-		xAxis.getTitle().getCaption().setValue("X");
-
-		yAxis = ((ChartWithAxes) chart).getPrimaryOrthogonalAxis(xAxis);
-		yAxis.getTitle().setVisible(true);
-		yAxis.getTitle().getCaption().setValue("Y");
-		yAxis.getScale().setStep(1.0);
-
-		TextDataSet categoryValues = TextDataSetImpl.create(new String[] {"one","two"});
-		Series seCategory = SeriesImpl.create();
-		seCategory.setDataSet(categoryValues);
-		SeriesDefinition sdX = SeriesDefinitionImpl.create();
-		sdX.getSeriesPalette().update(1);
-		xAxis.getSeriesDefinitions().add(sdX);
-		sdX.getSeries().add(seCategory);
-
-		NumberDataSet orthoValuesDataSet1 = NumberDataSetImpl.create(new double[] {1.0,10.0});
-
-		BarSeries bs1 = (BarSeries) BarSeriesImpl.create();
-		bs1.setDataSet(orthoValuesDataSet1);
-
-		SeriesDefinition sdY = SeriesDefinitionImpl.create();
-		yAxis.getSeriesDefinitions().add(sdY);
-		sdY.getSeries().add(bs1);
-
+		// System.err.println("got " + curves.size() + " curves!");
+		redraw();
 	}
 
 	@Override
-	public void handleEvent(Event event) {
-		if (event.type == SWT.Resize && cachedImage != null) {
-			System.err.println("resize");
-			
-			render.setProperty(IDeviceRenderer.GRAPHICS_CONTEXT, new GC(cachedImage));
-			buildChart();
-			drawToCachedImage(this.getBounds());
+	public void mouseDoubleClick(MouseEvent e) {
+		// do nothing
+	}
+
+	@Override
+	public void mouseDown(MouseEvent e) {
+		if (e.button == 1) {
+			this.setCursor(new Cursor(getDisplay(), SWT.CURSOR_HAND));
+			// System.err.println("down! -> " + e.x + e.y);
+			mousePos[0] = e.x;
+			mousePos[1] = e.y;
+
+			addMouseMoveListener(this);
+
+			startViewX = viewX;
+			startViewY = viewY;
 		}
+	}
+
+	@Override
+	public void mouseUp(MouseEvent e) {
+		if (e.button == 1) {
+			this.setCursor(null);
+			removeMouseMoveListener(this);
+		}
+	}
+
+	@Override
+	public void mouseMove(MouseEvent e) {
+
+		float vector[] = new float[] { e.x - mousePos[0], e.y - mousePos[1] };
+		// System.err.println("pixelpos: " + e.x + ":" + e.y);
+		// System.err.println("vector: " + vector[0] + ":" + vector[1]);
+		iScale.transform(vector);
+		// System.err.println("translated  vector: " + vector[0] + ":" +
+		// vector[1]);
+
+		// System.err.println("old view: " + startViewX + ":" + startViewY);
+		viewX = startViewX - vector[0];
+		viewY = startViewY - vector[1];
+		// System.err.println("new view: " + viewX + ":" + viewY);
+		updateView();
+		redraw();
 	}
 }

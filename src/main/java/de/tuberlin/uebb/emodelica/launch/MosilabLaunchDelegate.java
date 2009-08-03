@@ -263,6 +263,8 @@ public class MosilabLaunchDelegate implements ILaunchConfigurationDelegate {
 					e.printStackTrace();
 					return -1;
 				}
+				out.write("\n experiment returned with: " + proc.exitValue()
+						+ "\n");
 				
 				if (proc.exitValue() == 0) {
 					final InputStream inputStream = proc.getInputStream();
@@ -285,9 +287,6 @@ public class MosilabLaunchDelegate implements ILaunchConfigurationDelegate {
 					});
 
 				}
-				out.write("\n experiment returned with: " + proc.exitValue()
-						+ "\n");
-
 				return proc.exitValue();
 			} catch (IOException e) {
 				// TODO throw CoreException

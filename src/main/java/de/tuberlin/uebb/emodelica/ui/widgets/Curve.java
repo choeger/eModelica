@@ -9,14 +9,9 @@ import org.eclipse.swt.widgets.Display;
 
 public class Curve {
 	
-	public static class DataPoint {
-		public int index;
-		public double xValue;
-		public double yValue;
-	}
-	
-	private List<DataPoint> points = new ArrayList<DataPoint>();
+	private List<Double> points = new ArrayList<Double>();
 	private Color color = Display.getCurrent().getSystemColor(SWT.COLOR_BLACK);
+	String name;
 	
 	/**
 	 * @return the color
@@ -32,14 +27,14 @@ public class Curve {
 		this.color = color;
 	}
 
-	public Curve() {
-		
+	public Curve(String name) {
+		this.name = name;
 	}
 
 	/**
 	 * @return the points
 	 */
-	public List<DataPoint> getPoints() {
+	public List<Double> getPoints() {
 		return points;
 	}
 }

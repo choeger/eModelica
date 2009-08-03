@@ -16,23 +16,19 @@ import org.eclipse.ui.part.ViewPart;
 
 import de.tuberlin.uebb.emodelica.ui.widgets.Curve;
 import de.tuberlin.uebb.emodelica.ui.widgets.SimpleGraph;
-import de.tuberlin.uebb.emodelica.ui.widgets.Curve.DataPoint;
 
 /**
  * @author choeger
  *
  */
 public class PlotterView extends ViewPart {
-
-	class Variable {
-		public String name;
-	}
 		
-	ArrayList<Variable> vars = new ArrayList<Variable>(); 
-	ArrayList<DataPoint> points = new ArrayList<DataPoint>();
+	ArrayList<String> vars = new ArrayList<String>();
+	private ArrayList<Curve> curves;
+	private SimpleGraph graph; 
 	
 	public PlotterView() {
-		
+		curves = new ArrayList<Curve>();
 	}
 	
 	/**
@@ -54,25 +50,25 @@ public class PlotterView extends ViewPart {
 				return;
 			
 			for (String varName : header.split("\t")) {
-				Variable v = new Variable();
-				v.name = varName;
-				vars.add(v);
+				vars.add(varName);
 			}
+			curves.clear();
 			String dataLine = reader.readLine();
 			while (dataLine != null) {
+				System.err.println("parsing: " + dataLine);
 				String data[] = dataLine.split("\t");
-				double x = Double.parseDouble(data[0]);
-				
-				for (int i = 1; i < data.length;i++) {			
-					DataPoint point = new DataPoint();
-					point.index = i;
-					point.xValue = x;
-					point.yValue = Double.parseDouble(data[i]);
-					points.add(point);
+
+				for (int i = 0; i < vars.size(); i++)
+					curves.add(new Curve(vars.get(i)));
+								
+				for (int i = 0; i < data.length;i++) {			
+					double x = Double.parseDouble(data[i]);
+					curves.get(i).getPoints().add(new Double(x));
+					System.err.println("curve has " + curves.get(i).getPoints().size());
 				}
 				dataLine = reader.readLine();
 			}
-			
+			graph.setCurves(curves);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -84,20 +80,11 @@ public class PlotterView extends ViewPart {
 	 */
 	@Override
 	public void createPartControl(Composite parent) {
-		Composite container = new Composite(parent, SWT.NONE);
-		SimpleGraph graph = new SimpleGraph(container, SWT.NONE);
+		Composite container = new Composite(parent, SWT.NO_BACKGROUND | SWT.DOUBLE_BUFFERED);
+		graph = new SimpleGraph(container, SWT.NO_BACKGROUND | SWT.DOUBLE_BUFFERED);
 		
 		FillLayout layout = new FillLayout();
 		container.setLayout(layout);
-		
-		ArrayList<Curve> curves = new ArrayList<Curve>();
-		
-		for (int i = 0; i < vars.size(); i++)
-			curves.add(new Curve());
-		
-		for (DataPoint point : points) {
-			curves.get(point.index-1).getPoints().add(point);
-		}
 		
 		graph.setCurves(curves);
 
