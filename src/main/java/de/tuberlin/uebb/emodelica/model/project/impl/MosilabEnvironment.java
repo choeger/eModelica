@@ -6,6 +6,8 @@ package de.tuberlin.uebb.emodelica.model.project.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.core.resources.IResource;
+
 import de.tuberlin.uebb.emodelica.model.project.IModelicaPackage;
 import de.tuberlin.uebb.emodelica.model.project.IModelicaResource;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabEnvironment;
@@ -182,6 +184,11 @@ public class MosilabEnvironment extends ModelicaResource implements IMosilabEnvi
 	public void syncChildren() {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public IResource getResource() {
+		return null;
 	}
 	
 	

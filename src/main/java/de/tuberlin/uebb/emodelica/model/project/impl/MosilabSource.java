@@ -77,4 +77,9 @@ public class MosilabSource extends WorkspaceModelicaPackageContainer implements
 		else
 			return container.getProjectRelativePath().toString();
 	}
+
+	@Override
+	public IResource getResource() {
+		return getBasePath();
+	}
 }

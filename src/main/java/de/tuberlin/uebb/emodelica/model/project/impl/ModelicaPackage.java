@@ -70,11 +70,10 @@ public class ModelicaPackage extends ModelicaResource  implements IModelicaPacka
 		try {
 			onlyModelicaResources = true;
 			for (IResource member : completePath.members()) {
-				if (member.getType() == IResource.FILE && member.getName().endsWith(".mo")) {
+				if (member.getType() == IResource.FILE && member.getName().endsWith(".mo") && 
+						!member.getName().equals("package.mo")) {
 					children.add((IFile)member);
-					member.setSessionProperty(DoubleEntryFilter.VISITED_BY_NAVIGATOR, true);
-				} else onlyModelicaResources = false;
-				
+				} else onlyModelicaResources = false;	
 			}
 		} catch (CoreException e) {
 			e.printStackTrace();
@@ -97,6 +96,11 @@ public class ModelicaPackage extends ModelicaResource  implements IModelicaPacka
 
 	@Override
 	public IContainer getContainer() {
+		return completePath;
+	}
+
+	@Override
+	public IResource getResource() {
 		return completePath;
 	}
 

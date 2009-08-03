@@ -3,9 +3,16 @@
  */
 package de.tuberlin.uebb.emodelica.model.project.impl;
 
+import java.util.Set;
+
 import org.eclipse.core.resources.IProject;
-import org.eclipse.jface.viewers.ITreeContentProvider;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.ui.IMemento;
+import org.eclipse.ui.navigator.ICommonContentExtensionSite;
+import org.eclipse.ui.navigator.IPipelinedTreeContentProvider;
+import org.eclipse.ui.navigator.PipelinedShapeModification;
+import org.eclipse.ui.navigator.PipelinedViewerUpdate;
 
 import de.tuberlin.uebb.emodelica.EModelicaPlugin;
 import de.tuberlin.uebb.emodelica.model.project.IModelicaPackage;
@@ -18,7 +25,7 @@ import de.tuberlin.uebb.emodelica.model.project.IProjectManager;
  * @author choeger
  * 
  */
-public class MosilabProjectContentProvider implements ITreeContentProvider, IModelicaResourceChangedListener {
+public class MosilabProjectContentProvider implements IPipelinedTreeContentProvider, IModelicaResourceChangedListener {
 
 	private Viewer viewer;
 	private boolean onlyPackages;
@@ -152,5 +159,77 @@ public class MosilabProjectContentProvider implements ITreeContentProvider, IMod
 	public void resourceChanged(IModelicaResource resource) {
 		if (viewer != null)
 			viewer.refresh();
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public void getPipelinedChildren(Object parent, Set theCurrentChildren) {
+		cleanAndAddOwn(getChildren(parent), theCurrentChildren);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public void getPipelinedElements(Object anInput, Set theCurrentElements) {
+		cleanAndAddOwn(getElements(anInput), theCurrentElements);
+	}
+
+	@Override
+	public Object getPipelinedParent(Object anObject, Object suggestedParent) {
+		return suggestedParent;
+	}
+
+	@Override
+	public PipelinedShapeModification interceptAdd(
+			PipelinedShapeModification anAddModification) {
+		return anAddModification;
+	}
+
+	@Override
+	public boolean interceptRefresh(PipelinedViewerUpdate refreshSynchronization) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public PipelinedShapeModification interceptRemove(
+			PipelinedShapeModification removeModification) {
+		return removeModification;
+	}
+
+	@Override
+	public boolean interceptUpdate(PipelinedViewerUpdate anUpdateSynchronization) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void init(ICommonContentExtensionSite config) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void restoreState(IMemento memento) {
+		// TODO Auto-generated method stub	
+	}
+
+	@Override
+	public void saveState(IMemento memento) {
+		// TODO Auto-generated method stub
+	}
+	
+	private void cleanAndAddOwn(Object[] children, Set<Object> theCurrentChildren) {
+		for (Object child : children) {
+			if (child instanceof IModelicaResource) {
+				IModelicaResource modRes = (IModelicaResource)child;
+				IResource resource = modRes.getResource();				
+				
+				if (resource != null && theCurrentChildren.contains(resource)) {
+					System.err.println("removing " + resource + " because of " + modRes);
+					theCurrentChildren.remove(resource);
+				}
+			}
+			theCurrentChildren.add(child);
+		}
 	}
 }

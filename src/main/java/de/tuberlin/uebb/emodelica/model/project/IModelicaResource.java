@@ -5,9 +5,8 @@ package de.tuberlin.uebb.emodelica.model.project;
 
 import java.util.List;
 
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IAdaptable;
-
-import de.tuberlin.uebb.emodelica.model.IModelChangedListener;
 
 /**
  * @author choeger
@@ -43,4 +42,10 @@ public interface IModelicaResource extends IAdaptable {
 	 * @param listener
 	 */
 	public void removeListener(IModelicaResourceChangedListener listener);
+	
+	/**
+	 * 
+	 * @return an eclipse resource that defines this IModelicaResource or null if none
+	 */
+	public IResource getResource();
 }

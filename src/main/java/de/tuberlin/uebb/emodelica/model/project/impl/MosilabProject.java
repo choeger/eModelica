@@ -23,6 +23,7 @@ import javax.xml.validation.SchemaFactory;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.ui.actions.WorkspaceModifyOperation;
@@ -337,6 +338,11 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public IResource getResource() {
+		return project;
 	}
 
 }

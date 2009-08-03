@@ -6,6 +6,8 @@ package de.tuberlin.uebb.emodelica.model.project.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.core.resources.IResource;
+
 import de.tuberlin.uebb.emodelica.model.project.ILibraryContainer;
 import de.tuberlin.uebb.emodelica.model.project.ILibraryEntry;
 import de.tuberlin.uebb.emodelica.model.project.IModelicaResource;
@@ -55,6 +57,12 @@ public class LibraryContainer extends ModelicaResource implements ILibraryContai
 	@Override
 	public void add(String location, String name, String version) {
 		libs.add(new LibraryEntry(this, location, name, version));
+	}
+
+	@Override
+	public IResource getResource() {
+		// TODO check for linked resource
+		return null;
 	}
 	
 }

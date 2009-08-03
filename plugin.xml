@@ -129,14 +129,11 @@
                wizardId="de.tuberlin.uebb.emodelica.wizards.newepackagewizard">
             <enablement></enablement>
          </commonWizard>
+         <override
+               policy="InvokeAlwaysRegardlessOfSuppressedExt"
+               suppressedExtensionId="org.eclipse.ui.navigator.resourceContent">
+         </override>
       </navigatorContent>
-      <commonFilter
-            activeByDefault="true"
-            class="de.tuberlin.uebb.emodelica.model.project.impl.DoubleEntryFilter"
-            description="This filter hides all Modelica elements that appear in packages and folders "
-            id="de.tuberlin.uebb.emodelica.filters.doubleEntryFilter"
-            name="Double entry filter">
-      </commonFilter>
    </extension>
    <extension
          point="org.eclipse.ui.navigator.viewer">

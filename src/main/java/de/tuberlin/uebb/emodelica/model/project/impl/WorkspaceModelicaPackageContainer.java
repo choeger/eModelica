@@ -11,7 +11,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.PlatformObject;
 
 import de.tuberlin.uebb.emodelica.model.project.IModelicaPackage;
 import de.tuberlin.uebb.emodelica.model.project.IModelicaResource;
@@ -48,21 +47,15 @@ public abstract class WorkspaceModelicaPackageContainer extends ModelicaResource
 		if (container != null) {
 			System.err.println("Scanning: " + container.getFullPath());
 			try {
-				boolean onlyModelicaResources = true;
 				for (IResource resource : container.members())
 					if (resource.getType() == IResource.FOLDER) {
 						recFind((IFolder) resource);
-						onlyModelicaResources &= resource.getSessionProperty(DoubleEntryFilter.VISITED_BY_NAVIGATOR) != null;
 					} else {
 						if (resource.getType() == IResource.FILE && resource.getName().equals("package.mo")) {
 							ModelicaPackage pkg = new ModelicaPackage(this, this.container, container);
 							packages.add(pkg);
-							if (pkg.hasOnlyModelicaResources())
-								container.setSessionProperty(DoubleEntryFilter.VISITED_BY_NAVIGATOR, true);
 						}
 					}
-				if (onlyModelicaResources)
-					container.setSessionProperty(DoubleEntryFilter.VISITED_BY_NAVIGATOR, true);
 			} catch (CoreException e) {
 				e.printStackTrace();
 			}
