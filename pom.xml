@@ -66,6 +66,11 @@
 	<?eclipse dependencies?>
 		<dependency>
 			<groupId>org.eclipse.debug</groupId>
+			<artifactId>ui</artifactId>
+			<version>[3.3.0,)</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.debug</groupId>
 			<artifactId>core</artifactId>
 			<version>[3.3.0,)</version>
 		</dependency>
