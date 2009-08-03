@@ -135,7 +135,8 @@ public class MosilabBuilder extends IncrementalProjectBuilder {
 
 				ProcessBuilder processBuilder = new ProcessBuilder(mosilabProject.getMOSILABEnvironment().getLocation() + 
 						File.separator + "bin" + File.separator + "mkSelector.sh");
-
+				processBuilder.directory(new File(srcPath));
+				
 				processBuilder.environment().put("MOSILAB_ROOT",
 						mosilabProject.getMOSILABEnvironment().getLocation());
 
