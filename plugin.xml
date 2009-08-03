@@ -272,7 +272,7 @@
                   type="org.eclipse.core.resources.IProject">
                <test
                      forcePluginActivation="true"
-                     property="org.eclipse.core.resources.projectNature"
+                     property="de.tuberlin.uebb.emodelica.nature.mosilab"
                      value="de.tuberlin.uebb.emodelica.nature">
                </test>
             </adapt>
