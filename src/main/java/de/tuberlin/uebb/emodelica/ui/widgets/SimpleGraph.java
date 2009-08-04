@@ -21,6 +21,9 @@ import org.eclipse.swt.graphics.Transform;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 
+import sun.awt.geom.Curve;
+import de.tuberlin.uebb.emodelica.model.experiments.ICurve;
+
 /**
  * @author choeger
  * 
@@ -31,7 +34,7 @@ public class SimpleGraph extends Canvas implements PaintListener,
 	private float viewY = 0;
 	private float scaleF = 5.0f;
 
-	private List<Curve> curves = new ArrayList<Curve>();
+	private List<ICurve> curves = new ArrayList<ICurve>();
 	float mousePos[] = new float[2];
 	private float stepWidth;
 
@@ -77,8 +80,8 @@ public class SimpleGraph extends Canvas implements PaintListener,
 		if (curves.size() <= 1)
 			return;
 
-		Curve xCurve = curves.get(0);
-		Curve yCurve = curves.get(1);
+		ICurve xCurve = curves.get(0);
+		ICurve yCurve = curves.get(1);
 
 		float points[] = new float[xCurve.getPoints().size() * 2];
 		for (int i = 0; i < xCurve.getPoints().size(); i++) {
@@ -260,7 +263,7 @@ public class SimpleGraph extends Canvas implements PaintListener,
 	/**
 	 * @return the curves
 	 */
-	public List<Curve> getCurves() {
+	public List<ICurve> getCurves() {
 		return curves;
 	}
 
@@ -268,7 +271,7 @@ public class SimpleGraph extends Canvas implements PaintListener,
 	 * @param curves
 	 *            the curves to set
 	 */
-	public void setCurves(List<Curve> curves) {
+	public void setCurves(List<ICurve> curves) {
 		this.curves = curves;
 		// System.err.println("got " + curves.size() + " curves!");
 		redraw();

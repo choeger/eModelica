@@ -15,6 +15,7 @@ import org.eclipse.ui.navigator.PipelinedShapeModification;
 import org.eclipse.ui.navigator.PipelinedViewerUpdate;
 
 import de.tuberlin.uebb.emodelica.EModelicaPlugin;
+import de.tuberlin.uebb.emodelica.model.experiments.IExperimentContainer;
 import de.tuberlin.uebb.emodelica.model.project.IModelicaPackage;
 import de.tuberlin.uebb.emodelica.model.project.IModelicaResource;
 import de.tuberlin.uebb.emodelica.model.project.IModelicaResourceChangedListener;
@@ -72,6 +73,11 @@ public class MosilabProjectContentProvider implements IPipelinedTreeContentProvi
 			IModelicaResource resource = (IModelicaResource)arg0;
 			return resource.getChildren().toArray();
 		}
+		
+		if (arg0 instanceof IExperimentContainer) {
+			return ((IExperimentContainer)arg0).getExperiments().toArray();
+		}
+		
 		return null;
 	}
 
@@ -90,6 +96,10 @@ public class MosilabProjectContentProvider implements IPipelinedTreeContentProvi
 		if (arg0 instanceof IModelicaResource) {
 			IModelicaResource resource = (IModelicaResource)arg0;
 			return resource.getParent();
+		}
+		
+		if (arg0 instanceof IExperimentContainer) {
+			return ((IExperimentContainer)arg0).getProject();
 		}
 		return null;
 	}
@@ -113,6 +123,10 @@ public class MosilabProjectContentProvider implements IPipelinedTreeContentProvi
 				return false;
 			IModelicaResource resource = (IModelicaResource)arg0;
 			return !resource.getChildren().isEmpty();
+		}
+		
+		if (arg0 instanceof IExperimentContainer) {
+			return ((IExperimentContainer)arg0).getExperiments().size() > 0;
 		}
 
 		return false;

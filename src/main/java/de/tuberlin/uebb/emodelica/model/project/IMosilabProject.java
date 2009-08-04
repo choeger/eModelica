@@ -9,6 +9,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.QualifiedName;
 
 import de.tuberlin.uebb.emodelica.EModelicaPlugin;
+import de.tuberlin.uebb.emodelica.model.experiments.IExperiment;
 
 /**
  * @author choeger
@@ -68,5 +69,11 @@ public interface IMosilabProject extends IModelicaResource {
 	 * write properties to disk
 	 */
 	public void writeBackPropertiesAsync();
+	
+	/**
+	 * Get all experiments of that project
+	 * @return all experiments of that project
+	 */
+	public List<IExperiment> getExperiments();
 	
 }

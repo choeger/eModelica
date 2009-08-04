@@ -3,11 +3,15 @@
  */
 package de.tuberlin.uebb.emodelica.model.project.impl;
 
+import java.util.List;
+
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.swt.graphics.Image;
 
 import de.tuberlin.uebb.emodelica.Images;
+import de.tuberlin.uebb.emodelica.model.experiments.IExperiment;
+import de.tuberlin.uebb.emodelica.model.experiments.IExperimentContainer;
 import de.tuberlin.uebb.emodelica.model.project.ILibraryContainer;
 import de.tuberlin.uebb.emodelica.model.project.ILibraryEntry;
 import de.tuberlin.uebb.emodelica.model.project.IModelicaPackage;
@@ -55,6 +59,10 @@ public class MosilabProjectLabelProvider implements ILabelProvider {
 			return ((IMosilabSource) arg0).getBasePath().getName();
 		} else if (arg0 instanceof ILibraryEntry) {
 			return ((ILibraryEntry) arg0).getName();
+		} else if (arg0 instanceof IExperimentContainer) {
+			return "MOSILAB experiments";
+		} else if (arg0 instanceof IExperiment) {
+			return ((IExperiment) arg0).getName();
 		}
 
 		return null;

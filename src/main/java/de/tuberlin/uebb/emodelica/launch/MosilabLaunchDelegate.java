@@ -3,12 +3,13 @@
  */
 package de.tuberlin.uebb.emodelica.launch;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
@@ -28,11 +29,6 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.ILaunchConfigurationDelegate;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.IViewPart;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleManager;
@@ -40,8 +36,8 @@ import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
 
 import de.tuberlin.uebb.emodelica.EModelicaPlugin;
+import de.tuberlin.uebb.emodelica.model.experiments.impl.TextFileExperiment;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabProject;
-import de.tuberlin.uebb.emodelica.views.PlotterView;
 
 /**
  * @author choeger
@@ -91,7 +87,7 @@ public class MosilabLaunchDelegate implements ILaunchConfigurationDelegate {
 					.println("Could not launch. Path for C++ sources given does not exist.");
 			return;
 		}
-
+		
 		writeMainFile(configuration, monitor, sourceFolder);
 
 		createDefinitionHeader(configuration, monitor, sourceFolder);
@@ -263,29 +259,19 @@ public class MosilabLaunchDelegate implements ILaunchConfigurationDelegate {
 					e.printStackTrace();
 					return -1;
 				}
+
+				BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
+				String s = null;
+				while((s = reader.readLine()) != null)
+					System.err.println(s);
+				
 				out.write("\n experiment returned with: " + proc.exitValue()
 						+ "\n");
-				
+
 				if (proc.exitValue() == 0) {
-					final InputStream inputStream = proc.getInputStream();
-					Display.getDefault().asyncExec(new Runnable() {
-						public void run() {
-							IWorkbenchPage page = PlatformUI.getWorkbench()
-									.getActiveWorkbenchWindow().getActivePage();
-							try {
-								IViewPart part = page
-										.showView("de.tuberlin.uebb.emodelica.views.graphView");
-								if (part instanceof PlotterView) {
-									((PlotterView) part)
-											.setDataFromInputStream(inputStream);
-								}
-
-							} catch (PartInitException e) {
-								e.printStackTrace();
-							}
-						}
-					});
-
+					TextFileExperiment exp = new TextFileExperiment("experiment",mosilabProject,
+							proc.getInputStream());
+					mosilabProject.getExperiments().add(exp);
 				}
 				return proc.exitValue();
 			} catch (IOException e) {

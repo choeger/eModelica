@@ -34,6 +34,10 @@ import org.xml.sax.SAXException;
 
 import de.tuberlin.uebb.emodelica.Constants;
 import de.tuberlin.uebb.emodelica.EModelicaPlugin;
+import de.tuberlin.uebb.emodelica.model.experiments.IExperiment;
+import de.tuberlin.uebb.emodelica.model.experiments.IExperimentContainer;
+import de.tuberlin.uebb.emodelica.model.experiments.impl.ExperimentContainer;
+import de.tuberlin.uebb.emodelica.model.experiments.impl.TextFileExperiment;
 import de.tuberlin.uebb.emodelica.model.project.ILibraryContainer;
 import de.tuberlin.uebb.emodelica.model.project.ILibraryEntry;
 import de.tuberlin.uebb.emodelica.model.project.IModelicaResource;
@@ -59,7 +63,8 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 	private List<IMosilabSource> srcFolders;
 	private IMosilabEnvironment mosilabInstallation = null;
 	private List<Object> children = new ArrayList<Object>();
-
+	private IExperimentContainer experiments = new ExperimentContainer(new ArrayList<IExperiment>(), this);
+	
 	public MosilabProject(IProject project) {
 		this.project = project;
 		srcFolders = new ArrayList<IMosilabSource>();
@@ -236,6 +241,14 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 	@Override
 	public void syncChildren() {
 		children.clear();
+		try {
+			syncExperiments();
+		} catch (CoreException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		children.add(experiments);
+		
 		System.err.println("adding libs");
 		if (getMOSILABEnvironment() != null) {
 			getMOSILABEnvironment().syncChildren();
@@ -256,6 +269,20 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 		}
 		
 		notifyListeners();
+	}
+
+	private void syncExperiments() throws CoreException {
+		experiments.getExperiments().clear();
+		IFolder expFolder = project.getFolder(".experiments");
+		
+		if (expFolder.exists()) {
+			for (IResource res : expFolder.members()) {
+				if (res.getType() == IResource.FILE) {
+					IFile file = (IFile)res;
+					experiments.getExperiments().add(new TextFileExperiment(this, file));
+				}
+			}
+		}
 	}
 
 	@Override
@@ -343,6 +370,11 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 	@Override
 	public IResource getResource() {
 		return project;
+	}
+
+	@Override
+	public List<IExperiment> getExperiments() {
+		return experiments.getExperiments();
 	}
 
 }
