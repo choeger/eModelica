@@ -181,4 +181,10 @@ public class TextFileExperiment implements IExperiment {
 		}
 	}
 
+	@Override
+	public String getUniqueID() {
+		//filename is sufficient
+		return name + "." + dateFormat.format(date);
+	}
+
 }

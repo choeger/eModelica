@@ -39,4 +39,9 @@ public interface IExperiment {
 	 */
 	public List<ICurve> getCurves();
 
+	/**
+	 * 
+	 * @return a unique ID for that experiment
+	 */
+	public String getUniqueID();
 }

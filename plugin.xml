@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.2"?>
 <plugin>
+   <extension-point id="de.tuberlin.uebb.emodelica.experimentView" name="MOSILAB Experiment View" schema="xml/schema/de.tuberlin.uebb.emodelica.experimentView.exsd"/>
    <extension
          point="org.eclipse.ui.editors">
       <editor
@@ -379,5 +380,15 @@
             id="de.tuberlin.uebb.emodelica.modelicaPerspective"
             name="Modelica Perspective">
       </perspective>
+   </extension>
+   <extension
+         point="de.tuberlin.uebb.emodelica.experimentView">
+      <Viewer
+            Class="de.tuberlin.uebb.emodelica.views.PlotterView"
+            Name="Plotter"
+            View="de.tuberlin.uebb.emodelica.views.graphView"
+            icon="icons/chart.png"
+            id="de.tuberlin.uebb.emodelica.views.plotterView">
+      </Viewer>
    </extension>
 </plugin>

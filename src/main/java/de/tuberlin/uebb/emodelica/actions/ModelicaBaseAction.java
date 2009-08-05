@@ -39,5 +39,12 @@ public class ModelicaBaseAction extends Action implements IShellProvider, ISelec
 	public ISelection getSelection() {
 		return selection;
 	}
+
+	/**
+	 * @return the site
+	 */
+	public IWorkbenchSite getSite() {
+		return site;
+	}
 	
 }

@@ -32,5 +32,10 @@ public class Images {
 		ImageDescriptor.createFromFile(Images.class, "/icons/packagefolder_obj.gif");
 	public static final ImageDescriptor LIBRARY_FOLDER_DESCRIPTOR =
 		ImageDescriptor.createFromFile(Images.class, "/icons/library_obj.gif");
-
+	public static final ImageDescriptor CHART_DESCRIPTOR =
+		ImageDescriptor.createFromFile(Images.class, "/icons/chart.png");
+	public static final ImageDescriptor EXPERIMENT_DESCRIPTOR =
+		ImageDescriptor.createFromFile(Images.class, "/icons/experiment.png");
+	public static final ImageDescriptor EXPERIMENTS_DESCRIPTOR =
+		ImageDescriptor.createFromFile(Images.class, "/icons/experiments.png");
 }

@@ -39,6 +39,10 @@ public class MosilabProjectLabelProvider implements ILabelProvider {
 			return Images.SOURCE_FOLDER_DESCRIPTOR.createImage();
 		} else if (arg0 instanceof IMosilabEnvironment) {
 			return Images.LIBRARY_FOLDER_DESCRIPTOR.createImage();
+		} else if (arg0 instanceof IExperimentContainer) {
+			return Images.EXPERIMENTS_DESCRIPTOR.createImage();
+		} else if (arg0 instanceof IExperiment) {
+			return  Images.EXPERIMENT_DESCRIPTOR.createImage();
 		}
 
 		return null;
