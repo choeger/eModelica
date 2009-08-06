@@ -38,6 +38,7 @@ public class TextFileExperiment implements IExperiment {
 	private String name = "experiment " + date.toString();
 	private IMosilabProject project;
 	private DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd-HHmmssZ"); 
+	private IFile file = null;
 	
 	/* (non-Javadoc)
 	 * @see de.tuberlin.uebb.emodelica.model.experiments.IExperiment#getCurves()
@@ -88,7 +89,7 @@ public class TextFileExperiment implements IExperiment {
 			protected void execute(IProgressMonitor monitor)
 					throws CoreException, InvocationTargetException,
 					InterruptedException {
-				IFile file = storeToDisk(data);
+				file = storeToDisk(data);
 				if (file != null)
 					setDataFromInputStream(file.getContents());
 			}};
@@ -140,6 +141,7 @@ public class TextFileExperiment implements IExperiment {
 		}
 		
 		this.project = project;
+		this.file = file;
 		try {
 			setDataFromInputStream(file.getContents());
 		} catch (CoreException e) {
@@ -185,6 +187,13 @@ public class TextFileExperiment implements IExperiment {
 	public String getUniqueID() {
 		//filename is sufficient
 		return name + "." + dateFormat.format(date);
+	}
+
+	/**
+	 * @return the file
+	 */
+	public IFile getFile() {
+		return file;
 	}
 
 }

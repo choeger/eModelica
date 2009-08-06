@@ -4,14 +4,18 @@
 package de.tuberlin.uebb.emodelica.actions;
 
 import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchSite;
+import org.eclipse.ui.actions.ActionContext;
 import org.eclipse.ui.actions.ActionGroup;
 import org.eclipse.ui.navigator.ICommonMenuConstants;
 import org.eclipse.ui.part.Page;
 import org.eclipse.ui.texteditor.IWorkbenchActionDefinitionIds;
+
+import de.tuberlin.uebb.emodelica.model.experiments.IExperiment;
 
 /**
  * @author choeger
@@ -67,6 +71,25 @@ public class CCPActionGroup extends ActionGroup {
 		
 		actions = new ModelicaBaseAction[] { cutAction, copyAction, pasteAction, deleteAction };						
 
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.actions.ActionGroup#setContext(org.eclipse.ui.actions.ActionContext)
+	 */
+	@Override
+	public void setContext(ActionContext context) {
+		super.setContext(context);
+		
+		if (context.getSelection() instanceof IStructuredSelection) {
+			IStructuredSelection selection = (IStructuredSelection)context.getSelection();
+			
+			if (selection.getFirstElement() instanceof IExperiment) {
+				deleteAction.setEnabled(true);
+				copyAction.setEnabled(false);
+				pasteAction.setEnabled(false);
+				cutAction.setEnabled(false);
+			}
+		}
 	}
 
 }

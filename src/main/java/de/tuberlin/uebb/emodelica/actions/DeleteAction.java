@@ -15,6 +15,8 @@ import org.eclipse.ui.actions.DeleteResourceAction;
 import org.eclipse.ui.ide.undo.DeleteResourcesOperation;
 
 import de.tuberlin.uebb.emodelica.EModelicaPlugin;
+import de.tuberlin.uebb.emodelica.model.experiments.IExperiment;
+import de.tuberlin.uebb.emodelica.model.experiments.impl.TextFileExperiment;
 import de.tuberlin.uebb.emodelica.model.project.IModelicaPackage;
 import de.tuberlin.uebb.emodelica.model.project.IModelicaResource;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabSource;
@@ -51,20 +53,21 @@ public class DeleteAction extends ModelicaBaseAction {
 		ISelection selection = getSelection();
 		if (selection instanceof IStructuredSelection) {
 			Object toDelete = ((IStructuredSelection)getSelection()).getFirstElement();
+			
+			//TODO: use adapters when they exist!
+			DeleteResourcesOperation delOp = null;
+			if (toDelete instanceof TextFileExperiment) {		
+				TextFileExperiment experiment = (TextFileExperiment)toDelete;
+				delOp = new DeleteResourcesOperation(new IResource[] {experiment.getFile()},"deleting",true);
+			}
+			
 			if (toDelete instanceof IModelicaResource) {
 				
 				if (toDelete instanceof IMosilabSource) {
 					IMosilabSource mosilabSource = (IMosilabSource)toDelete;
 					
 					IFolder folder = mosilabSource.getBasePath();
-					DeleteResourcesOperation delOp = new DeleteResourcesOperation(new IResource[] {folder},"deleting",true);
-					try {
-						delOp.execute(null,null);
-					} catch (ExecutionException e) {
-						e.printStackTrace();
-					}
-
-					mosilabSource.getParent().syncChildren();
+					delOp = new DeleteResourcesOperation(new IResource[] {folder},"deleting",true);
 				}
 				
 				if (toDelete instanceof IModelicaPackage) {
@@ -72,17 +75,16 @@ public class DeleteAction extends ModelicaBaseAction {
 					
 					//TODO: only delete stuff, that is shown as package resource!
 					IFolder folder = (IFolder) pkg.getContainer();
-					DeleteResourcesOperation delOp = new DeleteResourcesOperation(new IResource[] {folder},"deleting",true);
-					try {
-						delOp.execute(null,null);
-					} catch (ExecutionException e) {
-						e.printStackTrace();
-					}
-
-					pkg.getParent().syncChildren();
+					delOp = new DeleteResourcesOperation(new IResource[] {folder},"deleting",true);
 				}
-				
 			}
+			
+			if (delOp != null)
+				try {
+					delOp.execute(null, null);
+				} catch (ExecutionException e) {
+					e.printStackTrace();
+				}
 		}
 	}
 	
