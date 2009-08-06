@@ -15,6 +15,6 @@ int main (int argc, char** argv) {
 	ex->rt->solver->setup->tol = RELATIVE_TOLERANCE;
 	ex->rt->solver->setup->aTol = ABSOLUTE_TOLERANCE;
    	ex->start();
-	delete ex;
+	//delete ex;
    	exit(0);
 }

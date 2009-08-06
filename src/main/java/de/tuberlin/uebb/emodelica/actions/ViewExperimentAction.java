@@ -4,9 +4,12 @@
 package de.tuberlin.uebb.emodelica.actions;
 
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchSite;
 import org.eclipse.ui.PartInitException;
 
+import de.tuberlin.uebb.emodelica.model.experiments.IExperiment;
 import de.tuberlin.uebb.emodelica.model.experiments.IExperimentView;
 
 
@@ -16,19 +19,16 @@ import de.tuberlin.uebb.emodelica.model.experiments.IExperimentView;
  */
 public class ViewExperimentAction extends ModelicaBaseAction {
 
-	private String viewName;
-	private String iconPath;
 	private String viewID;
+	private IExperiment experiment;
 	
 	public ViewExperimentAction(String viewerName, 
-			String viewerID, String icon, IWorkbenchSite site) {
+			String viewerID, ImageDescriptor icon, IWorkbenchSite site) {
 		super(site);
 		setText(viewerName);
-		this.viewName=viewerName;
-		this.iconPath = icon;
 		this.viewID= viewerID;
 		
-		setImageDescriptor(ImageDescriptor.createFromFile(this.getClass(), iconPath));
+		setImageDescriptor(icon);
 		
 		setDescription("View experiment in " + viewerName);
 	}
@@ -36,11 +36,32 @@ public class ViewExperimentAction extends ModelicaBaseAction {
 	@Override
 	public void run() {
 		try {
-			getSite().getWorkbenchWindow().getActivePage().showView(viewID);
+			IViewPart viewPart = getSite().getWorkbenchWindow().getActivePage().showView(viewID);
+			if (viewPart instanceof IExperimentView) {
+				((IExperimentView)viewPart).setExperiment(experiment);
+			}
 		} catch (PartInitException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+
+
+	/**
+	 * @return the experiment
+	 */
+	public IExperiment getExperiment() {
+		return experiment;
+	}
+
+
+
+	/**
+	 * @param experiment the experiment to set
+	 */
+	public void setExperiment(IExperiment experiment) {
+		this.experiment = experiment;
 	}
 
 }

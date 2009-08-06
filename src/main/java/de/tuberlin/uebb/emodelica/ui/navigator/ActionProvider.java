@@ -6,12 +6,14 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.SubMenuManager;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchActionConstants;
+import org.eclipse.ui.actions.ActionContext;
 import org.eclipse.ui.navigator.CommonActionProvider;
 import org.eclipse.ui.navigator.ICommonActionExtensionSite;
 import org.eclipse.ui.navigator.ICommonMenuConstants;
 import org.eclipse.ui.navigator.ICommonViewerWorkbenchSite;
 
 import de.tuberlin.uebb.emodelica.actions.CCPActionGroup;
+import de.tuberlin.uebb.emodelica.actions.ViewExperimentActionGroup;
 import de.tuberlin.uebb.emodelica.model.experiments.IExperiment;
 
 public class ActionProvider extends CommonActionProvider {
@@ -53,6 +55,16 @@ public class ActionProvider extends CommonActionProvider {
 			menu.setVisible(true);
 			ccpGroup.fillContextMenu(menu);
 		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.actions.ActionGroup#setContext(org.eclipse.ui.actions.ActionContext)
+	 */
+	@Override
+	public void setContext(ActionContext context) {
+		super.setContext(context);
+		viewExperimentActionGroup.setContext(context);
+		ccpGroup.setContext(context);
 	}
 
 }

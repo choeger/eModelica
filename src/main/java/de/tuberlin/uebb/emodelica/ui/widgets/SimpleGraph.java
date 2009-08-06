@@ -103,7 +103,7 @@ public class SimpleGraph extends Canvas implements PaintListener,
 		// System.err.println("drawing: " + rect);
 		float zero[] = { 0.0f, 0.0f };
 		graphToPixel(zero);
-		System.err.println("view: " +viewX + ":" +viewY + " zero: " + zero[0] + ":" + zero[1]);
+		//System.err.println("view: " +viewX + ":" +viewY + " zero: " + zero[0] + ":" + zero[1]);
 
 		LineAttributes thick = new LineAttributes(2.0f);
 		LineAttributes thin = new LineAttributes(1.0f);
@@ -175,7 +175,7 @@ public class SimpleGraph extends Canvas implements PaintListener,
 				  startx, starty + step, startx, starty - step};
 			
 			graphToPixel(point);
-			System.err.println("startx: " + startx + " step: " + step + " point: " + point[0]);
+			//System.err.println("startx: " + startx + " step: " + step + " point: " + point[0]);
 			gc.drawLine((int) point[0], 0, (int) point[0], rect.y + rect.height);
 			gc.drawLine((int) point[2], 0, (int) point[2], rect.y + rect.height);
 			
@@ -206,8 +206,8 @@ public class SimpleGraph extends Canvas implements PaintListener,
 
 	private float calculateStepWidth(float visible) {
 		float log = (float) Math.log10(visible);
-		System.err.println("log: " + log + " floor: " + Math.floor(log)
-				+ " pow: " + Math.pow(10.0, Math.floor(log)));
+//		System.err.println("log: " + log + " floor: " + Math.floor(log)
+//				+ " pow: " + Math.pow(10.0, Math.floor(log)));
 		return (float) Math.pow(10.0, Math.floor(log));
 	}
 
@@ -273,7 +273,7 @@ public class SimpleGraph extends Canvas implements PaintListener,
 	 */
 	public void setCurves(List<ICurve> curves) {
 		this.curves = curves;
-		// System.err.println("got " + curves.size() + " curves!");
+		System.err.println("got " + curves.size() + " curves!");
 		redraw();
 	}
 

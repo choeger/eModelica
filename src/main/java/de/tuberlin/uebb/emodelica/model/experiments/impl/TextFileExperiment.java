@@ -83,15 +83,16 @@ public class TextFileExperiment implements IExperiment {
 		super();
 		this.name = name;
 		this.project = project;
-		setDataFromInputStream(data);
 		
 		WorkspaceModifyOperation op = new WorkspaceModifyOperation() {
 			@Override
 			protected void execute(IProgressMonitor monitor)
 					throws CoreException, InvocationTargetException,
 					InterruptedException {
-				storeToDisk(data);
-		}};
+				IFile file = storeToDisk(data);
+				if (file != null)
+					setDataFromInputStream(file.getContents());
+			}};
 		
 		try {
 			op.run(null);
@@ -109,7 +110,7 @@ public class TextFileExperiment implements IExperiment {
 	 * @param project
 	 * @param data
 	 */
-	private void storeToDisk(InputStream data) {
+	private IFile storeToDisk(InputStream data) {
 		IFolder expFolder = project.getProject().getFolder(".experiments");
 		try {
 			
@@ -123,8 +124,10 @@ public class TextFileExperiment implements IExperiment {
 				System.err.println("storing " + resourceFile);
 				resourceFile.create(data, true, null);
 			}
+			return resourceFile;
 		} catch (CoreException e) {
 			e.printStackTrace();
+			return null;
 		}
 	}
 	

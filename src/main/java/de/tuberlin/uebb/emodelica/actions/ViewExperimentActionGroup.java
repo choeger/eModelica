@@ -1,4 +1,4 @@
-package de.tuberlin.uebb.emodelica.ui.navigator;
+package de.tuberlin.uebb.emodelica.actions;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,16 +10,21 @@ import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchSite;
 import org.eclipse.ui.actions.ActionGroup;
+import org.osgi.framework.Bundle;
 
-import de.tuberlin.uebb.emodelica.actions.ViewExperimentAction;
+import de.tuberlin.uebb.emodelica.EModelicaPlugin;
+import de.tuberlin.uebb.emodelica.model.experiments.IExperiment;
+
 
 public class ViewExperimentActionGroup extends ActionGroup {
 	private IWorkbenchSite site;
-	private List<Action> actions = new ArrayList<Action>();
+	private List<ViewExperimentAction> actions = new ArrayList<ViewExperimentAction>();
 
 	public ViewExperimentActionGroup(IWorkbenchPartSite site) {
 		this.site = site;
@@ -35,8 +40,11 @@ public class ViewExperimentActionGroup extends ActionGroup {
 					String viewID = element.getAttribute("View");
 					String iconPath = element.getAttribute("icon");
 					String name = element.getAttribute("Name");
+
+					ImageDescriptor icon = EModelicaPlugin.
+						imageDescriptorFromPlugin(element.getContributor().getName(), iconPath);
 					
-					Action action = new ViewExperimentAction(name, viewID, iconPath, site);
+					ViewExperimentAction action = new ViewExperimentAction(name, viewID, icon, site);
 					actions.add(action);
 				}
 			}	
@@ -49,8 +57,14 @@ public class ViewExperimentActionGroup extends ActionGroup {
 
 	public void fillContextMenu(IMenuManager menu) {
 		super.fillContextMenu(menu);
-		for (Action action : actions) {
-			menu.add(action);
+		
+		if (getContext().getSelection() instanceof IStructuredSelection) {
+			final IStructuredSelection selection = (IStructuredSelection)getContext().getSelection();
+			if (selection.getFirstElement() instanceof IExperiment)
+			for (ViewExperimentAction action : actions) {
+				action.setExperiment((IExperiment) selection.getFirstElement());
+				menu.add(action);
+			}
 		}
 	}
 }
