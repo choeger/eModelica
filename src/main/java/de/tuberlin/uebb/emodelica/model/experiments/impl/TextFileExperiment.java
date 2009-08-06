@@ -37,7 +37,6 @@ public class TextFileExperiment implements IExperiment {
 	private Date date = new Date(System.currentTimeMillis());
 	private String name = "experiment " + date.toString();
 	private IMosilabProject project;
-	private List<String> vars = new ArrayList<String>();
 	private DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd-HHmmssZ"); 
 	
 	/* (non-Javadoc)
@@ -159,26 +158,24 @@ public class TextFileExperiment implements IExperiment {
 			if (header == null)
 				return;
 			
-			for (String varName : header.split("\t")) {
-				vars .add(varName);
+			curves.clear();
+			for (String varName : header.split("\\s+")) {
+				curves.add(new ColoredCurve(this, varName, new 
+						Color(Display.getDefault(),255,255,255)));
 			}
 			
-			curves.clear();
 			String dataLine = reader.readLine();
 			while (dataLine != null) {
-				System.err.println("parsing: " + dataLine);
-				String data[] = dataLine.split("\t");
-
-				for (int i = 0; i < vars.size(); i++)
-					curves.add(new ColoredCurve(this, vars.get(i), new 
-							Color(Display.getDefault(),255,255,255)));
-								
+				String data[] = dataLine.split("\\s+");
+				
 				for (int i = 0; i < data.length;i++) {			
 					double x = Double.parseDouble(data[i]);
 					curves.get(i).getPoints().add(new Double(x));
 				}
 				dataLine = reader.readLine();
 			}
+			
+			System.err.println("parsed: " + curves.size() + " curves");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

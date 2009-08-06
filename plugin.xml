@@ -41,6 +41,13 @@
             name="Plotter"
             restorable="true">
       </view>
+      <view
+            class="de.tuberlin.uebb.emodelica.views.TabularExperimentView"
+            icon="icons/properties.gif"
+            id="de.tuberlin.uebb.emodelica.views.tabularView"
+            name="Tabular View"
+            restorable="true">
+      </view>
    </extension>
    <extension
          point="org.eclipse.ui.navigator.navigatorContent">
@@ -389,6 +396,12 @@
             View="de.tuberlin.uebb.emodelica.views.graphView"
             icon="icons/chart.png"
             id="de.tuberlin.uebb.emodelica.views.plotterView">
+      </Viewer>
+      <Viewer
+            Name="Table"
+            View="de.tuberlin.uebb.emodelica.views.tabularView"
+            icon="icons/properties.gif"
+            id="de.tuberlin.uebb.emodelica.views.tabularView">
       </Viewer>
    </extension>
 </plugin>
