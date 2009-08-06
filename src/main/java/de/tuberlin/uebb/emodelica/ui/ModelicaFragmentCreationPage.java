@@ -5,12 +5,12 @@ package de.tuberlin.uebb.emodelica.ui;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
@@ -47,11 +47,11 @@ public class ModelicaFragmentCreationPage extends Composite {
 		this.setLayout(layout);
 		GridData hFillData = new GridData(GridData.FILL_HORIZONTAL);
 		
-		srcGrp = new LabelTextButtonGroup(this, "&Source Folder:", "Browse...", delegate);
+		srcGrp = new LabelTextButtonGroup(this, "&Source Folder:", JFaceResources.getString("openBrowse"), delegate);
 		srcGrp.getText().setLayoutData(hFillData);
-		pkgGrp = new LabelTextButtonGroup(this, "&Package:", "Browse...", delegate);
+		pkgGrp = new LabelTextButtonGroup(this, "&Package:",JFaceResources.getString("openBrowse"), delegate);
 		pkgGrp.getText().setLayoutData(hFillData);
-		typeGrp = new ButtonTextButtonGroup(this, "&Enclosing type:", "Browse...");
+		typeGrp = new ButtonTextButtonGroup(this, "&Enclosing type:", JFaceResources.getString("openBrowse"));
 		typeGrp.getText().setLayoutData(hFillData);
 		
 		srcGrp.getButton().addSelectionListener(new SelectionListener() {

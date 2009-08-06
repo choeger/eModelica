@@ -4,6 +4,7 @@
 package de.tuberlin.uebb.emodelica.ui;
 
 
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -110,7 +111,7 @@ public class SourceFolderSelectionView implements IUIElement {
 		
 		addButton = new Button(group, SWT.PUSH);
 		addButton.setLayoutData(data);
-		addButton.setText("&Add Folder...");
+		addButton.setText(JFaceResources.getString("ListEditor.add"));
 		addButton.setLayoutData(buttonData);
 		addButton.addSelectionListener(new SelectionListener() {
 			@Override
@@ -132,7 +133,7 @@ public class SourceFolderSelectionView implements IUIElement {
 		
 		deleteButton = new Button(group, SWT.PUSH);
 		deleteButton.setLayoutData(data);
-		deleteButton.setText("&Remove");
+		deleteButton.setText(JFaceResources.getString("ListEditor.remove"));
 		deleteButton.setLayoutData(buttonData);
 		deleteButton.pack();
 	}

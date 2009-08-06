@@ -9,6 +9,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -72,7 +73,7 @@ public class MosilabMainTab extends AbstractLaunchConfigurationTab implements
 		rootClassGroup.setText("&Root class");
 
 		TextButtonGroup rootClassSelector = new TextButtonGroup(rootClassGroup,
-				"&Browse...", this);
+				JFaceResources.getString("openBrowse"), this);
 		rootClass = rootClassSelector.getText();
 		rootClassSelector.getButton().addSelectionListener(
 				new SelectionListener() {
@@ -112,7 +113,7 @@ public class MosilabMainTab extends AbstractLaunchConfigurationTab implements
 		projectSelectionGroup.setLayout(gridLayout);
 		projectSelectionGroup.setText("&Project");
 		TextButtonGroup projectTextGroup = new TextButtonGroup(
-				projectSelectionGroup, "&Browse...", this);
+				projectSelectionGroup, JFaceResources.getString("openBrowse"), this);
 		projectTextGroup.getText().setEditable(false);
 		projectName = projectTextGroup.getText();
 		projectTextGroup.getButton().addSelectionListener(

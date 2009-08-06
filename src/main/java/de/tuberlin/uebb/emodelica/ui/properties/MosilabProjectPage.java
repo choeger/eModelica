@@ -4,6 +4,7 @@
 package de.tuberlin.uebb.emodelica.ui.properties;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -107,7 +108,7 @@ public class MosilabProjectPage extends PropertyPage implements IWorkbenchProper
 		GridData textData = new GridData(GridData.FILL_HORIZONTAL);
 		outFolderText.setLayoutData(textData);
 		Button browseButton = new Button(outputFolderComp, SWT.PUSH);
-		browseButton.setText("Browse...");
+		browseButton.setText(JFaceResources.getString("openBrowse"));
 		setButtonLayoutData(browseButton);
 		
 		sourceFolderTab.setControl(sourceFolderComposite);

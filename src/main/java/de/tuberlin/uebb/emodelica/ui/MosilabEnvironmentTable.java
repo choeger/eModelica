@@ -14,6 +14,7 @@ import org.eclipse.core.databinding.observable.IObservable;
 import org.eclipse.core.databinding.observable.IStaleListener;
 import org.eclipse.core.databinding.observable.Realm;
 import org.eclipse.jface.preference.FieldEditor;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
@@ -250,7 +251,7 @@ public class MosilabEnvironmentTable extends FieldEditor implements IObservable 
 		buttonData.grabExcessHorizontalSpace = true;
 		
 		newButton = new Button(buttonGroup, SWT.PUSH);
-		newButton.setText("&New...");
+		newButton.setText(JFaceResources.getString("ListEditor.add"));
 		newButton.setLayoutData(buttonData);
 		
 		editButton = new Button(buttonGroup, SWT.PUSH);
@@ -260,7 +261,7 @@ public class MosilabEnvironmentTable extends FieldEditor implements IObservable 
 		editButton.setEnabled(false);
 		
 		delButton = new Button(buttonGroup, SWT.PUSH);
-		delButton.setText("&Remove");
+		delButton.setText(JFaceResources.getString("ListEditor.add"));
 		delButton.setLayoutData(buttonData);
 		delButton.addSelectionListener(new DelButtonSelectionListener());
 		delButton.setEnabled(false);
