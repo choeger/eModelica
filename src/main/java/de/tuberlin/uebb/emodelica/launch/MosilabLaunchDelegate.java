@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PipedInputStream;
@@ -29,6 +30,7 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.ILaunchConfigurationDelegate;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleManager;
@@ -269,9 +271,18 @@ public class MosilabLaunchDelegate implements ILaunchConfigurationDelegate {
 						+ "\n");
 
 				if (proc.exitValue() == 0) {
-					TextFileExperiment exp = new TextFileExperiment("experiment",mosilabProject,
-							proc.getInputStream());
-					mosilabProject.getExperiments().add(exp);
+					final InputStream stream = proc.getInputStream();
+					Display.getDefault().asyncExec(
+							new Runnable() {
+
+								@Override
+								public void run() {
+									TextFileExperiment exp = new TextFileExperiment("experiment",mosilabProject,
+											stream);
+									mosilabProject.getExperiments().add(exp);
+									}
+								}
+					);
 				}
 				return proc.exitValue();
 			} catch (IOException e) {

@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.CoreException;
@@ -22,6 +23,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.actions.WorkspaceModifyOperation;
+import org.eclipse.ui.ide.undo.CreateFileOperation;
 
 import de.tuberlin.uebb.emodelica.model.experiments.ICurve;
 import de.tuberlin.uebb.emodelica.model.experiments.IExperiment;
@@ -29,7 +31,7 @@ import de.tuberlin.uebb.emodelica.model.project.IMosilabProject;
 
 /**
  * @author choeger
- *
+ * 
  */
 public class TextFileExperiment implements IExperiment {
 
@@ -37,10 +39,12 @@ public class TextFileExperiment implements IExperiment {
 	private Date date = new Date(System.currentTimeMillis());
 	private String name = "experiment " + date.toString();
 	private IMosilabProject project;
-	private DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd-HHmmssZ"); 
+	private DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd-HHmmssZ");
 	private IFile file = null;
-	
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see de.tuberlin.uebb.emodelica.model.experiments.IExperiment#getCurves()
 	 */
 	@Override
@@ -48,7 +52,9 @@ public class TextFileExperiment implements IExperiment {
 		return curves;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see de.tuberlin.uebb.emodelica.model.experiments.IExperiment#getDate()
 	 */
 	@Override
@@ -56,7 +62,9 @@ public class TextFileExperiment implements IExperiment {
 		return date;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see de.tuberlin.uebb.emodelica.model.experiments.IExperiment#getName()
 	 */
 	@Override
@@ -64,42 +72,51 @@ public class TextFileExperiment implements IExperiment {
 		return name;
 	}
 
-	/* (non-Javadoc)
-	 * @see de.tuberlin.uebb.emodelica.model.experiments.IExperiment#getParentProject()
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * de.tuberlin.uebb.emodelica.model.experiments.IExperiment#getParentProject
+	 * ()
 	 */
 	@Override
 	public IMosilabProject getParentProject() {
 		return project;
 	}
-	
+
 	/**
 	 * create a TExtFileExperiment from an InputStream and sync back to disk
 	 * (will reside in project/.experiments/name.date
-	 * @param name The name of the experiment
-	 * @param project the parent project
-	 * @param data The data stream (MOSILAB format)
+	 * 
+	 * @param name
+	 *            The name of the experiment
+	 * @param project
+	 *            the parent project
+	 * @param data
+	 *            The data stream (MOSILAB format)
 	 */
-	public TextFileExperiment(String name, IMosilabProject project, final InputStream data) {
+	public TextFileExperiment(String name, IMosilabProject project,
+			final InputStream data) {
 		super();
-		this.name = name;
-		this.project = project;
-		
-		WorkspaceModifyOperation op = new WorkspaceModifyOperation() {
-			@Override
-			protected void execute(IProgressMonitor monitor)
-					throws CoreException, InvocationTargetException,
-					InterruptedException {
-				file = storeToDisk(data);
-				if (file != null)
-					setDataFromInputStream(file.getContents());
-			}};
-		
 		try {
-			op.run(null);
-		} catch (InvocationTargetException e) {
+			this.name = name;
+			this.project = project;
+			IFolder expFolder = project.getProject().getFolder(".experiments");
+			if (!expFolder.exists())
+				expFolder.create(true, true, null);
+
+			file = expFolder.getFile(name + "." + dateFormat.format(date));
+
+			CreateFileOperation create = new CreateFileOperation(file, null,
+					data, "save experiment");
+
+			create.execute(null, null);
+
+			setDataFromInputStream(file.getContents());
+		} catch (CoreException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (InterruptedException e) {
+		} catch (ExecutionException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -113,13 +130,13 @@ public class TextFileExperiment implements IExperiment {
 	private IFile storeToDisk(InputStream data) {
 		IFolder expFolder = project.getProject().getFolder(".experiments");
 		try {
-			
+
 			if (!expFolder.exists())
 				expFolder.create(true, true, null);
-			
-			IFile resourceFile = expFolder.getFile(name + "." + 
-					dateFormat.format(date));
-		
+
+			IFile resourceFile = expFolder.getFile(name + "."
+					+ dateFormat.format(date));
+
 			if (!resourceFile.exists()) {
 				System.err.println("storing " + resourceFile);
 				resourceFile.create(data, true, null);
@@ -130,7 +147,7 @@ public class TextFileExperiment implements IExperiment {
 			return null;
 		}
 	}
-	
+
 	public TextFileExperiment(IMosilabProject project, IFile file) {
 		super();
 		this.name = file.getName().split("\\.")[0];
@@ -139,7 +156,7 @@ public class TextFileExperiment implements IExperiment {
 		} catch (ParseException e1) {
 			e1.printStackTrace();
 		}
-		
+
 		this.project = project;
 		this.file = file;
 		try {
@@ -148,35 +165,36 @@ public class TextFileExperiment implements IExperiment {
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * @param dataStream
 	 */
 	private void setDataFromInputStream(InputStream dataStream) {
-		BufferedReader reader = new BufferedReader(new InputStreamReader(dataStream));
-		
+		BufferedReader reader = new BufferedReader(new InputStreamReader(
+				dataStream));
+
 		try {
 			String header = reader.readLine();
 			if (header == null)
 				return;
-			
+
 			curves.clear();
 			for (String varName : header.split("\\s+")) {
-				curves.add(new ColoredCurve(this, varName, new 
-						Color(Display.getDefault(),255,255,255)));
+				curves.add(new ColoredCurve(this, varName, new Color(Display
+						.getDefault(), 255, 255, 255)));
 			}
-			
+
 			String dataLine = reader.readLine();
 			while (dataLine != null) {
 				String data[] = dataLine.split("\\s+");
-				
-				for (int i = 0; i < data.length;i++) {			
+
+				for (int i = 0; i < data.length; i++) {
 					double x = Double.parseDouble(data[i]);
 					curves.get(i).getPoints().add(new Double(x));
 				}
 				dataLine = reader.readLine();
 			}
-			
+
 			System.err.println("parsed: " + curves.size() + " curves");
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -185,7 +203,7 @@ public class TextFileExperiment implements IExperiment {
 
 	@Override
 	public String getUniqueID() {
-		//filename is sufficient
+		// filename is sufficient
 		return name + "." + dateFormat.format(date);
 	}
 

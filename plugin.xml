@@ -96,6 +96,9 @@
                <instanceof
                      value="org.eclipse.core.resources.IResource">
                </instanceof>
+               <instanceof
+                     value="de.tuberlin.uebb.emodelica.model.experiments.IExperiment">
+               </instanceof>
             </or></possibleChildren>
          <triggerPoints>
             <or>
@@ -109,6 +112,9 @@
                </adapt>
                <instanceof
                      value="de.tuberlin.uebb.emodelica.model.project.IModelicaResource">
+               </instanceof>
+               <instanceof
+                     value="de.tuberlin.uebb.emodelica.model.experiments.IExperiment">
                </instanceof>
             </or>
          </triggerPoints>

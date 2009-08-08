@@ -34,6 +34,7 @@ public class ProjectManager implements IProjectManager, IResourceChangeListener 
 		@Override
 		public boolean visit(IResourceDelta delta) throws CoreException {
 			if (delta.getResource().getType() == IResource.PROJECT) {
+				System.err.println("delta for project! " + delta.getKind());
 				IProject project = (IProject) delta.getResource();
 				String path = project.getFullPath().toOSString();
 				

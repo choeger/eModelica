@@ -48,6 +48,7 @@ public class MosilabProjectContentProvider implements IPipelinedTreeContentProvi
 	 */
 	@Override
 	public Object[] getChildren(Object arg0) {
+		System.err.println("getChildren() " + arg0);
 		if (arg0 instanceof IProjectManager) {
 			IProjectManager pm = (IProjectManager)arg0;
 			return pm.getAllMosilabProjects().toArray();
@@ -171,8 +172,9 @@ public class MosilabProjectContentProvider implements IPipelinedTreeContentProvi
 
 	@Override
 	public void resourceChanged(IModelicaResource resource) {
-		if (viewer != null)
+		if (viewer != null) {
 			viewer.refresh();
+		}
 	}
 
 	@SuppressWarnings("unchecked")
