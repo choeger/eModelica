@@ -261,7 +261,7 @@ public class MosilabEnvironmentTable extends FieldEditor implements IObservable 
 		editButton.setEnabled(false);
 		
 		delButton = new Button(buttonGroup, SWT.PUSH);
-		delButton.setText(JFaceResources.getString("ListEditor.add"));
+		delButton.setText(JFaceResources.getString("ListEditor.remove"));
 		delButton.setLayoutData(buttonData);
 		delButton.addSelectionListener(new DelButtonSelectionListener());
 		delButton.setEnabled(false);
