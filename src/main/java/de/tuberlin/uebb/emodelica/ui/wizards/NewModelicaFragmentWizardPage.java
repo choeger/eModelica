@@ -144,4 +144,18 @@ public class NewModelicaFragmentWizardPage extends WizardPage implements ModifyL
 		this.setButtonLayoutData(button);
 		return button;
 	}
+
+	/**
+	 * @return the defaultSrc
+	 */
+	public IMosilabSource getDefaultSrc() {
+		return defaultSrc;
+	}
+
+	/**
+	 * @return the defaultPkg
+	 */
+	public IModelicaPackage getDefaultPkg() {
+		return defaultPkg;
+	}
 }

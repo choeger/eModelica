@@ -16,7 +16,10 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.WorkspaceModifyOperation;
 
 import de.tuberlin.uebb.emodelica.EModelicaPlugin;
+import de.tuberlin.uebb.emodelica.model.project.IModelicaPackage;
+import de.tuberlin.uebb.emodelica.model.project.IModelicaResource;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabProject;
+import de.tuberlin.uebb.emodelica.model.project.IMosilabSource;
 import de.tuberlin.uebb.emodelica.operations.NewPackageCreationOperation;
 
 /**
@@ -32,12 +35,25 @@ public class NewPackageWizard extends Wizard implements INewWizard {
 		ISelection sel = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
 				.getActivePage().getSelection();
 
-		IResource resource = EModelicaPlugin.extractSelection(sel);
+		IModelicaResource modelicaResource = EModelicaPlugin.extractSelectionModelicaResource(sel);
+		IResource resource = EModelicaPlugin.extractSelectionResource(sel);
+	
+		/* walk up tree */
+		while (modelicaResource != null) {
+				if (modelicaResource instanceof IModelicaPackage) {
+					page.setParentPkg((IModelicaPackage) modelicaResource);
+				}
+				if (modelicaResource instanceof IMosilabSource) {
+					page.setSrcPath((IMosilabSource) modelicaResource);
+				}
+				modelicaResource = modelicaResource.getParent();
+			}
+		
 		if (resource != null) {
 			IProject prj = resource.getProject();
 			IMosilabProject project = EModelicaPlugin.getDefault().getProjectManager().getMosilabProject(prj); 
-			if (project != null && project.getSrcFolders().size() > 0)
-				page.setSourceDir(project.getSrcFolders().get(0));
+			if (project != null && project.getSrcFolders().size() > 0 && (page.getSrcPath() == null))
+				page.setSrcPath(project.getSrcFolders().get(0));
 		}
 
 		addPage(page);

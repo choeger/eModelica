@@ -13,6 +13,7 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
 import de.tuberlin.uebb.emodelica.model.project.IModelicaPackage;
+import de.tuberlin.uebb.emodelica.model.project.IModelicaResource;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabEnvironment;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabSource;
 import de.tuberlin.uebb.emodelica.model.project.IProjectManager;
@@ -142,7 +143,7 @@ public class EModelicaPlugin extends AbstractUIPlugin {
 	 * @param sel
 	 * @return
 	 */
-	public static IResource extractSelection(ISelection sel) {
+	public static IResource extractSelectionResource(ISelection sel) {
 		if (!(sel instanceof IStructuredSelection))
 			return null;
 		IStructuredSelection ss = (IStructuredSelection) sel;
@@ -154,5 +155,16 @@ public class EModelicaPlugin extends AbstractUIPlugin {
 		IAdaptable adaptable = (IAdaptable) element;
 		Object adapter = adaptable.getAdapter(IResource.class);
 		return (IResource) adapter;
+	}
+	
+	public static IModelicaResource extractSelectionModelicaResource(ISelection sel) {
+		if (!(sel instanceof IStructuredSelection))
+			return null;
+		IStructuredSelection ss = (IStructuredSelection) sel;
+		Object element = ss.getFirstElement();
+		if (element instanceof IModelicaResource) {
+			return (IModelicaResource)element;
+		}
+		return null;
 	}
 }

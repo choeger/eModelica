@@ -16,6 +16,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
+import de.tuberlin.uebb.emodelica.model.project.IModelicaPackage;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabSource;
 import de.tuberlin.uebb.emodelica.ui.dialogs.SelectSourceFolderDialog;
 
@@ -31,7 +32,8 @@ public class NewPackageWizardPage extends WizardPage {
 
 	private Text packageNameField;
 	private Text sourceDirField;
-	private String srcPath = "";	
+	private IMosilabSource srcPath = null;
+	private IModelicaPackage parentPkg;
 	
 	@Override
 	public void createControl(Composite parent) {
@@ -60,7 +62,9 @@ public class NewPackageWizardPage extends WizardPage {
 		label1.setText("Package name:");
 		
 		packageNameField = new Text(container, SWT.BORDER);
-
+		if (parentPkg != null)
+			packageNameField.setText(parentPkg.getFullName());
+		
 		GridData data = new GridData(GridData.FILL_HORIZONTAL);
 		packageNameField.setLayoutData(data);
 	}
@@ -91,7 +95,8 @@ public class NewPackageWizardPage extends WizardPage {
 		
 		GridData data = new GridData(GridData.FILL_HORIZONTAL);
 		sourceDirField.setLayoutData(data);
-		sourceDirField.setText(srcPath );
+		if (srcPath != null)
+			sourceDirField.setText(srcPath.getResource().getName());
 	}
 
 	private void browseButtonClicked() {
@@ -129,10 +134,44 @@ public class NewPackageWizardPage extends WizardPage {
 	}
 
 	/**
-	 * set the source dir entry
-	 * @param mosilabSource
+	 * @return the packageNameField
 	 */
-	public void setSourceDir(IMosilabSource mosilabSource) {
-		srcPath = mosilabSource.getBasePath().getFullPath().toOSString();
+	public Text getPackageNameField() {
+		return packageNameField;
+	}
+
+	/**
+	 * @param packageNameField the packageNameField to set
+	 */
+	public void setPackageNameField(Text packageNameField) {
+		this.packageNameField = packageNameField;
+	}
+
+	/**
+	 * @return the parentPkg
+	 */
+	public IModelicaPackage getParentPkg() {
+		return parentPkg;
+	}
+
+	/**
+	 * @param parentPkg the parentPkg to set
+	 */
+	public void setParentPkg(IModelicaPackage parentPkg) {
+		this.parentPkg = parentPkg;
+	}
+
+	/**
+	 * @return the srcPath
+	 */
+	public IMosilabSource getSrcPath() {
+		return srcPath;
+	}
+
+	/**
+	 * @param srcPath the srcPath to set
+	 */
+	public void setSrcPath(IMosilabSource srcPath) {
+		this.srcPath = srcPath;
 	}
 }

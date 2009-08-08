@@ -16,7 +16,10 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.WorkspaceModifyOperation;
 
 import de.tuberlin.uebb.emodelica.EModelicaPlugin;
+import de.tuberlin.uebb.emodelica.model.project.IModelicaPackage;
+import de.tuberlin.uebb.emodelica.model.project.IModelicaResource;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabProject;
+import de.tuberlin.uebb.emodelica.model.project.IMosilabSource;
 import de.tuberlin.uebb.emodelica.operations.NewFragmentCreationOperation;
 import de.tuberlin.uebb.emodelica.operations.NewPackageCreationOperation;
 
@@ -35,15 +38,26 @@ public class NewModelicaFragmentWizard extends Wizard implements INewWizard {
 		ISelection sel = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
 				.getActivePage().getSelection();
 
-		IResource resource = EModelicaPlugin.extractSelection(sel);
+		IModelicaResource modelicaResource = EModelicaPlugin.extractSelectionModelicaResource(sel);
+		IResource resource = EModelicaPlugin.extractSelectionResource(sel);
+	
+		/* walk up tree */
+		while (modelicaResource != null) {
+				if (modelicaResource instanceof IModelicaPackage) {
+					page.setPkg((IModelicaPackage) modelicaResource);
+				}
+				if (modelicaResource instanceof IMosilabSource) {
+					page.setSourceDir((IMosilabSource) modelicaResource);
+				}
+				modelicaResource = modelicaResource.getParent();
+			}
+		
 		if (resource != null) {
 			IProject prj = resource.getProject();
 			IMosilabProject project = EModelicaPlugin.getDefault()
 					.getProjectManager().getMosilabProject(prj);
-			if (project != null && project.getSrcFolders().size() > 0)
-				page.setSourceDir(project.getSrcFolders().get(0));
-
-			// TODO: fill in package automagically
+			if (project != null && project.getSrcFolders().size() > 0 && (page.getDefaultSrc() == null))
+					page.setSourceDir(project.getSrcFolders().get(0));
 		}
 		page.setKind("class");
 	}

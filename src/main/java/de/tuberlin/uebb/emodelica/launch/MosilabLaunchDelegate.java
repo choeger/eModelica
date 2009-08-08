@@ -242,7 +242,7 @@ public class MosilabLaunchDelegate implements ILaunchConfigurationDelegate {
 				MessageConsole console = findConsole("running experiment");
 				MessageConsoleStream out = console.newMessageStream();
 				console.activate();
-
+				/**/
 				// TODO: fix source file to c++ file mapping
 				ProcessBuilder processBuilder = new ProcessBuilder(
 						getLocation(bin));

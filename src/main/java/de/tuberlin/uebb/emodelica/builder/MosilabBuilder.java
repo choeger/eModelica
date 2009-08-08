@@ -77,8 +77,7 @@ public class MosilabBuilder extends IncrementalProjectBuilder {
 
 			List<IFile> affectedResources = collectResources();
 
-			System.err.println("got " + affectedResources.size()
-					+ " files to compile.");
+			System.err.println("got " + affectedResources.size() + " files to compile.");
 			monitor.subTask("running mosilac");
 
 			MessageConsole console = findConsole("mosilac console");
