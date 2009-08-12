@@ -14,6 +14,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -31,6 +32,7 @@ import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.ILaunchConfigurationDelegate;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.actions.WorkspaceModifyOperation;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleManager;
@@ -40,6 +42,7 @@ import org.eclipse.ui.console.MessageConsoleStream;
 import de.tuberlin.uebb.emodelica.EModelicaPlugin;
 import de.tuberlin.uebb.emodelica.model.experiments.impl.TextFileExperiment;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabProject;
+import de.tuberlin.uebb.emodelica.operations.BuildProcessOperation;
 
 /**
  * @author choeger
@@ -56,8 +59,10 @@ public class MosilabLaunchDelegate implements ILaunchConfigurationDelegate {
 	public static final String PROJECT_KEY = "MOSILAB_PROJECT";
 	public static final String CLASS_NAME_KEY = "ROOT_CLASS_NAME";
 	public static final String OBSERVABLES_KEY = "OBSERVABLES";
+	private BuildProcessOperation buildOp;
 	private IProject project;
 	private IMosilabProject mosilabProject;
+	private IFolder sourceFolder;
 
 	/*
 	 * (non-Javadoc)
@@ -69,11 +74,47 @@ public class MosilabLaunchDelegate implements ILaunchConfigurationDelegate {
 	 * org.eclipse.core.runtime.IProgressMonitor)
 	 */
 	@Override
-	public void launch(ILaunchConfiguration configuration, String mode,
+	public void launch(final ILaunchConfiguration configuration, String mode,
 			ILaunch launch, IProgressMonitor monitor) throws CoreException {
 		monitor.beginTask("launching experiment", configuration.getAttributes()
 				.size() + 2);
 
+		initLaunch(configuration);
+
+		WorkspaceModifyOperation writeStuffOp = new WorkspaceModifyOperation() {
+
+			@Override
+			protected void execute(IProgressMonitor monitor)
+					throws CoreException, InvocationTargetException,
+					InterruptedException {
+				writeMainFile(configuration, monitor, sourceFolder);
+
+				createDefinitionHeader(configuration, monitor, sourceFolder);
+			}
+		};
+
+		try {
+			writeStuffOp.run(monitor);
+		} catch (InvocationTargetException e) {
+			e.printStackTrace();
+			return;
+		} catch (InterruptedException e) {
+			// canceled
+			return;
+		}
+
+		runMakefile(configuration, monitor, sourceFolder);
+
+		runExperiment(configuration, monitor, sourceFolder);
+	}
+
+	/**
+	 * @param configuration
+	 * @return
+	 * @throws CoreException
+	 */
+	private void initLaunch(final ILaunchConfiguration configuration)
+			throws CoreException {
 		String sourcePath = configuration.getAttribute(OUTPUT_PATH_KEY, "");
 
 		if (sourcePath.isEmpty()) {
@@ -82,21 +123,32 @@ public class MosilabLaunchDelegate implements ILaunchConfigurationDelegate {
 			return;
 		}
 
-		IFolder sourceFolder = ResourcesPlugin.getWorkspace().getRoot()
-				.getFolder(new Path(sourcePath));
+		sourceFolder = ResourcesPlugin.getWorkspace().getRoot().getFolder(
+				new Path(sourcePath));
 		if (!sourceFolder.exists()) {
 			System.err
 					.println("Could not launch. Path for C++ sources given does not exist.");
 			return;
 		}
+
+		try {
+			project = ResourcesPlugin.getWorkspace().getRoot().getProject(
+					configuration.getAttribute(PROJECT_KEY, ""));
+		} catch (CoreException e1) {
+			e1.printStackTrace();
+			return;
+		}
+
+		if (!project.exists())
+			return;
+
+		mosilabProject = EModelicaPlugin.getDefault().getProjectManager()
+				.getMosilabProject(project);
+
+		if (mosilabProject.getMOSILABEnvironment() == null)
+			return;
 		
-		writeMainFile(configuration, monitor, sourceFolder);
-
-		createDefinitionHeader(configuration, monitor, sourceFolder);
-
-		runMakefile(configuration, monitor, sourceFolder);
-
-		runExperiment(configuration, monitor, sourceFolder);
+		buildOp = new BuildProcessOperation(mosilabProject);
 	}
 
 	/**
@@ -242,36 +294,29 @@ public class MosilabLaunchDelegate implements ILaunchConfigurationDelegate {
 				MessageConsole console = findConsole("running experiment");
 				MessageConsoleStream out = console.newMessageStream();
 				console.activate();
-				/**/
-				// TODO: fix source file to c++ file mapping
-				ProcessBuilder processBuilder = new ProcessBuilder(
-						getLocation(bin));
-
-				for (String cmd : processBuilder.command()) {
-					out.write(cmd);
-					out.write(" ");
-				}
-				out.write("\n");
-
-				Process proc = processBuilder.start();
-
+				
+				buildOp.setCommands(new String[] {getLocation(bin)});
+				
 				try {
-					proc.waitFor();
+					buildOp.run(monitor);
 				} catch (InterruptedException e) {
+					//canceled
+					return -1;
+				} catch (InvocationTargetException e) {
+					// TODO Auto-generated catch block
 					e.printStackTrace();
 					return -1;
 				}
 
-				BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
+				BufferedReader reader = new BufferedReader(new InputStreamReader(buildOp.getErrorStream()));
 				String s = null;
 				while((s = reader.readLine()) != null)
 					System.err.println(s);
 				
-				out.write("\n experiment returned with: " + proc.exitValue()
-						+ "\n");
+				out.write("\n experiment returned with: " + buildOp.exitValue() + "\n");
 
-				if (proc.exitValue() == 0) {
-					final InputStream stream = proc.getInputStream();
+				if (buildOp.exitValue() == 0) {
+					final InputStream stream = buildOp.getInputStream();
 					Display.getDefault().asyncExec(
 							new Runnable() {
 
@@ -284,7 +329,7 @@ public class MosilabLaunchDelegate implements ILaunchConfigurationDelegate {
 								}
 					);
 				}
-				return proc.exitValue();
+				return buildOp.exitValue();
 			} catch (IOException e) {
 				// TODO throw CoreException
 				e.printStackTrace();
@@ -297,22 +342,6 @@ public class MosilabLaunchDelegate implements ILaunchConfigurationDelegate {
 
 	private int runMakefile(ILaunchConfiguration configuration,
 			IProgressMonitor monitor, IFolder sourceFolder) {
-		try {
-			project = ResourcesPlugin.getWorkspace().getRoot().getProject(
-					configuration.getAttribute(PROJECT_KEY, ""));
-		} catch (CoreException e1) {
-			e1.printStackTrace();
-			return -1;
-		}
-
-		if (!project.exists())
-			return -1;
-
-		mosilabProject = EModelicaPlugin.getDefault().getProjectManager()
-				.getMosilabProject(project);
-
-		if (mosilabProject.getMOSILABEnvironment() == null)
-			return -2;
 
 		// TODO check for special environment setting
 		File makefile = new File(mosilabProject.getMOSILABEnvironment()
@@ -328,41 +357,34 @@ public class MosilabLaunchDelegate implements ILaunchConfigurationDelegate {
 				console.activate();
 
 				// TODO: fix source file to c++ file mapping
-				ProcessBuilder processBuilder = new ProcessBuilder("make",
+				buildOp.setCommands(new String[] {"make",
 						"-f", makefile.getAbsolutePath(), "-C",
 						getLocation(sourceFolder), "lib", MAIN_TARGET, "P=.",
-						"TARGET=main", "TARGET_LIB=" + project.getName());
+						"TARGET=main", "TARGET_LIB=" + project.getName()});
 
-				processBuilder.environment().put("MOSILAB_ROOT",
+				buildOp.getEnvironment().put("MOSILAB_ROOT",
 						mosilabProject.getMOSILABEnvironment().getLocation());
 
-				for (String cmd : processBuilder.command()) {
-					out.write(cmd);
-					out.write(" ");
-				}
-				out.write("\n");
-
-				Process proc = processBuilder.start();
-
-				int r = -1;
-
-				while ((r = proc.getInputStream().read()) > -1)
-					out.write(r);
-
 				try {
-					proc.waitFor();
+					buildOp.run(monitor);
 				} catch (InterruptedException e) {
+					//canceled
+					return -1;
+				} catch (InvocationTargetException e) {
+					// TODO Auto-generated catch block
 					e.printStackTrace();
 					return -1;
 				}
 
-				while ((r = proc.getInputStream().read()) > -1)
+				int r = -1;
+
+				while ((r = buildOp.getInputStream().read()) > -1)
 					out.write(r);
 
-				System.err.println("make returned with: " + proc.exitValue());
-				out.write("\n make returned with: " + proc.exitValue() + "\n");
+				System.err.println("make returned with: " + buildOp.exitValue());
+				out.write("\n make returned with: " + buildOp.exitValue() + "\n");
 
-				return proc.exitValue();
+				return buildOp.exitValue();
 			} catch (IOException e) {
 				// TODO throw CoreException
 				e.printStackTrace();

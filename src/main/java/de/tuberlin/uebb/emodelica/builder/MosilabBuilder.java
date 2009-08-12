@@ -5,6 +5,7 @@ package de.tuberlin.uebb.emodelica.builder;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -15,7 +16,6 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -25,9 +25,11 @@ import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
 
+import de.tuberlin.uebb.emodelica.EModelicaPlugin;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabProject;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabSource;
 import de.tuberlin.uebb.emodelica.model.project.impl.ProjectManager;
+import de.tuberlin.uebb.emodelica.operations.BuildProcessOperation;
 
 /**
  * @author choeger
@@ -36,7 +38,8 @@ import de.tuberlin.uebb.emodelica.model.project.impl.ProjectManager;
 public class MosilabBuilder extends IncrementalProjectBuilder {
 
 	public static final String BUILDER_ID = "de.tuberlin.uebb.emodelica.mosilacBuilder";
-
+	private BuildProcessOperation buildOp;
+	private IProgressMonitor monitor;
 	/**
 	 * 
 	 */
@@ -83,10 +86,26 @@ public class MosilabBuilder extends IncrementalProjectBuilder {
 			MessageConsole console = findConsole("mosilac console");
 			MessageConsoleStream out = console.newMessageStream();
 
+			IMosilabProject mProject = EModelicaPlugin.getDefault().getProjectManager().getMosilabProject(getProject());
+			if (mProject == null)
+				return null;
+			
+			buildOp = new BuildProcessOperation(mProject);
+			this.monitor = monitor;
+			
 			for (IResource resource : affectedResources) {
-				String sourceFile = getLocation(resource);
-				if (runMosilac(sourceFile, console, out) == 0) {
-					runMakefile(resource, console, out);
+				String sourceFile = buildOp.getLocation(resource);
+				try {
+					if (runMosilac(sourceFile, console, out) == 0) {
+						runMakefile(resource, console, out);
+					}
+				} catch (InvocationTargetException e) {
+					e.printStackTrace();
+					return null;
+				} catch (InterruptedException e) {
+					//canceled by user
+					System.err.println("canceled!");
+					return null;
 				}
 			}
 		}
@@ -97,11 +116,11 @@ public class MosilabBuilder extends IncrementalProjectBuilder {
 	}
 
 	private int runMakefile(IResource modelicaSourceFile,
-			MessageConsole console, MessageConsoleStream out) {
+			MessageConsole console, MessageConsoleStream out) throws InvocationTargetException, InterruptedException {
 		IMosilabProject mosilabProject = ProjectManager.getDefault()
 				.getMosilabProject(getProject());
 
-		String srcPath = getLocation(getProject().getFolder(
+		String srcPath = buildOp.getLocation(getProject().getFolder(
 				mosilabProject.getOutputFolder()));
 
 		File makefile = new File(mosilabProject.getMOSILABEnvironment()
@@ -132,37 +151,32 @@ public class MosilabBuilder extends IncrementalProjectBuilder {
 			try {
 				console.activate();
 
-				ProcessBuilder processBuilder = new ProcessBuilder(mosilabProject.getMOSILABEnvironment().getLocation() + 
-						File.separator + "bin" + File.separator + "mkSelector.sh");
-				processBuilder.directory(new File(srcPath));
+				buildOp.setCommands(new String[] {
+							mosilabProject.getMOSILABEnvironment().getLocation() + 
+							File.separator + "bin" + File.separator + "mkSelector.sh"});
 				
-				processBuilder.environment().put("MOSILAB_ROOT",
+				buildOp.getEnvironment().put("MOSILAB_ROOT",
 						mosilabProject.getMOSILABEnvironment().getLocation());
 
-				Process proc = processBuilder.start();
+				buildOp.run(monitor);
+				
+				followOutput(out, buildOp.getProcessBuilder(), buildOp.getProc());
 
-				followOutput(out, processBuilder, proc);
-				out.write("\n mkSelector.sh returned with: " + proc.exitValue() + "\n");
+				out.write("\n mkSelector.sh returned with: " + buildOp.getProc().exitValue() + "\n");
 
 				// TODO: fix source file to c++ file mapping
-				processBuilder = new ProcessBuilder("make",
-						"-f", makefile.getAbsolutePath(), ccSourceFile
-								.getAbsolutePath().replaceAll("\\.cc", "\\.o"), srcPath + File.separator + "_selector.o");
+				buildOp.setCommands(new String[] {
+							"make", "-f", makefile.getAbsolutePath(), ccSourceFile
+							.getAbsolutePath().replaceAll("\\.cc", "\\.o"), 
+							srcPath + File.separator + "_selector.o"});
 
-				processBuilder.environment().put("MOSILAB_ROOT",
-						mosilabProject.getMOSILABEnvironment().getLocation());
+				buildOp.run(monitor);
 
-				proc = processBuilder.start();
+				followOutput(out, buildOp.getProcessBuilder(), buildOp.getProc());
 
-				followOutput(out, processBuilder, proc);
+				out.write("\n make returned with: " + buildOp.getProc().exitValue() + "\n");
 
-				out.write("\n make returned with: " + proc.exitValue() + "\n");
-
-				if (proc.exitValue() != 0) {
-					return proc.exitValue();
-				}
-
-				return proc.exitValue();
+				return buildOp.getProc().exitValue();
 			} catch (IOException e) {
 				// TODO throw CoreException
 				e.printStackTrace();
@@ -207,28 +221,23 @@ public class MosilabBuilder extends IncrementalProjectBuilder {
 			out.write(r);
 	}
 
-	/**
-	 * @param resource
-	 * @return
-	 */
-	private String getLocation(IResource resource) {
-		return ResourcesPlugin.getWorkspace().getRoot().getFile(
-				resource.getFullPath()).getLocation().toOSString();
-	}
+
 
 	/**
 	 * @param sourceFile
 	 * @param console
 	 * @param out
+	 * @throws InterruptedException 
+	 * @throws InvocationTargetException 
 	 */
 	private int runMosilac(String sourceFile, MessageConsole console,
-			MessageConsoleStream out) {
+			MessageConsoleStream out) throws InvocationTargetException, InterruptedException {
 		// TODO: move to adapter -> IMosilabProject
 		IMosilabProject mosilabProject = ProjectManager.getDefault()
 				.getMosilabProject(getProject());
 		String mosilac = mosilabProject.getMOSILABEnvironment()
 				.compilerCommand();
-		String outPath = getLocation(getProject().getFolder(
+		String outPath = buildOp.getLocation(getProject().getFolder(
 				mosilabProject.getOutputFolder()));
 		File binary = new File(mosilac);
 
@@ -236,8 +245,8 @@ public class MosilabBuilder extends IncrementalProjectBuilder {
 			try {
 				console.activate();
 
-				ProcessBuilder processBuilder = new ProcessBuilder(mosilac,
-						"--prefix", outPath, sourceFile);
+				buildOp.setCommands(new String[] {mosilac,
+						"--prefix", outPath, sourceFile});
 
 				StringBuilder pathBuilder = new StringBuilder();
 				// TODO make MOSILAB_LOADPATH configurable in MOSILAB
@@ -248,24 +257,24 @@ public class MosilabBuilder extends IncrementalProjectBuilder {
 				pathBuilder.append("base-lib");
 				for (IMosilabSource src : mosilabProject.getSrcFolders()) {
 					pathBuilder.append(File.pathSeparator);
-					pathBuilder.append(getLocation(src.getBasePath()));
+					pathBuilder.append(buildOp.getLocation(src.getBasePath()));
 				}
 
-				processBuilder.environment().put("MOSILAB_LOADPATH",
+				buildOp.getEnvironment().put("MOSILAB_LOADPATH",
 						pathBuilder.toString());
-				processBuilder.environment().put("MOSILAB_ROOT",
+				buildOp.getEnvironment().put("MOSILAB_ROOT",
 						mosilabProject.getMOSILABEnvironment().getLocation());
 
-				Process proc = processBuilder.start();
+				buildOp.run(monitor);
 
-				followOutput(out, processBuilder, proc);
+				followOutput(out, buildOp.getProcessBuilder(), buildOp.getProc());
 
 				System.err
-						.println("mosilac returned with: " + proc.exitValue());
-				out.write("\n mosilac returned with: " + proc.exitValue()
+						.println("mosilac returned with: " + buildOp.getProc().exitValue());
+				out.write("\n mosilac returned with: " + buildOp.getProc().exitValue()
 						+ "\n");
 
-				return proc.exitValue();
+				return buildOp.getProc().exitValue();
 			} catch (IOException e) {
 				// TODO throw CoreException
 				e.printStackTrace();
