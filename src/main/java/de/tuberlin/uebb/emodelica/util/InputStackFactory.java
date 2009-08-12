@@ -6,7 +6,6 @@ package de.tuberlin.uebb.emodelica.util;
 import java.io.BufferedReader;
 import java.util.Stack;
 
-import de.tuberlin.uebb.emodelica.generated.parser.LexerDefs;
 import de.tuberlin.uebb.page.grammar.symbols.Terminal;
 import de.tuberlin.uebb.page.lexer.Lexer;
 import de.tuberlin.uebb.page.lexer.exceptions.LexerException;
@@ -17,7 +16,7 @@ import de.tuberlin.uebb.page.lexer.exceptions.LexerException;
  */
 public class InputStackFactory {
 	public static Stack<Terminal> getInputStack(BufferedReader contentReader) throws LexerException {
-		Stack<Terminal> inputStack = Lexer.getInputTokens(contentReader, LexerDefs.lexerDefs());
+		Stack<Terminal> inputStack = Lexer.getInputTokens(contentReader, de.tuberlin.uebb.modelica.im.generated.moparser.LexerDefs.lexerDefs());
 		return inputStack;
 	}
 }

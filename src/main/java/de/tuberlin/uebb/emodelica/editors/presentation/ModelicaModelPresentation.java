@@ -4,7 +4,6 @@
 package de.tuberlin.uebb.emodelica.editors.presentation;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.BadPositionCategoryException;
@@ -23,9 +22,9 @@ import org.eclipse.swt.widgets.Display;
 
 import de.tuberlin.uebb.emodelica.editors.ModelicaPresentationReconciler;
 import de.tuberlin.uebb.emodelica.editors.ModelicaSourceViewer;
-import de.tuberlin.uebb.emodelica.generated.parser.NT_Component_Reference;
-import de.tuberlin.uebb.emodelica.generated.parser.NT_String_Comment;
 import de.tuberlin.uebb.emodelica.model.Model;
+import de.tuberlin.uebb.modelica.im.generated.moparser.NT_Component_Reference;
+import de.tuberlin.uebb.modelica.im.generated.moparser.NT_String_Comment;
 import de.tuberlin.uebb.page.parser.symbols.Absy;
 
 /**

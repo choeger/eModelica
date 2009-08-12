@@ -55,7 +55,7 @@
 			<groupId>de.tuberlin.uebb.page</groupId>
 			<artifactId>generator</artifactId>
 			<version>[0.1.3,0.2)</version>
-			<scope>compile</scope>
+			<scope>proc</scope>
 		</dependency>
 		<dependency>
 			<groupId>de.tuberlin.uebb.page</groupId>
@@ -197,29 +197,6 @@
 				</configuration>
 			</plugin>
 
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-antrun-plugin</artifactId>
-
-				<executions>
-					<execution>
-						<id>generate-parser</id>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>run</goal>
-						</goals>
-						<configuration>
-							<tasks>
-								<property name="source_dir" value="${project.build.sourceDirectory}" />
-								<property name="compile_classpath" refid="maven.compile.classpath" />
-								<property name="resources_dir" value="${page.resources.dir}" />
-								<ant antfile="src/build/ant/parser.xml" />
-							</tasks>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
 		</plugins>
 		<resources>
 			<resource>

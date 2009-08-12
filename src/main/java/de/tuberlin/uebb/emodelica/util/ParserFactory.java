@@ -5,7 +5,7 @@ package de.tuberlin.uebb.emodelica.util;
 
 import java.util.ArrayDeque;
 
-import de.tuberlin.uebb.emodelica.generated.parser.ModelicaStateFactory;
+import de.tuberlin.uebb.modelica.im.generated.moparser.modelicaStateFactory;
 import de.tuberlin.uebb.page.parser.Automaton;
 
 /**
@@ -16,11 +16,11 @@ public class ParserFactory {
 	static class ParserConstructor implements Runnable {
 
 		private ArrayDeque<Automaton> parserQue;
-		private ModelicaStateFactory stateFactory;
+		private modelicaStateFactory stateFactory;
 
 		public ParserConstructor(ArrayDeque<Automaton> parser) {
 			this.parserQue = parser;
-			stateFactory = new ModelicaStateFactory();
+			stateFactory = new modelicaStateFactory();
 		}
 
 		@Override

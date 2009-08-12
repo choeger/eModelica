@@ -9,7 +9,6 @@ import java.util.Set;
 import java.util.Stack;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -23,7 +22,6 @@ import org.eclipse.ui.part.FileEditorInput;
 import de.tuberlin.uebb.emodelica.EModelicaPlugin;
 import de.tuberlin.uebb.emodelica.ModelRepository;
 import de.tuberlin.uebb.emodelica.editors.ModelicaEditor;
-import de.tuberlin.uebb.emodelica.generated.parser.LexerDefs;
 import de.tuberlin.uebb.emodelica.util.ParserFactory;
 import de.tuberlin.uebb.page.exceptions.ParserException;
 import de.tuberlin.uebb.page.grammar.symbols.Terminal;
@@ -137,7 +135,7 @@ public class ModelicaModelManager implements IModelManager {
 		lexerError = null;
 		
 		try {
-			inputStack = lexer.getInputTokens(contentReader, LexerDefs.lexerDefs());
+			inputStack = lexer.getInputTokens(contentReader, de.tuberlin.uebb.modelica.im.generated.moparser.LexerDefs.lexerDefs());
 		} catch (InvalidCharacterException e) {
 			/* if we encounter a lexer problem, 
 			 * simply set inputStack to null.

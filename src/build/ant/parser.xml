@@ -12,7 +12,7 @@
             generates a new eModelica parser if necessary
     </description>
 	
-	<property name="grammar" value="Modelica"/>
+	<property name="grammar" value="modelica"/>
 
 	<!-- ================================= 
           target: default              
@@ -36,15 +36,15 @@
 			<arg value="-p"/>
 			<arg value="de.tuberlin.uebb.emodelica.generated.parser"/>
 			<arg value="-i"/>
-			<arg value="${resources_dir}/modelica.gram"/>
+			<arg value="${resources_dir}/${grammar}.gram"/>
 			<arg value="-l"/>
-			<arg value="${resources_dir}/modelica.lex"/>
+			<arg value="${resources_dir}/${grammar}.lex"/>
 			<arg value="-g"/>
 			<arg value="${grammar}"/>
 		</java>
 		
 		<!-- we do not need that file maybe we'll add an option for that to generator later -->
-		<delete file="${source_dir}/de/tuberlin/uebb/emodelica/generated/parser/Parser.java"/>
+		<delete file="${source_dir}/de/tuberlin/uebb/modelica/im/generated/parser/Parser.java"/>
 	</target>
 	
 	<target name="uptodatecheck">
