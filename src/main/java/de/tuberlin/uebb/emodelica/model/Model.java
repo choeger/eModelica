@@ -10,7 +10,9 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
 
-import de.tuberlin.uebb.emodelica.model.dom.DOMRootNode;
+import de.tuberlin.uebb.modelica.im.ClassNode;
+import de.tuberlin.uebb.modelica.im.generated.moparser.NT_Stored_Definition;
+import de.tuberlin.uebb.modelica.im.generator.AbsyToDOM;
 import de.tuberlin.uebb.page.grammar.symbols.Terminal;
 import de.tuberlin.uebb.page.parser.symbols.Absy;
 import de.tuberlin.uebb.page.parser.util.Range;
@@ -25,7 +27,7 @@ public class Model {
 	
 	private Absy child = null;
 
-	private DOMRootNode rootDOM;
+	private ClassNode rootNode;
 	private ArrayList<Position> foldablePositions;
 	private IDocument document;
 	
@@ -34,7 +36,10 @@ public class Model {
 		this.child = rootAbsy;
 		this.input = input;
 		foldablePositions = new ArrayList<Position>();
-		this.rootDOM = new DOMRootNode(this);
+		
+		AbsyToDOM domBuilder = new AbsyToDOM();
+		
+		this.rootNode = domBuilder.buildFromAbsy((NT_Stored_Definition) rootAbsy);
 	}
 
 	/**
@@ -63,8 +68,8 @@ public class Model {
 		return foldablePositions;
 	}
 
-	public DOMRootNode getDOMRoot() {
-		return rootDOM;
+	public ClassNode getRootNode() {
+		return rootNode;
 	}
 
 	/**

@@ -9,8 +9,8 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
 import de.tuberlin.uebb.emodelica.ModelRepository;
-import de.tuberlin.uebb.emodelica.model.dom.DOMNode;
-import de.tuberlin.uebb.emodelica.model.dom.DOMRootNode;
+import de.tuberlin.uebb.modelica.im.ClassNode;
+import de.tuberlin.uebb.modelica.im.Node;
 
 /**
  * @author choeger
@@ -18,11 +18,11 @@ import de.tuberlin.uebb.emodelica.model.dom.DOMRootNode;
  */
 public class ModelTreeContentProvider implements IStructuredContentProvider, 
 ITreeContentProvider {
-	private DOMNode invisibleRoot;
+	private ClassNode invisibleRoot;
 
 	public void inputChanged(Viewer v, Object oldInput, Object newInput) {
-		if (newInput instanceof DOMRootNode) {
-			invisibleRoot = (DOMNode)newInput;
+		if (newInput instanceof ClassNode) {
+			invisibleRoot = (ClassNode)newInput;
 			v.refresh();
 		}
 	}
@@ -34,10 +34,10 @@ ITreeContentProvider {
 			IFile file = (IFile)parent;
 			Model model = ModelRepository.getModelForFile(file);
 			if (model != null)
-				return model.getDOMRoot().getChildren().toArray();
+				return model.getRootNode().getChildren().values().toArray();
 		}
 		
-		if (!(parent instanceof DOMNode)) {
+		if (!(parent instanceof Node)) {
 			if (invisibleRoot==null) initialize();
 			return getChildren(invisibleRoot);
 		} else
@@ -45,8 +45,8 @@ ITreeContentProvider {
 	}
 	
 	public Object getParent(Object child) {
-		if (child instanceof DOMNode) {
-			return ((DOMNode)child).getParent();
+		if (child instanceof Node) {
+			return ((Node)child).getParent();
 		}
 		return null;
 	}
@@ -56,11 +56,11 @@ ITreeContentProvider {
 			IFile file = (IFile)parent;
 			Model model = ModelRepository.getModelForFile(file);
 			if (model != null)
-				return model.getDOMRoot().getChildren().toArray();
+				return model.getRootNode().getChildren().values().toArray();
 		}		
 		
-		if (parent instanceof DOMNode) {
-			return ((DOMNode)parent).getChildren().toArray();
+		if (parent instanceof Node) {
+			return ((Node)parent).getChildren().values().toArray();
 		}
 		return new Object[0];
 	}
@@ -70,11 +70,11 @@ ITreeContentProvider {
 			IFile file = (IFile)parent;
 			Model model = ModelRepository.getModelForFile(file);
 			if (model != null)
-				return model.getDOMRoot().getChildren().size() > 0;
+				return model.getRootNode().getChildren().size() > 0;
 		}
 		
-		if (parent instanceof DOMNode)
-			return ((DOMNode)parent).getChildren().size() >0;
+		if (parent instanceof Node)
+			return ((Node)parent).getChildren().size() >0;
 		return false;
 	}
 

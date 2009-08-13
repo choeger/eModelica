@@ -16,8 +16,7 @@ import de.tuberlin.uebb.emodelica.model.IModelChangedListener;
 import de.tuberlin.uebb.emodelica.model.Model;
 import de.tuberlin.uebb.emodelica.model.ModelLabelProvider;
 import de.tuberlin.uebb.emodelica.model.ModelTreeContentProvider;
-import de.tuberlin.uebb.emodelica.model.dom.DOMNode;
-import de.tuberlin.uebb.emodelica.model.dom.DOMRootNode;
+import de.tuberlin.uebb.modelica.im.ClassNode;
 
 /**
  * @author choeger
@@ -50,7 +49,7 @@ public class ModelicaOutline extends ContentOutlinePage implements IModelChanged
 		super.selectionChanged(event);
 		
 		IStructuredSelection selection = (IStructuredSelection)event.getSelection();
-		DOMNode node = (DOMNode)selection.getFirstElement();
+		ClassNode node = (ClassNode)selection.getFirstElement();
 		if (node == null)
 			return;
 		try {
@@ -80,6 +79,6 @@ public class ModelicaOutline extends ContentOutlinePage implements IModelChanged
 
 	private void updateTree() {
 		if (input != null)
-			this.getTreeViewer().setInput(input.getDOMRoot());
+			this.getTreeViewer().setInput(input.getRootNode());
 	}
 }
