@@ -7,15 +7,22 @@ This is a pom-first project built by maven2, to develop on it you will need to
 
 	mvn eclipse:to-maven -DstripQualifier=true -DeclipseDir=<YOUR_ECLIPSE_INSTALLATION>
 
-	b) generate a recent .project and .classpath by invoking:
+	b) generate the bundle MANIFEST.MF for the plugin by invoking:
+	
+	mvn bundle:manifest
 
+	c) generate a recent .project and .classpath by invoking:
+	(note that you need to have a maven enabled workspace, do this with mvn eclipse:configure-workspace)
+	
 	mvn eclipse:eclipse -Dpde=true -DdownloadJavadocs=true -DdownloadSources=true
 	
-	c) import the newly generated project into eclipse
+	d) import the newly generated project into eclipse
 	
-	d) in the java build path order tab, set the project folder down to the bottom (this is a bug between maven and pde)
+	e) in the java build path order tab, set the project folder down to the bottom 
+	(this is a bug between maven and pde) also note that MANIFEST.MF may now contain
+	an errnous empty line (also a bug). Remove this line.
 	
-	e) do not even think of exporting that plugin manually - that is not supported yet
+	f) do not ask about exporting that plugin manually - that is not supported yet ;)
 
 After those steps you can hack on ;)
 
