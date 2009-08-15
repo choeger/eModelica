@@ -222,13 +222,14 @@ public class EditEnvironmentWizardPage extends WizardPage {
 				setPageComplete(false);
 				return;
 			}
-			if (nameField.getText().isEmpty()) {
-				setErrorMessage("Please select a name!");
-				setPageComplete(false);
-				return;
-			}
+			else updateNameFromMosilac(mosilac);
 		}
-
+		
+		if (nameField.getText().isEmpty()) {
+			setErrorMessage("Please select a name!");
+			setPageComplete(false);
+			return;
+		}
 		// all valid
 		mosilabRootStr = mosilabRoot.getText();
 		nameStr = nameField.getText();
@@ -244,33 +245,40 @@ public class EditEnvironmentWizardPage extends WizardPage {
 		String fileName = dlg.open();
 		if (fileName != null) {
 			mosilacPath.setText(fileName);
-			if (nameField.getText().isEmpty())
+			updateNameFromMosilac(fileName);
+		}
+	}
+
+	/**
+	 * @param fileName
+	 */
+	private void updateNameFromMosilac(String fileName) {
+		if (nameField.getText().isEmpty())
+			try {
+				Process proc = Runtime.getRuntime().exec(fileName + " -v");
 				try {
-					Process proc = Runtime.getRuntime().exec(fileName + " -v");
-					try {
-						proc.waitFor();
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-					BufferedReader reader = new BufferedReader(
-							new InputStreamReader(proc.getInputStream()));
-					String out = reader.readLine();
-					if (out.startsWith("MOSILAB"))
-						nameField.setText(out);
-					else {
-						setMessage(
-								"Could not acquire MOSILAB name information from "
-										+ fileName, WizardPage.WARNING);
-						nameField.setText("unknown");
-					}
-				} catch (IOException e) {
+					proc.waitFor();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				BufferedReader reader = new BufferedReader(
+						new InputStreamReader(proc.getInputStream()));
+				String out = reader.readLine();
+				if (out.startsWith("MOSILAB"))
+					nameField.setText(out);
+				else {
 					setMessage(
 							"Could not acquire MOSILAB name information from "
 									+ fileName, WizardPage.WARNING);
 					nameField.setText("unknown");
-					e.printStackTrace();
 				}
-		}
+			} catch (IOException e) {
+				setMessage(
+						"Could not acquire MOSILAB name information from "
+								+ fileName, WizardPage.WARNING);
+				nameField.setText("unknown");
+				e.printStackTrace();
+			}
 	}
 
 	private void mosilabRootClicked() {
