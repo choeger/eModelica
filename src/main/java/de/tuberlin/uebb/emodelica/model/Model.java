@@ -12,7 +12,7 @@ import org.eclipse.jface.text.Position;
 
 import de.tuberlin.uebb.modelica.im.ClassNode;
 import de.tuberlin.uebb.modelica.im.generated.moparser.NT_Stored_Definition;
-import de.tuberlin.uebb.modelica.im.generator.AbsyToDOM;
+import de.tuberlin.uebb.modelica.im.generator.AbsyToIM;
 import de.tuberlin.uebb.page.grammar.symbols.Terminal;
 import de.tuberlin.uebb.page.parser.symbols.Absy;
 import de.tuberlin.uebb.page.parser.util.Range;
@@ -37,9 +37,7 @@ public class Model {
 		this.input = input;
 		foldablePositions = new ArrayList<Position>();
 		
-		AbsyToDOM domBuilder = new AbsyToDOM();
-		
-		this.rootNode = domBuilder.buildFromAbsy((NT_Stored_Definition) rootAbsy);
+		this.rootNode = AbsyToIM.buildFromAbsy((NT_Stored_Definition) rootAbsy);
 	}
 
 	/**

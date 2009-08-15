@@ -79,6 +79,9 @@ public class CCPActionGroup extends ActionGroup {
 	@Override
 	public void setContext(ActionContext context) {
 		super.setContext(context);
+		System.err.println("context: " + context);
+		if (context == null || context.getSelection() == null)
+			return;
 		
 		if (context.getSelection() instanceof IStructuredSelection) {
 			IStructuredSelection selection = (IStructuredSelection)context.getSelection();

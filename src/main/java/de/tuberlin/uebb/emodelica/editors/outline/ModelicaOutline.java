@@ -4,6 +4,7 @@
 package de.tuberlin.uebb.emodelica.editors.outline;
 
 
+import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
@@ -16,7 +17,7 @@ import de.tuberlin.uebb.emodelica.model.IModelChangedListener;
 import de.tuberlin.uebb.emodelica.model.Model;
 import de.tuberlin.uebb.emodelica.model.ModelLabelProvider;
 import de.tuberlin.uebb.emodelica.model.ModelTreeContentProvider;
-import de.tuberlin.uebb.modelica.im.ClassNode;
+import de.tuberlin.uebb.modelica.im.Node;
 
 /**
  * @author choeger
@@ -49,15 +50,15 @@ public class ModelicaOutline extends ContentOutlinePage implements IModelChanged
 		super.selectionChanged(event);
 		
 		IStructuredSelection selection = (IStructuredSelection)event.getSelection();
-		ClassNode node = (ClassNode)selection.getFirstElement();
+		Node node = (Node)selection.getFirstElement();
 		if (node == null)
 			return;
 		try {
-			System.err.println("setting highlighting to " + node.getStartOffset() + ":" + node.getEndOffset());
-			int length = node.getEndOffset() - node.getStartOffset();
-			editor.setHighlightRange(node.getStartOffset(), length, true);
+			Position pos = input.rangeToFoldablePosition(node.getRange());
+			System.err.println("setting highlighting to " + pos.offset + ":" + pos.length);
+			editor.setHighlightRange(pos.offset, pos.length, true);
 			//TODO: change this to happen on a flattened model only for identifiers (see java outline)
-			TextSelection textSelection = new TextSelection(documentProvider.getDocument(input),node.getStartOffset(), length);
+			TextSelection textSelection = new TextSelection(documentProvider.getDocument(input),pos.offset, pos.length);
 			editor.getSelectionProvider().setSelection(textSelection);
 		} catch (IllegalArgumentException x) {
 			editor.resetHighlightRange();
