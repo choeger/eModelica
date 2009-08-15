@@ -17,7 +17,7 @@ import de.tuberlin.uebb.emodelica.model.project.impl.WorkspaceModelicaPackageCon
  * @author choeger
  *
  */
-public class ModelicaAdapterFactory implements IAdapterFactory {
+public class ModelicaToResourcesAdapterFactory implements IAdapterFactory {
 
 	/* (non-Javadoc)
 	 * @see org.eclipse.core.runtime.IAdapterFactory#getAdapter(java.lang.Object, java.lang.Class)

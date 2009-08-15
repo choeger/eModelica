@@ -55,5 +55,4 @@ public class MOSILABPreferencePage
 		} else
 			setValid(true);
 	}
-	
 }

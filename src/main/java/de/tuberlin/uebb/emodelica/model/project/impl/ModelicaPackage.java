@@ -30,11 +30,13 @@ public class ModelicaPackage extends ModelicaResource  implements IModelicaPacka
 	
 	public ModelicaPackage(IModelicaResource parent, IContainer parentDir, IContainer completePath) {
 		this.parent = parent;
-		this.completePath = completePath;
+		setResource(completePath);
 		
 		IPath suffix = completePath.getFullPath().removeFirstSegments(parentDir.getFullPath().segmentCount());
 		this.fullName = suffix.toString().replace(IPath.SEPARATOR, '.');
 		children = new ArrayList<IFile>();
+		
+		doRefresh();
 		syncChildren();
 	}
 	
@@ -66,18 +68,8 @@ public class ModelicaPackage extends ModelicaResource  implements IModelicaPacka
 
 	@Override
 	public void syncChildren() {
-		children.clear();
-		try {
-			onlyModelicaResources = true;
-			for (IResource member : completePath.members()) {
-				if (member.getType() == IResource.FILE && member.getName().endsWith(".mo") && 
-						!member.getName().equals("package.mo")) {
-					children.add((IFile)member);
-				} else onlyModelicaResources = false;	
-			}
-		} catch (CoreException e) {
-			e.printStackTrace();
-		}	}
+		/* only one kind of children, see doRefresh() */
+	}
 
 	@Override
 	public boolean hasOnlyModelicaResources() {
@@ -104,4 +96,31 @@ public class ModelicaPackage extends ModelicaResource  implements IModelicaPacka
 		return completePath;
 	}
 
+	@Override
+	protected void doRefresh() {
+		children.clear();
+		try {
+			onlyModelicaResources = true;
+			for (IResource member : completePath.members()) {
+				if (member.getType() == IResource.FILE && member.getName().endsWith(".mo") && 
+						!member.getName().equals("package.mo")) {
+					children.add((IFile)member);
+				} else onlyModelicaResources = false;	
+			}
+		} catch (CoreException e) {
+			e.printStackTrace();
+		}	
+		
+	}
+
+	/* (non-Javadoc)
+	 * @see de.tuberlin.uebb.emodelica.model.project.impl.ModelicaResource#setResource(org.eclipse.core.resources.IResource)
+	 */
+	@Override
+	public void setResource(IResource resource) {
+		if (resource instanceof IContainer) {
+			super.setResource(resource);
+			completePath = (IContainer) resource;
+		}
+	}
 }

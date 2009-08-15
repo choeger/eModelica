@@ -7,6 +7,7 @@ import java.lang.reflect.InvocationTargetException;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
@@ -87,9 +88,8 @@ public class NewModelicaFragmentWizard extends Wizard implements INewWizard {
 		WorkspaceModifyOperation modifyOp = new NewFragmentCreationOperation(
 				page.getSourceFolder(), page.getPackageName(), page
 						.getTypeName(), page.getFragmentKind());
-
 		try {
-			modifyOp.run(null);
+			this.getContainer().run(false, false, modifyOp);
 		} catch (InvocationTargetException e) {
 			e.printStackTrace();
 			return false;

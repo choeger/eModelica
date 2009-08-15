@@ -28,7 +28,6 @@ public class EditEnvironmentWizard extends Wizard {
 
 	@Override
 	public void createPageControls(Composite pageContainer) {
-		System.err.println("createPageControls()");
 		newEnvPage.setMosilabRootStr(environment.mosilabRoot());
 		newEnvPage.setNameStr(environment.getName());
 		newEnvPage.setMosilacPathStr(environment.compilerCommand());

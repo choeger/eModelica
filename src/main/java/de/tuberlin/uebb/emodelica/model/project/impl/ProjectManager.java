@@ -19,6 +19,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Path;
 
 import de.tuberlin.uebb.emodelica.EModelicaPlugin;
+import de.tuberlin.uebb.emodelica.model.project.IModelicaResource;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabProject;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabSource;
 import de.tuberlin.uebb.emodelica.model.project.IProjectManager;
@@ -33,15 +34,13 @@ public class ProjectManager implements IProjectManager, IResourceChangeListener 
 
 		@Override
 		public boolean visit(IResourceDelta delta) throws CoreException {
+			
 			if (delta.getResource().getType() == IResource.PROJECT) {
 				System.err.println("delta for project! " + delta.getKind());
 				IProject project = (IProject) delta.getResource();
 				String path = project.getFullPath().toOSString();
 				
-				switch(delta.getKind()) {
-				
-					/* opened or closed a project */
-					case IResourceDelta.OPEN:
+				if (delta.getKind() == IResourceDelta.OPEN) {
 						if (project.isOpen()) {
 							/* new opened MOSILAB project */
 							if (project.getNature(MOSILAB_PROJECT_NATURE) != null) {
@@ -53,24 +52,16 @@ public class ProjectManager implements IProjectManager, IResourceChangeListener 
 							System.err.println("removing closed " + path);
 							projects.remove(path);
 						}
-					break;
-				
-					case IResourceDelta.CHANGED:
-						if (project.isOpen() && project.getNature(MOSILAB_PROJECT_NATURE) != null) {
-							IMosilabProject mProject = projects.get(path);
-							
-							/* new created? */
-							if (mProject == null) 
-								mProject = projects.put(path, new MosilabProject(project));
-							else
-								mProject.syncChildren();
-						}
-						
-					break;
+					/* new or closed - our job is done */
+					return false;
 				}
-				/* we are only interested in projects */
-				return false;
 			}
+			
+			IModelicaResource modelicaResource = (IModelicaResource) delta.getResource().getAdapter(IModelicaResource.class);
+			System.err.println("Resource: " + modelicaResource);
+			if (modelicaResource != null)
+				 modelicaResource.markAsDirty();
+			
 			return true;
 		}
 	}

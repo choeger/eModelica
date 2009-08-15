@@ -7,6 +7,7 @@ import java.util.Set;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.navigator.ICommonContentExtensionSite;
@@ -53,17 +54,13 @@ public class MosilabProjectContentProvider implements IPipelinedTreeContentProvi
 			IProjectManager pm = (IProjectManager)arg0;
 			return pm.getAllMosilabProjects().toArray();
 		}
-		
-		if (arg0 instanceof IMosilabProject) {
-			IMosilabProject prj = (IMosilabProject)arg0;
-			return prj.getSrcFolders().toArray();
-		}
 				
 		if (arg0 instanceof IProject) {
 			IProjectManager pm = EModelicaPlugin.getDefault().getProjectManager();
 			if (pm.isMosilabProject((IProject)arg0)) {
 				final IMosilabProject mosilabProject = pm.getMosilabProject((IProject)arg0);
 				mosilabProject.registerListener(this);
+				mosilabProject.refresh();
 				return mosilabProject.getChildren().toArray();
 			}
 		}
@@ -72,6 +69,7 @@ public class MosilabProjectContentProvider implements IPipelinedTreeContentProvi
 			if (arg0 instanceof IModelicaPackage && onlyPackages)
 				return null;
 			IModelicaResource resource = (IModelicaResource)arg0;
+			resource.refresh();
 			return resource.getChildren().toArray();
 		}
 		
@@ -91,8 +89,16 @@ public class MosilabProjectContentProvider implements IPipelinedTreeContentProvi
 	 */
 	@Override
 	public Object getParent(Object arg0) {
+		System.err.println("getParent: " + arg0);
 		if (arg0 instanceof IMosilabProject)
 			return ((IMosilabProject)arg0).getProject();
+		
+		if (arg0 instanceof IResource) {
+			IModelicaResource possibleParent = (IModelicaResource) 
+			((IResource)arg0).getParent().getAdapter(IModelicaResource.class);
+			if (possibleParent != null)
+				return possibleParent;
+		}
 		
 		if (arg0 instanceof IModelicaResource) {
 			IModelicaResource resource = (IModelicaResource)arg0;
@@ -123,6 +129,7 @@ public class MosilabProjectContentProvider implements IPipelinedTreeContentProvi
 			if (arg0 instanceof IModelicaPackage && onlyPackages)
 				return false;
 			IModelicaResource resource = (IModelicaResource)arg0;
+			resource.refresh();
 			return !resource.getChildren().isEmpty();
 		}
 		
@@ -173,6 +180,7 @@ public class MosilabProjectContentProvider implements IPipelinedTreeContentProvi
 	@Override
 	public void resourceChanged(IModelicaResource resource) {
 		if (viewer != null) {
+			System.err.println("refreshing!");
 			viewer.refresh();
 		}
 	}
@@ -197,12 +205,19 @@ public class MosilabProjectContentProvider implements IPipelinedTreeContentProvi
 	@Override
 	public PipelinedShapeModification interceptAdd(
 			PipelinedShapeModification anAddModification) {
+		
+		if (anAddModification.getParent() instanceof IResource) {
+			final IResource parent = (IResource)anAddModification.getParent();
+			final IModelicaResource res = (IModelicaResource) parent.getAdapter(IModelicaResource.class);
+			if (res != null)
+				anAddModification.setParent(res);
+		}
+		
 		return anAddModification;
 	}
 
 	@Override
 	public boolean interceptRefresh(PipelinedViewerUpdate refreshSynchronization) {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
@@ -214,7 +229,6 @@ public class MosilabProjectContentProvider implements IPipelinedTreeContentProvi
 
 	@Override
 	public boolean interceptUpdate(PipelinedViewerUpdate anUpdateSynchronization) {
-		// TODO Auto-generated method stub
 		return false;
 	}
 

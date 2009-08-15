@@ -21,23 +21,27 @@ import de.tuberlin.uebb.emodelica.model.project.IModelicaResource;
  */
 public abstract class WorkspaceModelicaPackageContainer extends ModelicaResource implements IModelicaResource {
 
-	protected ArrayList<IModelicaPackage> packages;
-	protected IContainer container;
-	protected List<IFile> children;
+	private ArrayList<IModelicaPackage> packages;
+	private IContainer container;
+	private List<Object> children;
+	private List<IResource> contents;
 	
 	public WorkspaceModelicaPackageContainer() {}
 	
 	public WorkspaceModelicaPackageContainer(IContainer container) {
 		packages = new ArrayList<IModelicaPackage>();
-		children = new ArrayList<IFile>();
-		this.container = container;
+		contents = new ArrayList<IResource>();
+		children = new ArrayList<Object>();
+		setResource(container);
+		
+		doRefresh();
 		syncChildren();
 	}
 
 	/**
 	 * read package structure from filesystem
 	 */
-	private void syncPackages() {
+	private void refreshPackages() {
 		packages.clear();
 		recFind(container);
 		System.err.println("got " + packages.size() + " packages.");
@@ -68,13 +72,18 @@ public abstract class WorkspaceModelicaPackageContainer extends ModelicaResource
 	
 	@Override
 	public void syncChildren() {
-		syncPackages();
 		children.clear();
+		children.addAll(packages);
+		children.addAll(contents);
+	}
+	
+	private void refreshContents() {
+		contents.clear();
 		try {
 			if (container != null)
 			for (IResource member : container.members())
 				if (member.getType() == IResource.FILE && member.getName().endsWith(".mo"))
-					children.add((IFile)member);
+					contents.add((IFile)member);
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}
@@ -82,5 +91,49 @@ public abstract class WorkspaceModelicaPackageContainer extends ModelicaResource
 	
 	public IContainer getContainer() {
 		return container;
+	}
+
+	/* (non-Javadoc)
+	 * @see de.tuberlin.uebb.emodelica.model.project.impl.ModelicaResource#doRefresh()
+	 */
+	@Override
+	protected void doRefresh() {
+		refreshPackages();
+		refreshContents();
+	}
+
+	/* (non-Javadoc)
+	 * @see de.tuberlin.uebb.emodelica.model.project.IModelicaResource#getChildren()
+	 */
+	@Override
+	public List<? extends Object> getChildren() {
+		return children;
+	}
+
+
+	/* (non-Javadoc)
+	 * @see de.tuberlin.uebb.emodelica.model.project.IModelicaResource#getResource()
+	 */
+	@Override
+	public IResource getResource() {
+		return container;
+	}
+	
+	public List<IResource> getContent() {
+		return contents;
+	}
+
+	/* (non-Javadoc)
+	 * @see de.tuberlin.uebb.emodelica.model.project.impl.ModelicaResource#setResource(org.eclipse.core.resources.IResource)
+	 */
+	@Override
+	public void setResource(IResource resource) {
+		if (resource instanceof IContainer) {
+			super.setResource(resource);
+			container = (IContainer) resource;
+		}
+	}
+
+	public void markAsDirty() {
 	}
 }

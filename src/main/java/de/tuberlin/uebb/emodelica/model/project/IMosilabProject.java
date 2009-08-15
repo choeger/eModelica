@@ -75,5 +75,4 @@ public interface IMosilabProject extends IModelicaResource {
 	 * @return all experiments of that project
 	 */
 	public List<IExperiment> getExperiments();
-	
 }

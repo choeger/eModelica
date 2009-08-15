@@ -48,4 +48,20 @@ public interface IModelicaResource extends IAdaptable {
 	 * @return an eclipse resource that defines this IModelicaResource or null if none
 	 */
 	public IResource getResource();
+	
+	/**
+	 * Set the resource that defines this IModelicaResource
+	 * @param resource
+	 */
+	public void setResource(IResource resource);
+	
+	/**
+	 * refresh the IModelicaResource
+	 */
+	public void refresh();
+
+	/**
+	 * mark this resource as needing a refresh()
+	 */
+	public void markAsDirty();
 }

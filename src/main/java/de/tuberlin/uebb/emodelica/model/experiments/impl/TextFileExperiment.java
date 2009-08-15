@@ -122,32 +122,6 @@ public class TextFileExperiment implements IExperiment {
 		}
 	}
 
-	/**
-	 * @param name
-	 * @param project
-	 * @param data
-	 */
-	private IFile storeToDisk(InputStream data) {
-		IFolder expFolder = project.getProject().getFolder(".experiments");
-		try {
-
-			if (!expFolder.exists())
-				expFolder.create(true, true, null);
-
-			IFile resourceFile = expFolder.getFile(name + "."
-					+ dateFormat.format(date));
-
-			if (!resourceFile.exists()) {
-				System.err.println("storing " + resourceFile);
-				resourceFile.create(data, true, null);
-			}
-			return resourceFile;
-		} catch (CoreException e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
-
 	public TextFileExperiment(IMosilabProject project, IFile file) {
 		super();
 		this.name = file.getName().split("\\.")[0];

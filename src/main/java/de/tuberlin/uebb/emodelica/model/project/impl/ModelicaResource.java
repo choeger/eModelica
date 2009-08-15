@@ -5,11 +5,12 @@ package de.tuberlin.uebb.emodelica.model.project.impl;
 
 import java.util.HashSet;
 
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.PlatformObject;
 
-import de.tuberlin.uebb.emodelica.model.IModelChangedListener;
 import de.tuberlin.uebb.emodelica.model.project.IModelicaResource;
 import de.tuberlin.uebb.emodelica.model.project.IModelicaResourceChangedListener;
+import de.tuberlin.uebb.emodelica.util.ResourcesToModelicaAdapterFactory;
 
 /**
  * @author choeger
@@ -18,6 +19,7 @@ import de.tuberlin.uebb.emodelica.model.project.IModelicaResourceChangedListener
 public abstract class ModelicaResource extends PlatformObject implements IModelicaResource {
 
 	private HashSet<IModelicaResourceChangedListener> listeners = new HashSet<IModelicaResourceChangedListener>();
+	public boolean dirty = false;
 	
 	/* (non-Javadoc)
 	 * @see de.tuberlin.uebb.emodelica.model.project.IModelicaResource#registerListener(de.tuberlin.uebb.emodelica.model.IModelChangedListener)
@@ -43,5 +45,37 @@ public abstract class ModelicaResource extends PlatformObject implements IModeli
 		for (IModelicaResourceChangedListener listener : listeners)
 			listener.resourceChanged(this);
 	}
+	
+	protected boolean isDirty() {
+		return dirty;
+	}
+	
+	@Override
+	public void refresh() {
+		if (dirty) {
+			doRefresh();
+			notifyListeners();
+			dirty = false;
+			syncChildren();
+		}
+	}
+	
+	protected abstract void doRefresh();
+	
+	@Override
+	public void markAsDirty() {
+		dirty = true;
+	}
+
+	/* (non-Javadoc)
+	 * @see de.tuberlin.uebb.emodelica.model.project.IModelicaResource#setResource(org.eclipse.core.resources.IResource)
+	 */
+	@Override
+	public void setResource(IResource resource) {
+		ResourcesToModelicaAdapterFactory.unMap(getResource());
+		ResourcesToModelicaAdapterFactory.map(resource, this);
+	}
+	
+	
 
 }

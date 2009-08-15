@@ -22,6 +22,7 @@ import javax.xml.validation.SchemaFactory;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -63,14 +64,18 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 	private List<IMosilabSource> srcFolders;
 	private IMosilabEnvironment mosilabInstallation = null;
 	private List<Object> children = new ArrayList<Object>();
-	private IExperimentContainer experiments = new ExperimentContainer(new ArrayList<IExperiment>(), this);
-	
+	private IExperimentContainer experiments = new ExperimentContainer(
+			new ArrayList<IExperiment>(), this);
+	private boolean dirty;
+
 	public MosilabProject(IProject project) {
-		this.project = project;
+		setResource(project);
 		srcFolders = new ArrayList<IMosilabSource>();
 
 		setupProperties();
 		readSettings();
+		
+		doRefresh();
 		syncChildren();
 	}
 
@@ -80,27 +85,34 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 			persistentProperties = project.getPersistentProperties();
 
 			if (persistentProperties.containsKey(MOSILAB_OUTFOLDER_KEY)) {
-				outputFolder = (String) persistentProperties.get(MOSILAB_OUTFOLDER_KEY);
+				outputFolder = (String) persistentProperties
+						.get(MOSILAB_OUTFOLDER_KEY);
 			} else {
-				outputFolder = EModelicaPlugin.getDefault().getPluginPreferences().getString(PreferenceConstants.P_MOSILAB_DEFAULT_OUTFOLDER);
+				outputFolder = EModelicaPlugin
+						.getDefault()
+						.getPluginPreferences()
+						.getString(
+								PreferenceConstants.P_MOSILAB_DEFAULT_OUTFOLDER);
 			}
-			
+
 			if (persistentProperties.containsKey(MOSILAB_ENVIRONMENT_KEY)) {
 				for (IMosilabEnvironment env : EModelicaPlugin.getDefault()
 						.getMosilabEnvironments()) {
 					if (env.getName().equals(
 							persistentProperties.get(MOSILAB_ENVIRONMENT_KEY))) {
-						mosilabInstallation = env;
+						setMosilabInstallation(env);
+						
 						break;
 					}
 				}
 			}
+			
 			if (mosilabInstallation == null) {
 				mosilabInstallation = EModelicaPlugin.getDefault()
 						.getDefaultMosilabEnvironment();
 				if (mosilabInstallation == null)
 					return;
-				//TODO: handle no default installation!
+				// TODO: handle no default installation!
 				project.setPersistentProperty(MOSILAB_ENVIRONMENT_KEY,
 						mosilabInstallation.getName());
 			}
@@ -108,6 +120,18 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	/**
+	 * set the IMosilabEnvironment of this project
+	 * @param env the new Environment or null if none
+	 */
+	public void setMosilabInstallation(IMosilabEnvironment env) {
+		if (mosilabInstallation != null)
+			mosilabInstallation.removeReferencedBy(this);
+		mosilabInstallation = env;
+		if (env != null)
+			mosilabInstallation.setReferencedBy(this);
 	}
 
 	private void readSettings() {
@@ -238,48 +262,50 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 		return null;
 	}
 
+	
+	
+	
 	@Override
 	public void syncChildren() {
 		children.clear();
-		try {
-			syncExperiments();
-		} catch (CoreException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		children.add(experiments);
 		
-		System.err.println("adding libs");
-		if (getMOSILABEnvironment() != null) {
-			getMOSILABEnvironment().syncChildren();
+		if (mosilabInstallation != null)
 			children.add(getMOSILABEnvironment());
-		}
-		
-		getLibraries().syncChildren();
-		children.add(getLibraries());
-
-		for (IMosilabSource src : getSrcFolders()) {
-			src.syncChildren();
+		children.add(experiments);
+		children.add(libs);
+		for (IMosilabSource src : srcFolders)
 			if (!src.isRoot())
 				children.add(src);
 			else {
 				children.addAll(src.getPackages());
 				children.addAll(src.getContent());
-			}
-		}
+			}		
 		
-		notifyListeners();
+//		if (getMOSILABEnvironment() == null) {
+//			try {
+//				IMarker probMarker = project.createMarker(IMarker.PROBLEM);
+//				probMarker.setAttribute(IMarker.SEVERITY,
+//						IMarker.SEVERITY_ERROR);
+//				probMarker.setAttribute(IMarker.MESSAGE,
+//						"No MOSILAB environment found!");
+//			} catch (CoreException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//		}
+
 	}
 
-	private void syncExperiments() throws CoreException {
+	private void refreshExperiments() throws CoreException {
 		experiments.getExperiments().clear();
 		IFolder expFolder = project.getFolder(".experiments");
-		
+
 		if (expFolder.exists()) {
 			for (IResource res : expFolder.members()) {
 				if (res.getType() == IResource.FILE) {
-					IFile file = (IFile)res;
-					experiments.getExperiments().add(new TextFileExperiment(this, file));
+					IFile file = (IFile) res;
+					experiments.getExperiments().add(
+							new TextFileExperiment(this, file));
 				}
 			}
 		}
@@ -377,4 +403,49 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 		return experiments.getExperiments();
 	}
 
+	/* (non-Javadoc)
+	 * @see de.tuberlin.uebb.emodelica.model.project.impl.ModelicaResource#isDirty()
+	 */
+	@Override
+	protected boolean isDirty() {
+		return dirty;
+	}
+
+	/* (non-Javadoc)
+	 * @see de.tuberlin.uebb.emodelica.model.project.impl.ModelicaResource#refresh()
+	 */
+	@Override
+	public void doRefresh() {
+			try {
+				refreshExperiments();
+			} catch (CoreException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			System.err.println("adding libs");		
+			if (!EModelicaPlugin.getDefault().getMosilabEnvironments().contains(mosilabInstallation))
+				mosilabInstallation=null;
+
+			if (getMOSILABEnvironment() != null) {			
+				getMOSILABEnvironment().syncChildren();
+			}
+			
+			getLibraries().refresh();
+
+			for (IMosilabSource src : getSrcFolders()) {
+				src.refresh();
+			}
+	}
+
+	/* (non-Javadoc)
+	 * @see de.tuberlin.uebb.emodelica.model.project.impl.ModelicaResource#setResource(org.eclipse.core.resources.IResource)
+	 */
+	@Override
+	public void setResource(IResource resource) {
+		if (resource instanceof IProject) {
+			super.setResource(resource);
+			project = (IProject) resource;
+		}
+	}
 }

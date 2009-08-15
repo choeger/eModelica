@@ -4,13 +4,16 @@
 package de.tuberlin.uebb.emodelica.model.project.impl;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.core.resources.IResource;
 
 import de.tuberlin.uebb.emodelica.model.project.IModelicaPackage;
 import de.tuberlin.uebb.emodelica.model.project.IModelicaResource;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabEnvironment;
+import de.tuberlin.uebb.emodelica.model.project.IMosilabProject;
 
 /**
  * @author choeger
@@ -104,6 +107,7 @@ public class MosilabEnvironment extends ModelicaResource implements IMosilabEnvi
 	private String rootPath;
 	private String name;
 	private List<IModelicaPackage> packages;
+	private Set<IMosilabProject> usedBy = new HashSet<IMosilabProject>();
 	
 	public MosilabEnvironment(String path, String name) {
 		rootPath = path;
@@ -182,14 +186,31 @@ public class MosilabEnvironment extends ModelicaResource implements IMosilabEnvi
 
 	@Override
 	public void syncChildren() {
-		// TODO Auto-generated method stub
-		
+				
 	}
 
 	@Override
 	public IResource getResource() {
 		return null;
 	}
-	
-	
+
+	@Override
+	public Set<IMosilabProject> getReferencingProjects() {
+		return usedBy ;
+	}
+
+	@Override
+	public void removeReferencedBy(IMosilabProject project) {
+		usedBy.remove(project);
+	}
+
+	@Override
+	public void setReferencedBy(IMosilabProject project) {
+		usedBy.add(project);
+	}
+
+	@Override
+	protected void doRefresh() {
+				
+	}
 }

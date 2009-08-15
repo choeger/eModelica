@@ -20,7 +20,7 @@ import de.tuberlin.uebb.emodelica.model.project.IProjectManager;
 import de.tuberlin.uebb.emodelica.model.project.impl.MosilabEnvironment;
 import de.tuberlin.uebb.emodelica.model.project.impl.ProjectManager;
 import de.tuberlin.uebb.emodelica.preferences.PreferenceConstants;
-import de.tuberlin.uebb.emodelica.util.ModelicaAdapterFactory;
+import de.tuberlin.uebb.emodelica.util.ModelicaToResourcesAdapterFactory;
 
 
 /**
@@ -58,8 +58,8 @@ public class EModelicaPlugin extends AbstractUIPlugin {
 		projectManager = new ProjectManager();
 		projectManager.init();
 		
-		Platform.getAdapterManager().registerAdapters(new ModelicaAdapterFactory(), IMosilabSource.class);
-		Platform.getAdapterManager().registerAdapters(new ModelicaAdapterFactory(), IModelicaPackage.class);
+		Platform.getAdapterManager().registerAdapters(new ModelicaToResourcesAdapterFactory(), IMosilabSource.class);
+		Platform.getAdapterManager().registerAdapters(new ModelicaToResourcesAdapterFactory(), IModelicaPackage.class);
 
 		ResourcesPlugin.getWorkspace().addResourceChangeListener(projectManager);
 	}
@@ -166,5 +166,19 @@ public class EModelicaPlugin extends AbstractUIPlugin {
 			return (IModelicaResource)element;
 		}
 		return null;
+	}
+
+	public void setMosilabEnvironments(List<IMosilabEnvironment> environments) {
+		if (this.mosilabEnvironments != null) {
+			this.mosilabEnvironments.clear();
+		} else {
+			this.mosilabEnvironments = new ArrayList<IMosilabEnvironment>();
+		}
+		
+		this.mosilabEnvironments.addAll(environments);
+		
+		for (IMosilabEnvironment env : this.mosilabEnvironments) {
+			
+		}
 	}
 }

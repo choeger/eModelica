@@ -3,6 +3,8 @@
  */
 package de.tuberlin.uebb.emodelica.model.project;
 
+import java.util.Set;
+
 
 /**
  * This interface provides access to the settings of a MosilabEnvironment that needs not to be bound to the workspace
@@ -55,5 +57,23 @@ public interface IMosilabEnvironment extends ILibraryEntry {
 	 * @param name the name to set
 	 */
 	void setName(String name);
+	
+	/**
+	 * Add a project as using this environment
+	 * @param project
+	 */
+	public void setReferencedBy(IMosilabProject project);
+	
+	/**
+	 * return all projects that use this environment
+	 * @return
+	 */
+	public Set<IMosilabProject> getReferencingProjects();
+	
+	/**
+	 *  mar that project as not using this environment
+	 * @param project
+	 */
+	public void removeReferencedBy(IMosilabProject project);
 	
 }

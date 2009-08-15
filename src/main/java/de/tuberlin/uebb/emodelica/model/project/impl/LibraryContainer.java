@@ -65,4 +65,16 @@ public class LibraryContainer extends ModelicaResource implements ILibraryContai
 		return null;
 	}
 	
+	@Override
+	public void refresh() {
+		//TODO: check if needed!
+		this.syncChildren();		
+	}
+
+	@Override
+	protected void doRefresh() {
+		// TODO Auto-generated method stub
+		
+	}
+	
 }

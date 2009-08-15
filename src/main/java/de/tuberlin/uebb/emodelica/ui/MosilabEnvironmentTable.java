@@ -296,10 +296,7 @@ public class MosilabEnvironmentTable extends FieldEditor implements IObservable 
 	}
 	
 	private void syncBack() {
-		System.err.println("syncBack()");
-
-		EModelicaPlugin.getDefault().getMosilabEnvironments().clear();
-		EModelicaPlugin.getDefault().getMosilabEnvironments().addAll(environments);
+		EModelicaPlugin.getDefault().setMosilabEnvironments(environments);
 	}
 	
 	private void updateTableItems() {
