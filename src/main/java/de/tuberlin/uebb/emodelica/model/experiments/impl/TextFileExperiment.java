@@ -7,7 +7,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -18,22 +17,23 @@ import java.util.List;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.actions.WorkspaceModifyOperation;
 import org.eclipse.ui.ide.undo.CreateFileOperation;
 
 import de.tuberlin.uebb.emodelica.model.experiments.ICurve;
 import de.tuberlin.uebb.emodelica.model.experiments.IExperiment;
+import de.tuberlin.uebb.emodelica.model.project.IModelicaResource;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabProject;
+import de.tuberlin.uebb.emodelica.model.project.impl.ModelicaResource;
 
 /**
  * @author choeger
  * 
  */
-public class TextFileExperiment implements IExperiment {
+public class TextFileExperiment extends ModelicaResource implements IExperiment {
 
 	private List<ICurve> curves = new ArrayList<ICurve>();
 	private Date date = new Date(System.currentTimeMillis());
@@ -105,8 +105,7 @@ public class TextFileExperiment implements IExperiment {
 			if (!expFolder.exists())
 				expFolder.create(true, true, null);
 
-			file = expFolder.getFile(name + "." + dateFormat.format(date));
-
+			setResource(expFolder.getFile(name + "." + dateFormat.format(date)));
 			CreateFileOperation create = new CreateFileOperation(file, null,
 					data, "save experiment");
 
@@ -132,7 +131,8 @@ public class TextFileExperiment implements IExperiment {
 		}
 
 		this.project = project;
-		this.file = file;
+		setResource(file);
+		
 		try {
 			setDataFromInputStream(file.getContents());
 		} catch (CoreException e) {
@@ -186,6 +186,34 @@ public class TextFileExperiment implements IExperiment {
 	 */
 	public IFile getFile() {
 		return file;
+	}
+
+	@Override
+	protected void doRefresh() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public List<? extends Object> getChildren() {
+		return null;
+	}
+
+	@Override
+	public IModelicaResource getParent() {
+		return 
+	}
+
+	@Override
+	public IResource getResource() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void syncChildren() {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

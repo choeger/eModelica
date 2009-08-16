@@ -5,6 +5,7 @@ package de.tuberlin.uebb.emodelica.model.experiments;
 
 import java.util.List;
 
+import de.tuberlin.uebb.emodelica.model.project.IModelicaResource;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabProject;
 
 /**
@@ -12,7 +13,7 @@ import de.tuberlin.uebb.emodelica.model.project.IMosilabProject;
  * @author choeger
  * 
  */
-public interface IExperimentContainer {
+public interface IExperimentContainer extends IModelicaResource {
 
 	public IMosilabProject getProject();
 	

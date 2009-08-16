@@ -6,6 +6,7 @@ package de.tuberlin.uebb.emodelica.model.experiments;
 import java.util.Date;
 import java.util.List;
 
+import de.tuberlin.uebb.emodelica.model.project.IModelicaResource;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabProject;
 
 /**
@@ -13,7 +14,7 @@ import de.tuberlin.uebb.emodelica.model.project.IMosilabProject;
  * @author choeger
  *
  */
-public interface IExperiment {
+public interface IExperiment extends IModelicaResource {
 
 	/**
 	 * The parent project
