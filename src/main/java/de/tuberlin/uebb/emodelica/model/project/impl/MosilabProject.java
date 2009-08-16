@@ -301,13 +301,15 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 		IFolder expFolder = project.getFolder(".experiments");
 
 		if (expFolder.exists()) {
-			for (IResource res : expFolder.members()) {
-				if (res.getType() == IResource.FILE) {
-					IFile file = (IFile) res;
-					experiments.getExperiments().add(
-							new TextFileExperiment(this, file));
-				}
+			IModelicaResource cont = (IModelicaResource) expFolder.getAdapter(IModelicaResource.class);
+			if (cont != null && cont instanceof IExperimentContainer) {
+				experiments = (IExperimentContainer) cont;
+			} else {
+				experiments = new ExperimentContainer(new ArrayList<IExperiment>(), this);
 			}
+			experiments.refresh();
+		} else {
+			experiments = null;
 		}
 	}
 
@@ -399,8 +401,8 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 	}
 
 	@Override
-	public List<IExperiment> getExperiments() {
-		return experiments.getExperiments();
+	public IExperimentContainer getExperimentContainer() {
+		return experiments;
 	}
 
 	/* (non-Javadoc)
@@ -423,12 +425,12 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 				e.printStackTrace();
 			}
 			
-			System.err.println("adding libs");		
+			System.err.println("adding libs");
 			if (!EModelicaPlugin.getDefault().getMosilabEnvironments().contains(mosilabInstallation))
 				mosilabInstallation=null;
 
 			if (getMOSILABEnvironment() != null) {			
-				getMOSILABEnvironment().syncChildren();
+				getMOSILABEnvironment().refresh();
 			}
 			
 			getLibraries().refresh();

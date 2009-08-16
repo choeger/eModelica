@@ -93,3 +93,6 @@ Import-Package: javax.xml.parsers,
  org.osgi.framework;version="1.4",
  org.w3c.dom,
  org.xml.sax
+Bundle-ClassPath: .,
+ im-0.0.2.jar,
+ page-runtime-0.1.4.jar

@@ -63,7 +63,7 @@ public abstract class AbstractExperimentViewPart extends ViewPart implements IEx
 		
 		IMosilabProject project = manager.getMosilabProject(eclipseProject);
 		
-		for (IExperiment experiment : project.getExperiments()) {
+		for (IExperiment experiment : project.getExperimentContainer().getExperiments()) {
 			if (experiment.getUniqueID().equals(experimentID)) {
 				setExperiment(experiment);
 				break;

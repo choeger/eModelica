@@ -5,13 +5,14 @@ package de.tuberlin.uebb.emodelica.model.experiments.impl;
 
 import java.util.List;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 
 import de.tuberlin.uebb.emodelica.model.experiments.IExperiment;
 import de.tuberlin.uebb.emodelica.model.experiments.IExperimentContainer;
 import de.tuberlin.uebb.emodelica.model.project.IModelicaResource;
-import de.tuberlin.uebb.emodelica.model.project.IModelicaResourceChangedListener;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabProject;
 import de.tuberlin.uebb.emodelica.model.project.impl.ModelicaResource;
 
@@ -67,12 +68,41 @@ public class ExperimentContainer extends ModelicaResource implements IExperiment
 
 	@Override
 	public void syncChildren() {
-		/* nothing needed */		
+		experiments.clear();
+		try {
+			for (IResource member : folder.members())
+				if (member instanceof IFile) {
+					IModelicaResource exp = (IModelicaResource) member.getAdapter(IModelicaResource.class);
+				
+					if (exp != null && exp instanceof TextFileExperiment) {
+						experiments.add((IExperiment) exp);
+					}
+				}
+		} catch (CoreException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	@Override
 	protected void doRefresh() {
-				
+	
+		try {
+			for (IResource member : folder.members()) {
+				if (member instanceof IFile) {
+					IFile file = (IFile)member;
+					IModelicaResource exp = (IModelicaResource) file.getAdapter(IModelicaResource.class);
+					if (exp == null || !(exp instanceof IExperiment)) {
+						exp = new TextFileExperiment(this, file);
+					}
+						
+				}
+			}
+		} catch (CoreException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
 	
 }

@@ -25,6 +25,7 @@ import org.eclipse.ui.ide.undo.CreateFileOperation;
 
 import de.tuberlin.uebb.emodelica.model.experiments.ICurve;
 import de.tuberlin.uebb.emodelica.model.experiments.IExperiment;
+import de.tuberlin.uebb.emodelica.model.experiments.IExperimentContainer;
 import de.tuberlin.uebb.emodelica.model.project.IModelicaResource;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabProject;
 import de.tuberlin.uebb.emodelica.model.project.impl.ModelicaResource;
@@ -38,7 +39,7 @@ public class TextFileExperiment extends ModelicaResource implements IExperiment 
 	private List<ICurve> curves = new ArrayList<ICurve>();
 	private Date date = new Date(System.currentTimeMillis());
 	private String name = "experiment " + date.toString();
-	private IMosilabProject project;
+	private IExperimentContainer container;
 	private DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd-HHmmssZ");
 	private IFile file = null;
 
@@ -81,7 +82,7 @@ public class TextFileExperiment extends ModelicaResource implements IExperiment 
 	 */
 	@Override
 	public IMosilabProject getParentProject() {
-		return project;
+		return container.getProject();
 	}
 
 	/**
@@ -90,22 +91,27 @@ public class TextFileExperiment extends ModelicaResource implements IExperiment 
 	 * 
 	 * @param name
 	 *            The name of the experiment
-	 * @param project
-	 *            the parent project
+	 * @param container
+	 *            The IExperimentContainer in which the experiment data is
+	 *            stored
 	 * @param data
 	 *            The data stream (MOSILAB format)
 	 */
-	public TextFileExperiment(String name, IMosilabProject project,
+	public TextFileExperiment(String name, IExperimentContainer container,
 			final InputStream data) {
 		super();
 		try {
 			this.name = name;
-			this.project = project;
-			IFolder expFolder = project.getProject().getFolder(".experiments");
+			this.container = container;
+			container.getExperiments().add(this);
+			
+			IFolder expFolder = (IFolder) container.getResource();
 			if (!expFolder.exists())
 				expFolder.create(true, true, null);
 
+			/* set file */
 			setResource(expFolder.getFile(name + "." + dateFormat.format(date)));
+			
 			CreateFileOperation create = new CreateFileOperation(file, null,
 					data, "save experiment");
 
@@ -121,18 +127,25 @@ public class TextFileExperiment extends ModelicaResource implements IExperiment 
 		}
 	}
 
-	public TextFileExperiment(IMosilabProject project, IFile file) {
+	/**
+	 * @param container
+	 *            The IExperimentContainer in which the experiment data is
+	 *            stored
+	 */
+	public TextFileExperiment(IExperimentContainer container, IFile file) {
 		super();
 		this.name = file.getName().split("\\.")[0];
+		this.container = container;
+		container.getExperiments().add(this);
+		
 		try {
 			this.date = dateFormat.parse(file.getFileExtension());
 		} catch (ParseException e1) {
 			e1.printStackTrace();
 		}
 
-		this.project = project;
 		setResource(file);
-		
+
 		try {
 			setDataFromInputStream(file.getContents());
 		} catch (CoreException e) {
@@ -190,8 +203,12 @@ public class TextFileExperiment extends ModelicaResource implements IExperiment 
 
 	@Override
 	protected void doRefresh() {
-		// TODO Auto-generated method stub
-		
+		try {
+			setDataFromInputStream(file.getContents());
+		} catch (CoreException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	@Override
@@ -201,19 +218,17 @@ public class TextFileExperiment extends ModelicaResource implements IExperiment 
 
 	@Override
 	public IModelicaResource getParent() {
-		return 
+		return container;
 	}
 
 	@Override
 	public IResource getResource() {
-		// TODO Auto-generated method stub
-		return null;
+		return file;
 	}
 
 	@Override
 	public void syncChildren() {
 		// TODO Auto-generated method stub
-		
 	}
 
 }

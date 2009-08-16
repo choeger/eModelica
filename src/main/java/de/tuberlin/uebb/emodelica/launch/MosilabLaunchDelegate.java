@@ -322,9 +322,8 @@ public class MosilabLaunchDelegate implements ILaunchConfigurationDelegate {
 
 								@Override
 								public void run() {
-									TextFileExperiment exp = new TextFileExperiment("experiment",mosilabProject,
-											stream);
-									mosilabProject.getExperiments().add(exp);
+									// create new Experiment, storage will be done in constructors
+										new TextFileExperiment("experiment",mosilabProject.getExperimentContainer(),stream);
 									}
 								}
 					);
