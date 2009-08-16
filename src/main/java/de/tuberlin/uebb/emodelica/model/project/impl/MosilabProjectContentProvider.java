@@ -130,7 +130,7 @@ public class MosilabProjectContentProvider implements IPipelinedTreeContentProvi
 				return false;
 			IModelicaResource resource = (IModelicaResource)arg0;
 			resource.refresh();
-			return !resource.getChildren().isEmpty();
+			return !(resource.getChildren() == null || resource.getChildren().isEmpty());
 		}
 		
 		if (arg0 instanceof IExperimentContainer) {

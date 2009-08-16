@@ -10,6 +10,7 @@ import org.eclipse.core.runtime.QualifiedName;
 
 import de.tuberlin.uebb.emodelica.EModelicaPlugin;
 import de.tuberlin.uebb.emodelica.model.experiments.IExperimentContainer;
+import de.tuberlin.uebb.emodelica.model.experiments.impl.ExperimentContainer;
 
 /**
  * @author choeger
@@ -75,4 +76,10 @@ public interface IMosilabProject extends IModelicaResource {
 	 * @return all experiments of that project
 	 */
 	public IExperimentContainer getExperimentContainer();
+
+	/**
+	 * Set the Experiment Container
+	 * @param container the new Container
+	 */
+	public void setExperimentContainer(IExperimentContainer container);
 }

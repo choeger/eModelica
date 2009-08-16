@@ -31,11 +31,15 @@ public class ExperimentContainer extends ModelicaResource implements IExperiment
 		return experiments;
 	}
 
-	public ExperimentContainer(List<IExperiment> experiments, IMosilabProject parent) {
+	public ExperimentContainer(List<IExperiment> experiments,IMosilabProject project, IFolder parent) {
 		super();
 		this.experiments = experiments;
-		project = parent;
-		setResource(project.getProject().getFolder(".experiments"));
+		this.project = project;
+		setResource(parent);
+	
+		doRefresh();
+		//Do not re-sync on construction - the adapter manager may not be loaded yet
+		//syncChildren();
 	}
 
 	@Override
@@ -73,8 +77,10 @@ public class ExperimentContainer extends ModelicaResource implements IExperiment
 			for (IResource member : folder.members())
 				if (member instanceof IFile) {
 					IModelicaResource exp = (IModelicaResource) member.getAdapter(IModelicaResource.class);
-				
+					System.err.println("syncing: " + member.hashCode() + " == " + exp);
+					
 					if (exp != null && exp instanceof TextFileExperiment) {
+						System.err.println("adding: " + member.getName());
 						experiments.add((IExperiment) exp);
 					}
 				}
@@ -91,8 +97,10 @@ public class ExperimentContainer extends ModelicaResource implements IExperiment
 			for (IResource member : folder.members()) {
 				if (member instanceof IFile) {
 					IFile file = (IFile)member;
+					System.err.println("checking: " + file.hashCode());
 					IModelicaResource exp = (IModelicaResource) file.getAdapter(IModelicaResource.class);
 					if (exp == null || !(exp instanceof IExperiment)) {
+						System.err.println("adding new exp.");
 						exp = new TextFileExperiment(this, file);
 					}
 						

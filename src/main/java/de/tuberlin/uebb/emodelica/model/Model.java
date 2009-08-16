@@ -37,7 +37,12 @@ public class Model {
 		this.input = input;
 		foldablePositions = new ArrayList<Position>();
 		
-		this.rootNode = AbsyToIM.buildFromAbsy((NT_Stored_Definition) rootAbsy);
+		try {
+			this.rootNode = AbsyToIM.buildFromAbsy((NT_Stored_Definition) rootAbsy);
+		} catch (Exception e) {
+			e.printStackTrace();
+			rootNode = null;
+		}
 	}
 
 	/**

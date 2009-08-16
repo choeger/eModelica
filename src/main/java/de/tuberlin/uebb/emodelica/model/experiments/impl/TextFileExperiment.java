@@ -111,7 +111,7 @@ public class TextFileExperiment extends ModelicaResource implements IExperiment 
 
 			/* set file */
 			setResource(expFolder.getFile(name + "." + dateFormat.format(date)));
-			
+			System.err.println("saving experiment to " + file.getFullPath());
 			CreateFileOperation create = new CreateFileOperation(file, null,
 					data, "save experiment");
 
@@ -224,6 +224,17 @@ public class TextFileExperiment extends ModelicaResource implements IExperiment 
 	@Override
 	public IResource getResource() {
 		return file;
+	}
+
+	/* (non-Javadoc)
+	 * @see de.tuberlin.uebb.emodelica.model.project.impl.ModelicaResource#setResource(org.eclipse.core.resources.IResource)
+	 */
+	@Override
+	public void setResource(IResource resource) {
+		if (resource instanceof IFile) {
+			super.setResource(resource);
+			file = (IFile) resource;
+		}
 	}
 
 	@Override

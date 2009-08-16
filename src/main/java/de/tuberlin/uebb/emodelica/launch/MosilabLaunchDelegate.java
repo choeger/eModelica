@@ -18,6 +18,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -40,6 +41,8 @@ import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
 
 import de.tuberlin.uebb.emodelica.EModelicaPlugin;
+import de.tuberlin.uebb.emodelica.model.experiments.IExperiment;
+import de.tuberlin.uebb.emodelica.model.experiments.impl.ExperimentContainer;
 import de.tuberlin.uebb.emodelica.model.experiments.impl.TextFileExperiment;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabProject;
 import de.tuberlin.uebb.emodelica.operations.BuildProcessOperation;
@@ -322,7 +325,23 @@ public class MosilabLaunchDelegate implements ILaunchConfigurationDelegate {
 
 								@Override
 								public void run() {
-									// create new Experiment, storage will be done in constructors
+										System.err.println("creating Experiment in text file.");
+										if (mosilabProject.getExperimentContainer() == null) {
+											IFolder expFolder = mosilabProject.getProject().getFolder(".experiments");
+											if (!expFolder.exists())
+												try {
+													expFolder.create(true, true, null);
+												} catch (CoreException e) {
+													// TODO Auto-generated catch block
+													e.printStackTrace();
+													return;
+												}
+											
+											ExperimentContainer container = new ExperimentContainer(
+													new ArrayList<IExperiment>(),mosilabProject,expFolder);
+											mosilabProject.setExperimentContainer(container);
+										}
+										// create new Experiment, storage will be done in constructors
 										new TextFileExperiment("experiment",mosilabProject.getExperimentContainer(),stream);
 									}
 								}

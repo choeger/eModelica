@@ -18,6 +18,7 @@ import de.tuberlin.uebb.emodelica.model.Model;
 import de.tuberlin.uebb.emodelica.model.ModelLabelProvider;
 import de.tuberlin.uebb.emodelica.model.ModelTreeContentProvider;
 import de.tuberlin.uebb.modelica.im.Node;
+import de.tuberlin.uebb.page.parser.util.Range;
 
 /**
  * @author choeger
@@ -54,7 +55,7 @@ public class ModelicaOutline extends ContentOutlinePage implements IModelChanged
 		if (node == null)
 			return;
 		try {
-			Position pos = input.rangeToFoldablePosition(node.getRange());
+			Position pos = input.rangeToFoldablePosition(new Range(node.getStartOffset(),node.getEndOffset()));
 			System.err.println("setting highlighting to " + pos.offset + ":" + pos.length);
 			editor.setHighlightRange(pos.offset, pos.length, true);
 			//TODO: change this to happen on a flattened model only for identifiers (see java outline)

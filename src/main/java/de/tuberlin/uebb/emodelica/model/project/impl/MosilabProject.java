@@ -64,8 +64,7 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 	private List<IMosilabSource> srcFolders;
 	private IMosilabEnvironment mosilabInstallation = null;
 	private List<Object> children = new ArrayList<Object>();
-	private IExperimentContainer experiments = new ExperimentContainer(
-			new ArrayList<IExperiment>(), this);
+	private IExperimentContainer experiments;
 	private boolean dirty;
 
 	public MosilabProject(IProject project) {
@@ -253,6 +252,7 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 
 	@Override
 	public List<? extends Object> getChildren() {
+		
 		return children;
 	}
 
@@ -261,9 +261,6 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 		// TODO Auto-generated method stub
 		return null;
 	}
-
-	
-	
 	
 	@Override
 	public void syncChildren() {
@@ -271,7 +268,10 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 		
 		if (mosilabInstallation != null)
 			children.add(getMOSILABEnvironment());
-		children.add(experiments);
+		
+		if (experiments != null)
+			children.add(experiments);
+		
 		children.add(libs);
 		for (IMosilabSource src : srcFolders)
 			if (!src.isRoot())
@@ -297,7 +297,6 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 	}
 
 	private void refreshExperiments() throws CoreException {
-		experiments.getExperiments().clear();
 		IFolder expFolder = project.getFolder(".experiments");
 
 		if (expFolder.exists()) {
@@ -305,7 +304,7 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 			if (cont != null && cont instanceof IExperimentContainer) {
 				experiments = (IExperimentContainer) cont;
 			} else {
-				experiments = new ExperimentContainer(new ArrayList<IExperiment>(), this);
+				experiments = new ExperimentContainer(new ArrayList<IExperiment>(), this, expFolder);
 			}
 			experiments.refresh();
 		} else {
@@ -449,5 +448,11 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 			super.setResource(resource);
 			project = (IProject) resource;
 		}
+	}
+
+	@Override
+	public void setExperimentContainer(IExperimentContainer container) {
+		experiments = container;
+		syncChildren();
 	}
 }
