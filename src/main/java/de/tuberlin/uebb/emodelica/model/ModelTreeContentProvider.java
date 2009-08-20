@@ -60,6 +60,7 @@ ITreeContentProvider {
 		}		
 		
 		if (parent instanceof Node) {
+			System.err.println(parent + ": " + ((Node)parent).getChildren().values());
 			return ((Node)parent).getChildren().values().toArray();
 		}
 		return new Object[0];

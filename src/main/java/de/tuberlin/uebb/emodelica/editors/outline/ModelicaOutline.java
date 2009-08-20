@@ -70,6 +70,8 @@ public class ModelicaOutline extends ContentOutlinePage implements IModelChanged
 	@Override
 	public void modelChanged(Model oldModel, Model newModel) {
 		this.input = newModel;
+		if (input != null)
+		System.err.println("setting input to: " + input.getRootNode());
 		
 		//are we there already?
 		if (this.getTreeViewer() == null)

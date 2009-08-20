@@ -6,7 +6,6 @@ package de.tuberlin.uebb.emodelica.ui.properties;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -23,6 +22,7 @@ import de.tuberlin.uebb.emodelica.EModelicaPlugin;
 import de.tuberlin.uebb.emodelica.Images;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabProject;
 import de.tuberlin.uebb.emodelica.model.project.IProjectManager;
+import de.tuberlin.uebb.emodelica.ui.LibrariesSelectionView;
 import de.tuberlin.uebb.emodelica.ui.SourceFolderSelectionView;
 
 /**
@@ -64,6 +64,7 @@ public class MosilabProjectPage extends PropertyPage implements IWorkbenchProper
 		container.setLayoutData(data);
 		
 		createSourceFolderTab(tabFolder);
+		createLibrariesTab(tabFolder);
 		
 		tabFolder.pack();
 		
@@ -112,6 +113,32 @@ public class MosilabProjectPage extends PropertyPage implements IWorkbenchProper
 		setButtonLayoutData(browseButton);
 		
 		sourceFolderTab.setControl(sourceFolderComposite);
+	}
+	
+	
+
+	/**
+	 * @param tabFolder
+	 */
+	private void createLibrariesTab(TabFolder tabFolder) {
+		TabItem sourceFolderTab = new TabItem(tabFolder, SWT.NULL);
+		sourceFolderTab.setText("&Libraries");
+		sourceFolderTab.setImage(Images.LIBRARY_FOLDER_DESCRIPTOR.createImage());
+		
+		Composite librariesComposite = new Composite(tabFolder, SWT.NONE);
+		GridLayout masterLayout = new GridLayout();
+		masterLayout.numColumns = 1;
+		librariesComposite.setLayout(masterLayout);
+		
+		LibrariesSelectionView sourceView = new LibrariesSelectionView(getShell(), project);
+		
+		Composite sourceViewComp = sourceView.getControl(librariesComposite);
+		setButtonLayoutData(sourceView.getAddButton());
+		setButtonLayoutData(sourceView.getEditButton());
+		setButtonLayoutData(sourceView.getDeleteButton());
+		sourceViewComp.setLayoutData(new GridData(GridData.FILL_BOTH));
+		
+		sourceFolderTab.setControl(librariesComposite);
 	}
 	
 	@Override
