@@ -9,9 +9,8 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IAdapterFactory;
 
 import de.tuberlin.uebb.emodelica.model.project.IModelicaPackage;
+import de.tuberlin.uebb.emodelica.model.project.IModelicaResource;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabProject;
-import de.tuberlin.uebb.emodelica.model.project.IMosilabSource;
-import de.tuberlin.uebb.emodelica.model.project.impl.WorkspaceModelicaPackageContainer;
 
 /**
  * @author choeger
@@ -26,20 +25,12 @@ public class ModelicaToResourcesAdapterFactory implements IAdapterFactory {
 	@Override
 	public Object getAdapter(Object arg0, Class arg1) {
 	
-		if (arg0 instanceof IMosilabSource) {
-			IMosilabSource src = (IMosilabSource)arg0;
+		if (arg0 instanceof IModelicaResource) {
+			IModelicaResource resource = (IModelicaResource)arg0;
 			if (arg1.equals(IProject.class)) {
-				return ((IMosilabProject)src.getParent()).getProject();
+				return resource.getResource().getProject();
 			} else if (arg1.isAssignableFrom(IResource.class)) {
-				return src.getBasePath();
-			}
-			return ((IAdaptable)arg0).getAdapter(arg1);
-		} else if (arg0 instanceof IModelicaPackage) {
-			IModelicaPackage pkg = (IModelicaPackage)arg0;
-			if (arg1.equals(IProject.class)) {
-				return pkg.getParent().getAdapter(arg1);
-			} else if (arg1.isAssignableFrom(IResource.class)) {
-				return pkg.getContainer();
+				return resource.getResource();
 			}
 			return ((IAdaptable)arg0).getAdapter(arg1);
 		} else return null;
