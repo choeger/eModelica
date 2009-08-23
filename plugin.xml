@@ -106,12 +106,12 @@
                <instanceof
                      value="org.eclipse.core.resources.IResource">
                </instanceof>
-               <instanceof
-                     value="de.tuberlin.uebb.emodelica.model.experiments.IExperiment">
-               </instanceof>
             </or></possibleChildren>
          <triggerPoints>
             <or>
+               <instanceof
+                     value="de.tuberlin.uebb.emodelica.model.project.IModelicaResource">
+               </instanceof>
                <adapt
                      type="org.eclipse.core.resources.IProject">
                   <test
@@ -120,12 +120,6 @@
                         value="de.tuberlin.uebb.emodelica.nature.mosilab">
                   </test>
                </adapt>
-               <instanceof
-                     value="de.tuberlin.uebb.emodelica.model.project.IModelicaResource">
-               </instanceof>
-               <instanceof
-                     value="de.tuberlin.uebb.emodelica.model.experiments.IExperiment">
-               </instanceof>
             </or>
          </triggerPoints>
          <actionProvider
@@ -133,6 +127,9 @@
                id="de.tuberlin.uebb.emodelica.actions.StandardActions"
                overrides="org.eclipse.ui.navigator.resources.actions.EditActions">
             <enablement>
+               <instanceof
+                     value="de.tuberlin.uebb.emodelica.model.project.IModelicaResource">
+               </instanceof>
             </enablement>
          </actionProvider>
          <commonWizard
