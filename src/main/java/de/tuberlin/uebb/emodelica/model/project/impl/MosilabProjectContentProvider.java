@@ -223,7 +223,7 @@ public class MosilabProjectContentProvider implements IPipelinedTreeContentProvi
 	@Override
 	public PipelinedShapeModification interceptRemove(
 			PipelinedShapeModification removeModification) {
-		
+		System.err.println("remove intercept: " + removeModification.getParent());
 		if (removeModification.getParent() instanceof IResource) {
 			final IResource parent = (IResource)removeModification.getParent();
 			final IModelicaResource res = (IModelicaResource) parent.getAdapter(IModelicaResource.class);

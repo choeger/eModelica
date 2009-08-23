@@ -24,12 +24,14 @@ import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
+import org.eclipse.ui.wizards.datatransfer.SelectFilesOperation;
 
 import de.tuberlin.uebb.emodelica.EModelicaPlugin;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabProject;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabSource;
 import de.tuberlin.uebb.emodelica.model.project.impl.ProjectManager;
 import de.tuberlin.uebb.emodelica.operations.BuildProcessOperation;
+import de.tuberlin.uebb.emodelica.operations.SelectCPPFilesOperation;
 
 /**
  * @author choeger
@@ -40,6 +42,7 @@ public class MosilabBuilder extends IncrementalProjectBuilder {
 	public static final String BUILDER_ID = "de.tuberlin.uebb.emodelica.mosilacBuilder";
 	private BuildProcessOperation buildOp;
 	private IProgressMonitor monitor;
+	private IMosilabProject mosilabProject;
 	/**
 	 * 
 	 */
@@ -86,11 +89,11 @@ public class MosilabBuilder extends IncrementalProjectBuilder {
 			MessageConsole console = findConsole("mosilac console");
 			MessageConsoleStream out = console.newMessageStream();
 
-			IMosilabProject mProject = EModelicaPlugin.getDefault().getProjectManager().getMosilabProject(getProject());
-			if (mProject == null)
+			mosilabProject = EModelicaPlugin.getDefault().getProjectManager().getMosilabProject(getProject());
+			if (mosilabProject == null)
 				return null;
 			
-			buildOp = new BuildProcessOperation(mProject);
+			buildOp = new BuildProcessOperation(mosilabProject);
 			this.monitor = monitor;
 			
 			for (IResource resource : affectedResources) {
@@ -151,18 +154,21 @@ public class MosilabBuilder extends IncrementalProjectBuilder {
 			try {
 				console.activate();
 
-				buildOp.setCommands(new String[] {
-							mosilabProject.getMOSILABEnvironment().getLocation() + 
-							File.separator + "bin" + File.separator + "mkSelector.sh"});
-				
-				buildOp.getEnvironment().put("MOSILAB_ROOT",
-						mosilabProject.getMOSILABEnvironment().getLocation());
-
-				buildOp.run(monitor);
-				
-				followOutput(out, buildOp.getProcessBuilder(), buildOp.getProc());
-
-				out.write("\n mkSelector.sh returned with: " + buildOp.getProc().exitValue() + "\n");
+				SelectCPPFilesOperation selector = new SelectCPPFilesOperation(this.mosilabProject);
+				selector.run(monitor);
+				System.err.println("selector done.");
+//				buildOp.setCommands(new String[] {
+//							mosilabProject.getMOSILABEnvironment().getLocation() + 
+//							File.separator + "bin" + File.separator + "mkSelector.sh"});
+//				
+//				buildOp.getEnvironment().put("MOSILAB_ROOT",
+//						mosilabProject.getMOSILABEnvironment().getLocation());
+//
+//				buildOp.run(monitor);
+//				
+//				followOutput(out, buildOp.getProcessBuilder(), buildOp.getProc());
+//
+//				out.write("\n mkSelector.sh returned with: " + buildOp.getProc().exitValue() + "\n");
 
 				// TODO: fix source file to c++ file mapping
 				buildOp.setCommands(new String[] {

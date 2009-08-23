@@ -38,10 +38,10 @@ public class Model {
 		foldablePositions = new ArrayList<Position>();
 		
 		try {
-			this.rootNode = AbsyToIM.buildFromAbsy((NT_Stored_Definition) rootAbsy);
-			System.err.println("ROOT NODE: " + rootNode.toString());
-			System.err.println("CHILDREN: " + rootNode.getChildren());
-			System.err.println("ERRORS:" + AbsyToIM.getErrorList());
+//			this.rootNode = AbsyToIM.buildFromAbsy((NT_Stored_Definition) rootAbsy);
+//			System.err.println("ROOT NODE: " + rootNode.toString());
+//			System.err.println("CHILDREN: " + rootNode.getChildren());
+//			System.err.println("ERRORS:" + AbsyToIM.getErrorList());
 		} catch (Exception e) {
 			e.printStackTrace();
 			rootNode = null;
