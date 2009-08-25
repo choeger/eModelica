@@ -16,8 +16,9 @@ import de.tuberlin.uebb.emodelica.model.project.IMosilabProject;
 /**
  * @author choeger
  * This class is a WorkspaceModifyOperation that runs given commands inside the output directory of the parent project
+ * This operation will run asynchroneously
  */
-public class BuildProcessOperation extends AbstractBuildProcessOperation {
+public class AsyncBuildProcessOperation extends AbstractBuildProcessOperation {
 
 	protected int runProcess(IProgressMonitor monitor, IFolder sourceFolder) throws IOException {
 		System.err.println("running: " + commands[0]);
@@ -32,6 +33,13 @@ public class BuildProcessOperation extends AbstractBuildProcessOperation {
 		processBuilder.environment().putAll(environment);
 	
 		proc = processBuilder.start();
+		return 0;
+	}
+	
+	/**
+	 * @return
+	 */
+	public int waitForProcess() {
 		try {
 			proc.waitFor();
 		} catch (InterruptedException e) {
@@ -40,7 +48,7 @@ public class BuildProcessOperation extends AbstractBuildProcessOperation {
 		return proc.exitValue();
 	}
 	
-	public BuildProcessOperation(IMosilabProject mosilabProject) {
+	public AsyncBuildProcessOperation(IMosilabProject mosilabProject) {
 		super();
 		this.mosilabProject = mosilabProject;
 	}

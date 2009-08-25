@@ -377,7 +377,7 @@ public class MosilabLaunchDelegate implements ILaunchConfigurationDelegate {
 				// TODO: fix source file to c++ file mapping
 				buildOp.setCommands(new String[] {"make",
 						"-f", makefile.getAbsolutePath(), "-C",
-						getLocation(sourceFolder), "lib", MAIN_TARGET, "P=.",
+						getLocation(sourceFolder), MAIN_TARGET, "P=.",
 						"TARGET=main", "TARGET_LIB=" + project.getName()});
 
 				buildOp.getEnvironment().put("MOSILAB_ROOT",
