@@ -5,28 +5,23 @@ package de.tuberlin.uebb.emodelica.ui.wizards;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.jface.preference.IPreferenceNode;
-import org.eclipse.jface.preference.IPreferencePage;
-import org.eclipse.jface.preference.PreferenceDialog;
-import org.eclipse.jface.preference.PreferenceManager;
-import org.eclipse.jface.preference.PreferenceNode;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Text;
 
 import de.tuberlin.uebb.emodelica.EModelicaPlugin;
-import de.tuberlin.uebb.emodelica.preferences.MOSILABPreferencePage;
+import de.tuberlin.uebb.emodelica.model.project.IMosilabEnvironment;
+import de.tuberlin.uebb.emodelica.ui.widgets.MosilabSelection;
 
 /**
  * @author choeger
@@ -38,6 +33,8 @@ public class NewProjectWizardPage extends WizardPage {
 	private IProject project;
 	private Button useDefaultEnvironment;
 	private Button useDefaultLayout;
+	private MosilabSelection mosilabSelection;
+	private IMosilabEnvironment environment;
 	
 	protected NewProjectWizardPage(String pageName) {
 		super(pageName);
@@ -79,7 +76,7 @@ public class NewProjectWizardPage extends WizardPage {
 		projectLayout.setLayout(gridLayout);
 		useDefaultLayout = new Button(projectLayout, SWT.RADIO);
 		
-		/* TODO: add confidure defaults link */
+		/* TODO: add configure defaults link */
 		useDefaultLayout.setText("&Create separate folders for source files and mosilac output");
 		useDefaultLayout.setSelection(true);
 		
@@ -87,63 +84,24 @@ public class NewProjectWizardPage extends WizardPage {
 	}
 
 	private void createMosilabSelectionGroup(Composite container) {		
-		Group mosilabSelection = new Group(container, SWT.NONE);
-		mosilabSelection.setText("MOSILAB installation");
-		final GridData gridData = new GridData(GridData.FILL_HORIZONTAL);
-		gridData.horizontalSpan = 2;
-		mosilabSelection.setLayoutData(gridData);
-		
-		GridLayout gridLayout = new GridLayout();
-		gridLayout.numColumns = 2;
-		mosilabSelection.setLayout(gridLayout);
-		
-		useDefaultEnvironment = new Button(mosilabSelection, SWT.RADIO);
-		
-		Link confLink = new Link(mosilabSelection, SWT.NONE);
-		confLink.setText("<A>Configure MOSILAB</A>");
-		confLink.addSelectionListener(new SelectionListener() {
+		mosilabSelection = new MosilabSelection(container, SWT.NONE);
+
+		mosilabSelection.addSelectionChangedListener(new ISelectionChangedListener() {
 
 			@Override
-			public void widgetDefaultSelected(SelectionEvent arg0) {
-				openPreferencePage();
+			public void selectionChanged(SelectionChangedEvent event) {
+				updatePageComplete();				
 			}
-
-			@Override
-			public void widgetSelected(SelectionEvent arg0) {
-				openPreferencePage();
-			}
+			
 		});
 		
-		updateDefaultEnvironment();
+		useDefaultEnvironment = mosilabSelection.getUseDefaultEnvironment();
+		setButtonLayoutData(mosilabSelection.getOpenInstalledEnvironments());
+		mosilabSelection.getOpenInstalledEnvironments().pack();
 		useDefaultEnvironment.setSelection(true);
-		setButtonLayoutData(useDefaultEnvironment);
+		mosilabSelection.getAlternateEnvironmentSelection().setEnabled(false);
 		
 		/* TODO: add project specific selection */
-	}
-
-	/**
-	 * @param environmentName
-	 */
-	private void updateDefaultEnvironment() {
-		String environmentName = "none";
-		if (EModelicaPlugin.getDefault().getDefaultMosilabEnvironment() != null)
-			environmentName = EModelicaPlugin.getDefault().getDefaultMosilabEnvironment().getName();
-		
-		useDefaultEnvironment.setText("use default installation (Currently '" + 
-				environmentName + "')");
-	}
-
-	private void openPreferencePage() {
-		IPreferencePage page = new MOSILABPreferencePage();
-		PreferenceManager mgr = new PreferenceManager();
-		IPreferenceNode node = new PreferenceNode("1", page);
-		mgr.addToRoot(node);
-		PreferenceDialog dialog = new PreferenceDialog(this.getShell(), mgr);
-		dialog.create();
-		dialog.setMessage(page.getTitle());
-		dialog.open();
-		updateDefaultEnvironment();
-		updatePageComplete();
 	}
 	
 	/**
@@ -163,6 +121,7 @@ public class NewProjectWizardPage extends WizardPage {
 					public void modifyText(ModifyEvent arg0) {
 						updatePageComplete();
 					}});
+		
 		final GridData gridDataProjectNameField = new GridData(GridData.FILL_HORIZONTAL);
 		projectNameField.setLayoutData(gridDataProjectNameField);
 	}
@@ -170,6 +129,12 @@ public class NewProjectWizardPage extends WizardPage {
 	protected void updatePageComplete() {
 		boolean valid = false;
 		setErrorMessage(null);
+		
+		if (mosilabSelection.getUseDefaultEnvironment().getSelection())
+			environment = EModelicaPlugin.getDefault().getDefaultMosilabEnvironment();
+		else
+			environment = EModelicaPlugin.getDefault().getMosilabEnvironments().get(
+					mosilabSelection.getAlternateEnvironmentSelection().getSelectionIndex());
 		
 		if (projectNameField.getText().isEmpty()) {
 			setDescription("Select a project name");
@@ -198,6 +163,10 @@ public class NewProjectWizardPage extends WizardPage {
 	
 	public boolean useDefaultEnvironment() {
 		return useDefaultEnvironment.getSelection();
+	}
+
+	public IMosilabEnvironment getMOSILABEnvironment() {
+		return environment;
 	}
 
 }

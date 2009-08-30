@@ -180,7 +180,7 @@ public class MosilabEnvironment extends ModelicaResource implements IMosilabEnvi
 
 	@Override
 	public IModelicaResource getParent() {
-		// TODO Auto-generated method stub
+		// Environments do not have unique parents
 		return null;
 	}
 
@@ -212,5 +212,10 @@ public class MosilabEnvironment extends ModelicaResource implements IMosilabEnvi
 	@Override
 	protected void doRefresh() {
 				
+	}
+
+	@Override
+	public void setParent(IModelicaResource newParent) {
+		// Environments do not have unique parents
 	}
 }

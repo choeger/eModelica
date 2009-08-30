@@ -76,5 +76,12 @@ public class LibraryContainer extends ModelicaResource implements ILibraryContai
 		// TODO Auto-generated method stub
 		
 	}
+
+	@Override
+	public void setParent(IModelicaResource newParent) {
+		if (newParent instanceof IMosilabProject)
+			parent = (IMosilabProject) newParent;
+		
+	}
 	
 }

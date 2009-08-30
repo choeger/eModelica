@@ -3,7 +3,6 @@
  */
 package de.tuberlin.uebb.emodelica.ui;
 
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,36 +22,40 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 
+import de.tuberlin.uebb.emodelica.model.project.ILibraryEntry;
 import de.tuberlin.uebb.emodelica.model.project.IModelicaResource;
+import de.tuberlin.uebb.emodelica.model.project.IMosilabEnvironment;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabProject;
 import de.tuberlin.uebb.emodelica.model.project.impl.ModelicaResource;
 import de.tuberlin.uebb.emodelica.model.project.impl.MosilabProjectContentProvider;
 import de.tuberlin.uebb.emodelica.model.project.impl.MosilabProjectLabelProvider;
-import de.tuberlin.uebb.emodelica.ui.dialogs.SelectNewSourceFolderDialog;
+import de.tuberlin.uebb.emodelica.ui.dialogs.MosilabSelectionDialog;
 
 /**
  * @author choeger
- *
+ * 
  */
 public class LibrariesSelectionView implements IUIElement {
 
+	private List<ILibraryEntry> libraries = new ArrayList<ILibraryEntry>();
+	private TreeViewer treeViewer;
+	private Button addButton;
+	private Button editButton;
+	private Button deleteButton;
+	private Shell shell;
+	private IMosilabProject project;
+	private IMosilabEnvironment environment;
+	
 	/**
 	 * 
 	 */
 	private class LibraryOnlyContainer extends ModelicaResource {
-
-		private IMosilabProject project;
 		private List<Object> children = new ArrayList<Object>();
-		
-		/**
-		 * @param project
-		 */
-		public LibraryOnlyContainer(IMosilabProject project) {
-			super();
-			this.project = project;
+
+		public LibraryOnlyContainer() {
 			syncChildren();
 		}
-
+		
 		@Override
 		protected void doRefresh() {
 			// TODO Auto-generated method stub
@@ -76,60 +79,76 @@ public class LibrariesSelectionView implements IUIElement {
 		@Override
 		public void syncChildren() {
 			children.clear();
-			children.add(project.getMOSILABEnvironment());
-			children.addAll(project.getLibraries().getLibraries());
+			children.add(environment);
+			children.addAll(libraries);
 		}
-		
+
+		@Override
+		public void setParent(IModelicaResource newParent) {
+			// TODO Auto-generated method stub
+			
+		}
 	}
-	private IMosilabProject project;
-	private TreeViewer treeViewer;
-	private Button addButton;
-	private Button editButton;
-	private Button deleteButton;
-	private Shell shell;
-	
+
 	public LibrariesSelectionView(Shell parent, IMosilabProject project) {
 		super();
 		this.shell = parent;
 		this.project = project;
+		
+		environment = project.getMOSILABEnvironment();
+		libraries.addAll(project.getLibraries().getLibraries());
+	}
+
+	/**
+	 * @return the libraries
+	 */
+	public List<ILibraryEntry> getLibraries() {
+		return libraries;
+	}
+
+	/**
+	 * @return the environment
+	 */
+	public IMosilabEnvironment getEnvironment() {
+		return environment;
 	}
 
 	public Composite getControl(Composite parent) {
 		Composite container = new Composite(parent, SWT.NONE);
-		
+
 		GridLayout gridLayout = new GridLayout();
 		gridLayout.numColumns = 2;
 		container.setLayout(gridLayout);
-		
+
 		treeViewer = new TreeViewer(container);
 		treeViewer.setContentProvider(new MosilabProjectContentProvider());
 		treeViewer.setLabelProvider(new MosilabProjectLabelProvider());
-		treeViewer.setInput(new LibraryOnlyContainer(project));
-		treeViewer.expandAll();		
-		
-		GridData data = new GridData(GridData.FILL_HORIZONTAL | GridData.FILL_VERTICAL);
+		treeViewer.setInput(new LibraryOnlyContainer());
+		treeViewer.expandAll();
+
+		GridData data = new GridData(GridData.FILL_HORIZONTAL
+				| GridData.FILL_VERTICAL);
 		data.horizontalSpan = 1;
-		
+
 		treeViewer.getControl().setLayoutData(data);
 		treeViewer.addSelectionChangedListener(new ISelectionChangedListener() {
 			@Override
 			public void selectionChanged(SelectionChangedEvent arg0) {
-				updateEnabled();				
-			}});
-		
-		createButtonGroup(container);		
-		
+				updateEnabled();
+			}
+		});
+
+		createButtonGroup(container);
+
 		updateEnabled();
-		
+
 		return container;
 	}
-	
+
 	private void addNew() {
-		SelectNewSourceFolderDialog dlg = new  SelectNewSourceFolderDialog(shell, project);
-		dlg.open();
-		treeViewer.setInput(project);
+
 	}
-	
+
 	private void updateEnabled() {
 		ISelection selection = treeViewer.getSelection();
 		if (selection.isEmpty()) {
@@ -149,17 +168,17 @@ public class LibrariesSelectionView implements IUIElement {
 		GridLayout layout = new GridLayout();
 		layout.numColumns = 1;
 		group.setLayout(layout);
-				
+
 		GridData data = new GridData();
 		data.verticalAlignment = SWT.TOP;
 		data.grabExcessHorizontalSpace = false;
 		data.grabExcessVerticalSpace = true;
-		
-		group.setLayoutData(data);		
-		
+
+		group.setLayoutData(data);
+
 		final GridData buttonData = new GridData();
 		buttonData.grabExcessHorizontalSpace = true;
-		
+
 		addButton = new Button(group, SWT.PUSH);
 		addButton.setLayoutData(data);
 		addButton.setText(JFaceResources.getString("ListEditor.add"));
@@ -173,20 +192,50 @@ public class LibrariesSelectionView implements IUIElement {
 			@Override
 			public void widgetSelected(SelectionEvent arg0) {
 				addNew();
-			}});
+			}
+		});
 		addButton.pack();
-		
+
 		editButton = new Button(group, SWT.PUSH);
 		editButton.setLayoutData(data);
 		editButton.setText("&Edit...");
 		editButton.setLayoutData(buttonData);
 		editButton.pack();
-		
+		editButton.addSelectionListener(new SelectionListener() {
+
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+				editClicked();
+			}
+
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				editClicked();
+			}
+		});
+
 		deleteButton = new Button(group, SWT.PUSH);
 		deleteButton.setLayoutData(data);
 		deleteButton.setText(JFaceResources.getString("ListEditor.remove"));
 		deleteButton.setLayoutData(buttonData);
 		deleteButton.pack();
+	}
+
+	protected void editClicked() {
+		ISelection selection = treeViewer.getSelection();
+		if (!selection.isEmpty() && (selection instanceof IStructuredSelection)) {
+			Object selected = ((IStructuredSelection) selection)
+					.getFirstElement();
+			if (selected instanceof IMosilabEnvironment) {
+				MosilabSelectionDialog dlg = new MosilabSelectionDialog(shell,
+						(IMosilabEnvironment) selected);
+				dlg.open();
+				if (dlg.getReturnCode() == MosilabSelectionDialog.OK) {
+					project.setMOSILABEnvironment(dlg.getSelectedEnvironment());
+					treeViewer.setInput(project);
+				}
+			}
+		}
 	}
 
 	/**
@@ -215,5 +264,5 @@ public class LibrariesSelectionView implements IUIElement {
 	 */
 	public Button getDeleteButton() {
 		return deleteButton;
-	}	
+	}
 }

@@ -46,6 +46,8 @@ import de.tuberlin.uebb.emodelica.model.project.IMosilabEnvironment;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabProject;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabSource;
 import de.tuberlin.uebb.emodelica.preferences.PreferenceConstants;
+import de.tuberlin.uebb.emodelica.util.ModelicaToResourcesAdapterFactory;
+import de.tuberlin.uebb.emodelica.util.ResourcesToModelicaAdapterFactory;
 
 /**
  * @author choeger
@@ -258,7 +260,7 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 
 	@Override
 	public IModelicaResource getParent() {
-		// TODO Auto-generated method stub
+		// Projects don't have Modelica parents
 		return null;
 	}
 	
@@ -332,8 +334,11 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 		WorkspaceModifyOperation syncOp = new WorkspaceModifyOperation() {
 
 			@Override
-			protected void execute(IProgressMonitor arg0) throws CoreException,
+			protected void execute(IProgressMonitor monitor) throws CoreException,
 					InvocationTargetException, InterruptedException {
+				for (IMosilabSource source : srcFolders)
+					if (!source.getResource().exists())
+						((IFolder)source.getResource()).create(true, true, monitor);
 				writeBackProperties();
 			}
 		};
@@ -454,5 +459,28 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 	public void setExperimentContainer(IExperimentContainer container) {
 		experiments = container;
 		syncChildren();
+	}
+
+	@Override
+	public void setMOSILABEnvironment(IMosilabEnvironment environment) {
+		this.mosilabInstallation = environment;
+		syncChildren();
+	}
+
+	@Override
+	public void addSrc(IMosilabSource src) {
+		srcFolders.add(src);
+		src.setParent(this);
+	}
+
+	@Override
+	public void removeSource(IMosilabSource src) {
+		srcFolders.remove(src);
+		ResourcesToModelicaAdapterFactory.unMap(src.getResource());
+	}
+
+	@Override
+	public void setParent(IModelicaResource newParent) {
+		//Projects don't have parents		
 	}
 }

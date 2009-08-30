@@ -242,4 +242,10 @@ public class TextFileExperiment extends ModelicaResource implements IExperiment 
 		// TODO Auto-generated method stub
 	}
 
+	@Override
+	public void setParent(IModelicaResource newParent) {
+		if (newParent instanceof IExperimentContainer)
+			container = (IExperimentContainer) newParent;
+	}
+
 }

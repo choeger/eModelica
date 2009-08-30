@@ -15,6 +15,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.wizards.newresource.BasicNewProjectResourceWizard;
 
 import de.tuberlin.uebb.emodelica.EModelicaPlugin;
+import de.tuberlin.uebb.emodelica.model.project.IMosilabEnvironment;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabProject;
 import de.tuberlin.uebb.emodelica.model.project.IProjectManager;
 
@@ -71,6 +72,9 @@ public class NewProjectWizard extends Wizard implements INewWizard, IExecutableE
 			newMosilabProject.setOutputFolder("c++/");
 			newMosilabProject.addSrc("src");
 		}
+		
+		IMosilabEnvironment environment = newProjectPage.getMOSILABEnvironment();
+		newMosilabProject.setMOSILABEnvironment(environment);
 		
 		BasicNewProjectResourceWizard.updatePerspective(configElement);
 		return true;

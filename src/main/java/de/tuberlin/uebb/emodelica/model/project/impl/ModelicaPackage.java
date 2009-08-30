@@ -123,4 +123,9 @@ public class ModelicaPackage extends ModelicaResource  implements IModelicaPacka
 			completePath = (IContainer) resource;
 		}
 	}
+
+	@Override
+	public void setParent(IModelicaResource newParent) {
+		this.parent = newParent;		
+	}
 }

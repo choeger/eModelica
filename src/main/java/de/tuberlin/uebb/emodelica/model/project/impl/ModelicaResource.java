@@ -76,6 +76,12 @@ public abstract class ModelicaResource extends PlatformObject implements IModeli
 		ResourcesToModelicaAdapterFactory.map(resource, this);
 	}
 	
-	
-
+	/* (non-Javadoc)
+	 * @see java.lang.Object#finalize()
+	 */
+	@Override
+	protected void finalize() throws Throwable {
+		ResourcesToModelicaAdapterFactory.unMap(getResource());
+		super.finalize();
+	}
 }

@@ -4,6 +4,11 @@
 package de.tuberlin.uebb.emodelica.ui;
 
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -19,7 +24,12 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 
+import de.tuberlin.uebb.emodelica.model.project.IModelicaResource;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabProject;
+import de.tuberlin.uebb.emodelica.model.project.IMosilabSource;
+import de.tuberlin.uebb.emodelica.model.project.impl.ModelicaResource;
+import de.tuberlin.uebb.emodelica.model.project.impl.MosilabProjectContentProvider;
+import de.tuberlin.uebb.emodelica.model.project.impl.MosilabProjectLabelProvider;
 import de.tuberlin.uebb.emodelica.model.project.impl.SourcePathContentProvider;
 import de.tuberlin.uebb.emodelica.model.project.impl.SourcePathLabelProvider;
 import de.tuberlin.uebb.emodelica.ui.dialogs.SelectNewSourceFolderDialog;
@@ -30,17 +40,63 @@ import de.tuberlin.uebb.emodelica.ui.dialogs.SelectNewSourceFolderDialog;
  */
 public class SourceFolderSelectionView implements IUIElement {
 
+	private final SourcesOnlyContainer input;
 	private IMosilabProject project;
+	private List<IMosilabSource> sources = new ArrayList<IMosilabSource>();
 	private TreeViewer treeViewer;
 	private Button addButton;
 	private Button editButton;
 	private Button deleteButton;
 	private Shell shell;
 	
+	/**
+	 * 
+	 */
+	private class SourcesOnlyContainer extends ModelicaResource {
+		private List<Object> children = new ArrayList<Object>();
+
+		public SourcesOnlyContainer() {
+			syncChildren();
+		}
+		
+		@Override
+		protected void doRefresh() {
+			// nothing to do...
+		}
+
+		@Override
+		public List<? extends Object> getChildren() {
+			return children;
+		}
+
+		@Override
+		public IModelicaResource getParent() {
+			return project;
+		}
+
+		@Override
+		public IResource getResource() {
+			return null;
+		}
+
+		@Override
+		public void syncChildren() {
+			children.clear();
+			children.addAll(sources);
+		}
+
+		@Override
+		public void setParent(IModelicaResource newParent) {
+			
+		}
+	}
+	
 	public SourceFolderSelectionView(Shell parent, IMosilabProject project) {
 		super();
 		this.shell = parent;
 		this.project = project;
+		sources.addAll(project.getSrcFolders());
+		input = new SourcesOnlyContainer();
 	}
 
 	public Composite getControl(Composite parent) {
@@ -51,10 +107,10 @@ public class SourceFolderSelectionView implements IUIElement {
 		container.setLayout(gridLayout);
 		
 		treeViewer = new TreeViewer(container);
-		treeViewer.setContentProvider(new SourcePathContentProvider());
-		treeViewer.setLabelProvider(new SourcePathLabelProvider());
-		treeViewer.setInput(project);
-		treeViewer.expandAll();		
+		treeViewer.setContentProvider(new MosilabProjectContentProvider());
+		treeViewer.setLabelProvider(new MosilabProjectLabelProvider());
+		treeViewer.setInput(input);
+		treeViewer.expandAll();
 		
 		GridData data = new GridData(GridData.FILL_HORIZONTAL | GridData.FILL_VERTICAL);
 		data.horizontalSpan = 1;
@@ -73,10 +129,18 @@ public class SourceFolderSelectionView implements IUIElement {
 		return container;
 	}
 	
+	/**
+	 * @return the sources
+	 */
+	public List<IMosilabSource> getSources() {
+		return sources;
+	}
+
 	private void addNew() {
-		SelectNewSourceFolderDialog dlg = new  SelectNewSourceFolderDialog(shell, project);
+		SelectNewSourceFolderDialog dlg = 
+			new SelectNewSourceFolderDialog(shell, sources, project.getProject());
 		dlg.open();
-		treeViewer.setInput(project);
+		input.syncChildren();
 	}
 	
 	private void updateEnabled() {

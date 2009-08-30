@@ -15,6 +15,13 @@ import org.eclipse.core.runtime.IAdaptable;
 public interface IModelicaResource extends IAdaptable {
 
 	/**
+	 * Set the parent of that IModelicaResource
+	 * Note: This method must not remove the resource from the old parents children
+	 * @param newParent
+	 */
+	public void setParent(IModelicaResource newParent);
+	
+	/**
 	 * 
 	 * @return the parent of that IModelicaResource
 	 */

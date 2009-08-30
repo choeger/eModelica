@@ -23,7 +23,7 @@ import de.tuberlin.uebb.emodelica.model.project.impl.ModelicaResource;
 public class ExperimentContainer extends ModelicaResource implements IExperimentContainer {
 
 	final private List<IExperiment> experiments;
-	final private IMosilabProject project;
+	private IMosilabProject project;
 	private IFolder folder;
 	
 	@Override
@@ -111,6 +111,12 @@ public class ExperimentContainer extends ModelicaResource implements IExperiment
 			e.printStackTrace();
 		}
 		
+	}
+
+	@Override
+	public void setParent(IModelicaResource newParent) {
+		if (newParent instanceof IMosilabProject)
+			project = (IMosilabProject) newParent;
 	}
 	
 }

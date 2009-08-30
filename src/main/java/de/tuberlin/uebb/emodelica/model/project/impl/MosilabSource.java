@@ -10,6 +10,8 @@ import org.eclipse.core.resources.IResource;
 import de.tuberlin.uebb.emodelica.model.project.IModelicaResource;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabProject;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabSource;
+import de.tuberlin.uebb.emodelica.util.ModelicaToResourcesAdapterFactory;
+import de.tuberlin.uebb.emodelica.util.ResourcesToModelicaAdapterFactory;
 
 /**
  * @author choeger
@@ -51,5 +53,11 @@ public class MosilabSource extends WorkspaceModelicaPackageContainer implements
 			return ".";
 		else
 			return getResource().getProjectRelativePath().toString();
+	}
+
+	@Override
+	public void setParent(IModelicaResource newParent) {
+		if (newParent instanceof IMosilabProject)
+			parent = (IMosilabProject) newParent;
 	}
 }

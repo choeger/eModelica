@@ -1,6 +1,8 @@
 package de.tuberlin.uebb.emodelica.ui.wizards;
 
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -11,17 +13,15 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
-import de.tuberlin.uebb.emodelica.model.project.IMosilabProject;
-
 public class NewSourceFolderWizardPage extends WizardPage implements ModifyListener {
 
 	private Text pathField;
-	private IMosilabProject project;
 	private IFolder newFolder;
+	private IContainer container;
 	
-	protected NewSourceFolderWizardPage(String pageName, IMosilabProject project) {
+	protected NewSourceFolderWizardPage(String pageName, IContainer container) {
 		super(pageName);
-		this.project = project;
+		this.container = container;
 	}
 
 	@Override
@@ -42,13 +42,13 @@ public class NewSourceFolderWizardPage extends WizardPage implements ModifyListe
 		pathField.addModifyListener(this);
 	
 		setTitle("Source Folder");
-		setMessage("Add a new source folder relative to '" + project.getProject().getFullPath() + "'");
+		setMessage("Add a new source folder");
 		//TODO: setImage
 	}
 
 	@Override
 	public void modifyText(ModifyEvent arg0) {
-		setMessage("Add a new source folder relative to '" + project.getProject().getFullPath() + "'");
+		setMessage("Add a new source folder");
 		setErrorMessage(null);
 		if (pathField.getText().isEmpty()) {
 			setMessage("Select a new source folder.");
@@ -56,7 +56,7 @@ public class NewSourceFolderWizardPage extends WizardPage implements ModifyListe
 			return;
 		}
 		
-		newFolder = project.getProject().getFolder(pathField.getText());
+		newFolder = container.getFolder(new Path(pathField.getText()));
 		
 		if (newFolder.exists()) {
 			setErrorMessage("The folder '" + newFolder.getFullPath() + "' already exists.");

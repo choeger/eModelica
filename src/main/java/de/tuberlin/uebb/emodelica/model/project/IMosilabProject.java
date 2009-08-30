@@ -82,4 +82,24 @@ public interface IMosilabProject extends IModelicaResource {
 	 * @param container the new Container
 	 */
 	public void setExperimentContainer(IExperimentContainer container);
+
+	/**
+	 * set the MOSILAB environment that shall be used
+	 * @param environment
+	 */
+	public void setMOSILABEnvironment(IMosilabEnvironment environment);
+
+	/**
+	 * remove that Source Folder from the given project and unmap all references to it
+	 * This method is not guaranteed to run syncChildren() for performance reasons!
+	 * @param src
+	 */
+	public void removeSource(IMosilabSource src);
+
+	/**
+	 * Add a source folder to that project and update all needed references
+	 * This method is not guaranteed to run syncChildren() for performance reasons!
+	 * @param src
+	 */
+	public void addSrc(IMosilabSource src);
 }

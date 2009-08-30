@@ -3,17 +3,16 @@
  */
 package de.tuberlin.uebb.emodelica.ui.dialogs;
 
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.Dialog;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.jface.wizard.WizardDialog;
@@ -29,8 +28,9 @@ import org.eclipse.ui.model.WorkbenchContentProvider;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
 
 import de.tuberlin.uebb.emodelica.EModelicaPlugin;
-import de.tuberlin.uebb.emodelica.model.project.IMosilabProject;
+import de.tuberlin.uebb.emodelica.model.project.IModelicaResource;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabSource;
+import de.tuberlin.uebb.emodelica.model.project.impl.MosilabSource;
 import de.tuberlin.uebb.emodelica.ui.wizards.NewSourceFolderResourceWizard;
 
 /**
@@ -39,40 +39,45 @@ import de.tuberlin.uebb.emodelica.ui.wizards.NewSourceFolderResourceWizard;
  */
 public class SelectNewSourceFolderDialog extends CheckedTreeSelectionDialog {
 
-	private IMosilabProject project;
-	private List<IFolder> createdFolders = new ArrayList<IFolder>();
+	private List<IMosilabSource> sources;
+	private IContainer rootContainer;
 
 	private class NoSourceFolderFilter extends ViewerFilter {
 		@Override
 		public boolean select(Viewer arg0, Object parent, Object element) {
-			if (element instanceof IProject)
-				return true;
-
 			if (element instanceof IFolder) {
-				return true;
+				return ((IFolder) element).getAdapter(IModelicaResource.class) == null;
 			}
-			return false;
+			return true;
 		}
 
 	}
 
-	public SelectNewSourceFolderDialog(Shell parent, final IMosilabProject project) {
+	public SelectNewSourceFolderDialog(Shell parent,
+			final List<IMosilabSource> sources, IContainer rootContainer) {
 		super(parent, new WorkbenchLabelProvider(),
 				new WorkbenchContentProvider());
-		setInput(project.getProject());
+
+		this.rootContainer = rootContainer;
+		setInput(rootContainer);
+
+		this.sources = sources;
+
 		setTitle("Source Folder Selection");
 		setMessage("&Select the source folder");
-		this.project = project;
+
 		this.setContainerMode(true);
+		this.addFilter(new NoSourceFolderFilter());
+		
 		this.setValidator(new ISelectionStatusValidator() {
 			@Override
 			public IStatus validate(Object[] arg0) {
-				for (IMosilabSource src : project.getSrcFolders())
+				for (IMosilabSource src : sources)
 					getTreeViewer().setGrayChecked(src.getBasePath(), true);
-				
+
 				return new Status(IStatus.OK, EModelicaPlugin.PLUGIN_ID, "");
 			}
-			
+
 		});
 	}
 
@@ -93,13 +98,12 @@ public class SelectNewSourceFolderDialog extends CheckedTreeSelectionDialog {
 				addNew();
 			}
 		});
-		this.getTreeViewer().addFilter(new NoSourceFolderFilter());
-		
+
 		return parentControl;
 	}
 
 	protected void addNew() {
-		NewSourceFolderResourceWizard wizard = new NewSourceFolderResourceWizard(project);
+		NewSourceFolderResourceWizard wizard = new NewSourceFolderResourceWizard(rootContainer);
 		WizardDialog dialog = new WizardDialog(this.getShell(), wizard);
 		int ret = dialog.open();
 		System.err.println(ret);
@@ -112,34 +116,29 @@ public class SelectNewSourceFolderDialog extends CheckedTreeSelectionDialog {
 				e.printStackTrace();
 				return;
 			}
-			createdFolders.add(folder);
+
 			getTreeViewer().refresh();
 		}
 	}
-	
-	@Override
-	protected void cancelPressed() {
-		for (IFolder folder : createdFolders)
-			try {
-				folder.delete(true, null);
-			} catch (CoreException e) {
-				e.printStackTrace();
-			}
-		super.cancelPressed();
-	}
-	
+
 	@Override
 	protected void okPressed() {
-		project.getSrcFolders().clear();
-		
-		IStructuredSelection selection = (IStructuredSelection) this.getTreeViewer().getSelection();
-		for (Iterator<?> iter = selection.iterator();iter.hasNext();) {
-			Object selected = iter.next();
-			if (selected instanceof IFolder)
-				project.addSrc(((IFolder)selected).getName());
+		try {
+			for (IResource member : rootContainer.members()) {
+				if (member instanceof IFolder) {
+					final boolean checked = getTreeViewer().getChecked(member);
+					final Object modelicaResource = member
+							.getAdapter(IModelicaResource.class);
+					if (checked && modelicaResource == null) {
+						sources.add(new MosilabSource(null, (IFolder) member));
+					}
+				}
+			}
+		} catch (CoreException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-			
-		project.syncChildren();
+
 		super.okPressed();
 	}
 }

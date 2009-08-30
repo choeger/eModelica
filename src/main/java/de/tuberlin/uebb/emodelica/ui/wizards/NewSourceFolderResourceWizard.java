@@ -3,11 +3,9 @@
  */
 package de.tuberlin.uebb.emodelica.ui.wizards;
 
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.wizard.Wizard;
-
-import de.tuberlin.uebb.emodelica.model.project.IMosilabProject;
 
 /**
  * @author choeger
@@ -16,12 +14,10 @@ import de.tuberlin.uebb.emodelica.model.project.IMosilabProject;
 public class NewSourceFolderResourceWizard extends Wizard {
 
 	private NewSourceFolderWizardPage page;
-	private IMosilabProject project;
 	private IFolder sourceFolder;
 	
-	public NewSourceFolderResourceWizard(IMosilabProject project) {
-		this.project = project;
-		this.page = new NewSourceFolderWizardPage("New Source Folder", project);
+	public NewSourceFolderResourceWizard(IContainer container) {
+		this.page = new NewSourceFolderWizardPage("New Source Folder", container);
 	}
 	
 	@Override

@@ -68,4 +68,9 @@ public class LibraryEntry extends WorkspaceModelicaPackageContainer implements I
 		// TODO Check for linked resource
 		return null;
 	}
+
+	@Override
+	public void setParent(IModelicaResource newParent) {
+		this.parent = newParent;
+	}
 }
