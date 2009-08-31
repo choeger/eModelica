@@ -231,8 +231,8 @@ public class LibrariesSelectionView implements IUIElement {
 						(IMosilabEnvironment) selected);
 				dlg.open();
 				if (dlg.getReturnCode() == MosilabSelectionDialog.OK) {
-					project.setMOSILABEnvironment(dlg.getSelectedEnvironment());
-					treeViewer.setInput(project);
+					environment = dlg.getSelectedEnvironment();
+					treeViewer.refresh();
 				}
 			}
 		}

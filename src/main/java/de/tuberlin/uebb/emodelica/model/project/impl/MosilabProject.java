@@ -326,19 +326,23 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 			}
 		IMosilabSource source = new MosilabSource(this, folder);
 		this.srcFolders.add(source);
+		
+		try {
+			source.getResource().touch(null);
+		} catch (CoreException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	@Override
-	public void writeBackPropertiesAsync() {
+	public void writeBackPropertiesGuarded() {
 
 		WorkspaceModifyOperation syncOp = new WorkspaceModifyOperation() {
 
 			@Override
 			protected void execute(IProgressMonitor monitor) throws CoreException,
 					InvocationTargetException, InterruptedException {
-				for (IMosilabSource source : srcFolders)
-					if (!source.getResource().exists())
-						((IFolder)source.getResource()).create(true, true, monitor);
 				writeBackProperties();
 			}
 		};
@@ -351,8 +355,9 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 			e.printStackTrace();
 		}
 	}
-
-	private void writeBackProperties() {
+	
+	@Override
+	public void writeBackProperties() {
 		try {
 			PipedInputStream in = new PipedInputStream();
 			PipedOutputStream out = new PipedOutputStream(in);
@@ -471,12 +476,25 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 	public void addSrc(IMosilabSource src) {
 		srcFolders.add(src);
 		src.setParent(this);
+		try {
+			src.getResource().touch(null);
+		} catch (CoreException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	@Override
 	public void removeSource(IMosilabSource src) {
 		srcFolders.remove(src);
+		src.setParent(null);
 		ResourcesToModelicaAdapterFactory.unMap(src.getResource());
+		try {
+			src.getResource().touch(null);
+		} catch (CoreException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	@Override

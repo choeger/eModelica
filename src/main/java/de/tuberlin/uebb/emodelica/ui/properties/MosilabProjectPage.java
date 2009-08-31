@@ -3,9 +3,12 @@
  */
 package de.tuberlin.uebb.emodelica.ui.properties;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -18,6 +21,7 @@ import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchPropertyPage;
+import org.eclipse.ui.actions.WorkspaceModifyOperation;
 import org.eclipse.ui.dialogs.PropertyPage;
 
 import de.tuberlin.uebb.emodelica.EModelicaPlugin;
@@ -157,23 +161,42 @@ public class MosilabProjectPage extends PropertyPage implements
 
 	@Override
 	public boolean performOk() {
-		if (sourceView != null && libsView != null) {
-			project.setMOSILABEnvironment(libsView.getEnvironment());
-			
-			//safe remove! or concurrent mod. exception!	
-			ArrayList<IMosilabSource> oldSources = new ArrayList<IMosilabSource>();
-			oldSources.addAll(project.getSrcFolders());
-			for (IMosilabSource src : oldSources)
-				project.removeSource(src);
-				
-			for (IMosilabSource src : sourceView.getSources())
-				project.addSrc(src);			
-			
-			// TODO: add libs likewise
-			project.syncChildren();
-			// store complex properties
-			project.writeBackPropertiesAsync();
+		project.setMOSILABEnvironment(libsView.getEnvironment());
+
+		WorkspaceModifyOperation op = new WorkspaceModifyOperation() {
+
+			@Override
+			protected void execute(IProgressMonitor monitor)
+					throws CoreException, InvocationTargetException,
+					InterruptedException {
+				// safe remove! or concurrent mod. exception!
+				ArrayList<IMosilabSource> oldSources = new ArrayList<IMosilabSource>();
+				oldSources.addAll(project.getSrcFolders());
+				for (IMosilabSource src : oldSources)
+					project.removeSource(src);
+
+				for (IMosilabSource src : sourceView.getSources())
+					project.addSrc(src);
+
+				project.setMOSILABEnvironment(libsView.getEnvironment());
+				// TODO: add libs likewise
+				project.syncChildren();
+				// store complex properties
+				project.writeBackProperties();
+				project.getProject().touch(monitor);
+			}
+		};
+
+		try {
+			op.run(null);
+		} catch (InvocationTargetException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
+		
 		return super.performOk();
 	}
 
@@ -194,7 +217,7 @@ public class MosilabProjectPage extends PropertyPage implements
 			if (lib.getParent() == null)
 				lib.setResource(null);
 		}
-		sourceView = null;
+		libsView = null;
 
 		return super.performCancel();
 	}

@@ -89,7 +89,7 @@ public class ProjectManager implements IProjectManager, IResourceChangeListener 
 				IProject project = (IProject)event.getResource();
 				if (project.getNature(MOSILAB_PROJECT_NATURE) != null) {
 					IMosilabProject mpj = getMosilabProject(project);
-					mpj.writeBackPropertiesAsync();
+					mpj.writeBackPropertiesGuarded();
 				}
 			} else if (event.getDelta() != null) {
 				event.getDelta().accept(visitor);

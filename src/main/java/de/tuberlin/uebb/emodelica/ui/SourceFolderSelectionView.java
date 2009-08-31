@@ -7,13 +7,13 @@ package de.tuberlin.uebb.emodelica.ui;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
@@ -30,8 +30,7 @@ import de.tuberlin.uebb.emodelica.model.project.IMosilabSource;
 import de.tuberlin.uebb.emodelica.model.project.impl.ModelicaResource;
 import de.tuberlin.uebb.emodelica.model.project.impl.MosilabProjectContentProvider;
 import de.tuberlin.uebb.emodelica.model.project.impl.MosilabProjectLabelProvider;
-import de.tuberlin.uebb.emodelica.model.project.impl.SourcePathContentProvider;
-import de.tuberlin.uebb.emodelica.model.project.impl.SourcePathLabelProvider;
+import de.tuberlin.uebb.emodelica.model.project.impl.PathConfigContentProvider;
 import de.tuberlin.uebb.emodelica.ui.dialogs.SelectNewSourceFolderDialog;
 
 /**
@@ -52,7 +51,7 @@ public class SourceFolderSelectionView implements IUIElement {
 	/**
 	 * 
 	 */
-	private class SourcesOnlyContainer extends ModelicaResource {
+	public class SourcesOnlyContainer extends ModelicaResource {
 		private List<Object> children = new ArrayList<Object>();
 
 		public SourcesOnlyContainer() {
@@ -107,10 +106,9 @@ public class SourceFolderSelectionView implements IUIElement {
 		container.setLayout(gridLayout);
 		
 		treeViewer = new TreeViewer(container);
-		treeViewer.setContentProvider(new MosilabProjectContentProvider());
+		treeViewer.setContentProvider(new PathConfigContentProvider());
 		treeViewer.setLabelProvider(new MosilabProjectLabelProvider());
 		treeViewer.setInput(input);
-		treeViewer.expandAll();
 		
 		GridData data = new GridData(GridData.FILL_HORIZONTAL | GridData.FILL_VERTICAL);
 		data.horizontalSpan = 1;
@@ -141,6 +139,7 @@ public class SourceFolderSelectionView implements IUIElement {
 			new SelectNewSourceFolderDialog(shell, sources, project.getProject());
 		dlg.open();
 		input.syncChildren();
+		treeViewer.refresh();
 	}
 	
 	private void updateEnabled() {
@@ -199,7 +198,28 @@ public class SourceFolderSelectionView implements IUIElement {
 		deleteButton.setLayoutData(data);
 		deleteButton.setText(JFaceResources.getString("ListEditor.remove"));
 		deleteButton.setLayoutData(buttonData);
+		
+		deleteButton.addSelectionListener(new SelectionListener(){
+
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+				deleteSrc();
+			}
+
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				deleteSrc();
+			}});
+		
 		deleteButton.pack();
+	}
+
+	protected void deleteSrc() {
+		if (treeViewer.getSelection() instanceof StructuredSelection) {
+			sources.remove(((StructuredSelection)treeViewer.getSelection()).getFirstElement());
+		}
+		input.syncChildren();
+		treeViewer.refresh();
 	}
 
 	/**

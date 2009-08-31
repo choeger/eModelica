@@ -3,16 +3,17 @@
  */
 package de.tuberlin.uebb.emodelica.ui.dialogs;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.jface.wizard.WizardDialog;
@@ -42,6 +43,8 @@ public class SelectNewSourceFolderDialog extends CheckedTreeSelectionDialog {
 	private List<IMosilabSource> sources;
 	private IContainer rootContainer;
 
+	private Set<IFolder> newFolders = new HashSet<IFolder>();
+	
 	private class NoSourceFolderFilter extends ViewerFilter {
 		@Override
 		public boolean select(Viewer arg0, Object parent, Object element) {
@@ -109,34 +112,41 @@ public class SelectNewSourceFolderDialog extends CheckedTreeSelectionDialog {
 		System.err.println(ret);
 		if (ret == Dialog.OK) {
 			IFolder folder = wizard.getSourceFolder();
-			System.err.println("creating new folder '" + folder + "'");
 			try {
-				folder.create(true, true, null);
+				folder.create(true,true,null);
+				newFolders.add(folder);
 			} catch (CoreException e) {
 				e.printStackTrace();
-				return;
 			}
-
-			getTreeViewer().refresh();
+			getTreeViewer().refresh();	
 		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.dialogs.CheckedTreeSelectionDialog#cancelPressed()
+	 */
+	@Override
+	protected void cancelPressed() {
+		//cleanup
+		for (IFolder folder : newFolders)
+			try {
+				folder.delete(true, null);
+			} catch (CoreException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		
+		super.cancelPressed();
 	}
 
 	@Override
 	protected void okPressed() {
-		try {
-			for (IResource member : rootContainer.members()) {
-				if (member instanceof IFolder) {
-					final boolean checked = getTreeViewer().getChecked(member);
-					final Object modelicaResource = member
-							.getAdapter(IModelicaResource.class);
-					if (checked && modelicaResource == null) {
-						sources.add(new MosilabSource(null, (IFolder) member));
-					}
-				}
+		for (Object checked : getTreeViewer().getCheckedElements()) {
+			if (checked instanceof IFolder) {
+				IFolder folder = (IFolder)checked;
+				if (folder.getAdapter(IModelicaResource.class) == null)
+						sources.add(new MosilabSource(null,folder));
 			}
-		} catch (CoreException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 
 		super.okPressed();

@@ -65,11 +65,6 @@ public interface IMosilabProject extends IModelicaResource {
 	 * @param name the name of the new source folder
 	 */
 	public void addSrc(String name);
-
-	/**
-	 * write properties to disk
-	 */
-	public void writeBackPropertiesAsync();
 	
 	/**
 	 * Get the contained experiments of that project
@@ -102,4 +97,14 @@ public interface IMosilabProject extends IModelicaResource {
 	 * @param src
 	 */
 	public void addSrc(IMosilabSource src);
+
+	/**
+	 * write properties to disk (guarded by a WorkspaceModifyOperation)
+	 */
+	public void writeBackPropertiesGuarded();
+	
+	/**
+	 * write back properties directly
+	 */
+	void writeBackProperties();
 }
