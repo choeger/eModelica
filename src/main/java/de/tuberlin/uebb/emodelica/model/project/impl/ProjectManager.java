@@ -58,7 +58,7 @@ public class ProjectManager implements IProjectManager, IResourceChangeListener 
 			}
 			
 			IModelicaResource modelicaResource = (IModelicaResource) delta.getResource().getAdapter(IModelicaResource.class);
-			System.err.println("Resource: " + modelicaResource);
+			System.err.println("For: " + delta.getResource() + "Resource: " + modelicaResource);
 			if (modelicaResource != null)
 				 modelicaResource.markAsDirty();
 			

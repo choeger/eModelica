@@ -65,6 +65,7 @@ public class ExperimentContainer extends ModelicaResource implements IExperiment
 	@Override
 	public void setResource(IResource resource) {
 		if (resource instanceof IFolder) {
+			System.err.println("mapping: " + resource + " to " + this);
 			super.setResource(resource);
 			folder = (IFolder) resource;
 		}
@@ -103,7 +104,6 @@ public class ExperimentContainer extends ModelicaResource implements IExperiment
 						System.err.println("adding new exp.");
 						exp = new TextFileExperiment(this, file);
 					}
-						
 				}
 			}
 		} catch (CoreException e) {

@@ -3,6 +3,7 @@
  */
 package de.tuberlin.uebb.emodelica.model.project.impl;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import org.eclipse.core.resources.IProject;
@@ -103,10 +104,7 @@ public class MosilabProjectContentProvider implements IPipelinedTreeContentProvi
 			IModelicaResource resource = (IModelicaResource)arg0;
 			return resource.getParent();
 		}
-		
-		if (arg0 instanceof IExperimentContainer) {
-			return ((IExperimentContainer)arg0).getProject();
-		}
+
 		return null;
 	}
 
@@ -178,32 +176,32 @@ public class MosilabProjectContentProvider implements IPipelinedTreeContentProvi
 
 	@Override
 	public void resourceChanged(IModelicaResource resource) {
-		if (viewer != null) {
-			System.err.println("refreshing!");
-			viewer.refresh();
-		}
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public void getPipelinedChildren(Object parent, Set theCurrentChildren) {
+		System.err.println("getPipelinedElements " + parent);
 		cleanAndAddOwn(getChildren(parent), theCurrentChildren);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public void getPipelinedElements(Object anInput, Set theCurrentElements) {
+		System.err.println("getPipelinedElements " + anInput);
 		cleanAndAddOwn(getElements(anInput), theCurrentElements);
 	}
 
 	@Override
 	public Object getPipelinedParent(Object anObject, Object suggestedParent) {
+		System.err.println("getPipelinedParent " + anObject + ":" + suggestedParent);
 		return suggestedParent;
 	}
 
 	@Override
 	public PipelinedShapeModification interceptAdd(
 			PipelinedShapeModification anAddModification) {
+		System.err.println("intercept add: " + anAddModification.getChildren());
 		
 		if (anAddModification.getParent() instanceof IResource) {
 			final IResource parent = (IResource)anAddModification.getParent();
@@ -212,11 +210,14 @@ public class MosilabProjectContentProvider implements IPipelinedTreeContentProvi
 				anAddModification.setParent(res);
 		}
 		
+		cleanSet(anAddModification.getChildren());
+		
 		return anAddModification;
 	}
 
 	@Override
 	public boolean interceptRefresh(PipelinedViewerUpdate refreshSynchronization) {
+		System.err.println("intercept refresh: " + refreshSynchronization.getRefreshTargets());
 		return false;
 	}
 
@@ -236,7 +237,32 @@ public class MosilabProjectContentProvider implements IPipelinedTreeContentProvi
 
 	@Override
 	public boolean interceptUpdate(PipelinedViewerUpdate anUpdateSynchronization) {
-		return false;
+		return cleanSet(anUpdateSynchronization.getRefreshTargets());
+	}
+
+	/**
+	 * @param anUpdateSynchronization
+	 * @return
+	 */
+	private boolean cleanSet(final Set refreshTargets) {
+		System.err.println("cleaning set: " + refreshTargets);
+
+		HashSet<IResource> toReplace = new HashSet<IResource>();
+		
+		for (Object object : refreshTargets) {
+			if (object instanceof IResource) {
+				IResource resource = (IResource) object;
+				IModelicaResource modelicaRes = (IModelicaResource) resource.getAdapter(IModelicaResource.class);
+				if (modelicaRes != null)
+					toReplace.add(resource);
+			}
+		}
+		
+		for (IResource resource : toReplace) {
+			refreshTargets.remove(resource);
+			refreshTargets.add(resource.getAdapter(IModelicaResource.class));
+		}
+		return !toReplace.isEmpty();
 	}
 
 	@Override
