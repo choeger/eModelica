@@ -109,9 +109,10 @@ public class SelectCPPFilesOperation extends WorkspaceModifyOperation {
 		builder.append("}");
 		
 		try {
-			PipedInputStream source = new PipedInputStream();
-			PipedOutputStream out = new PipedOutputStream(source);
-
+			
+			PipedOutputStream out = new PipedOutputStream();
+			PipedInputStream source = new PipedInputStream(out, builder.length());
+			
 			out.write(builder.toString().getBytes());
 			out.close();
 			
