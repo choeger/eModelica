@@ -4,6 +4,8 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
 import de.tuberlin.uebb.emodelica.model.project.IModelicaResource;
+import de.tuberlin.uebb.emodelica.model.project.IMosilabProject;
+import de.tuberlin.uebb.emodelica.model.project.IProjectManager;
 import de.tuberlin.uebb.emodelica.ui.SourceFolderSelectionView.SourcesOnlyContainer;
 
 public class PathConfigContentProvider implements ITreeContentProvider {
@@ -13,6 +15,13 @@ public class PathConfigContentProvider implements ITreeContentProvider {
 		if (arg0 instanceof SourcesOnlyContainer) {
 			return ((SourcesOnlyContainer)arg0).getChildren().toArray();
 		} 
+		
+		if (arg0 instanceof IProjectManager)
+			return ((IProjectManager)arg0).getAllMosilabProjects().toArray();
+		
+		if (arg0 instanceof IMosilabProject)
+			return ((IMosilabProject)arg0).getSrcFolders().toArray();
+		
 		return new Object[]{};
 	}
 
@@ -28,6 +37,13 @@ public class PathConfigContentProvider implements ITreeContentProvider {
 		if (arg0 instanceof SourcesOnlyContainer) {
 			return ((SourcesOnlyContainer)arg0).getChildren().size() > 0;
 		}
+		
+		if (arg0 instanceof IProjectManager)
+			return ((IProjectManager)arg0).getAllMosilabProjects().size() > 0;
+		
+		if (arg0 instanceof IMosilabProject)
+			return ((IMosilabProject)arg0).getSrcFolders().size() > 0;
+		
 		return false;
 	}
 
@@ -35,7 +51,14 @@ public class PathConfigContentProvider implements ITreeContentProvider {
 	public Object[] getElements(Object arg0) {
 		if (arg0 instanceof SourcesOnlyContainer) {
 			return ((SourcesOnlyContainer)arg0).getChildren().toArray();
-		} 
+		}
+		
+		if (arg0 instanceof IProjectManager)
+			return ((IProjectManager)arg0).getAllMosilabProjects().toArray();
+		
+		if (arg0 instanceof IMosilabProject)
+			return ((IMosilabProject)arg0).getSrcFolders().toArray();
+		
 		return new Object[] {};
 	}
 

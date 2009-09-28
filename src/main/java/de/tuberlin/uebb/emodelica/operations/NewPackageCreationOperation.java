@@ -38,7 +38,7 @@ public class NewPackageCreationOperation extends WorkspaceModifyOperation {
 	@Override
 	protected void execute(IProgressMonitor arg0) throws CoreException,
 			InvocationTargetException, InterruptedException {
-		System.err.println("creating a new package!");
+		System.err.println("creating a new package! (" + packageName + " in " + sourceFolder + ")");
 
 		IFolder srcFolder = ResourcesPlugin.getWorkspace().getRoot().getFolder(
 				new Path(sourceFolder));
