@@ -21,7 +21,6 @@ import org.eclipse.swt.graphics.Transform;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 
-import sun.awt.geom.Curve;
 import de.tuberlin.uebb.emodelica.model.experiments.ICurve;
 
 /**
