@@ -219,14 +219,10 @@
 				<directory>resources</directory>
 			</resource>
 			<resource>
-				<directory>xml</directory>
-			</resource>
-			<resource>
-				<directory>icons</directory>
-			</resource>
-			<resource>
 				<directory>.</directory>
 				<includes>
+					<include>icons/</include>
+					<include>xml/</include>
 					<include>plugin.xml</include>
 				</includes>
 			</resource>

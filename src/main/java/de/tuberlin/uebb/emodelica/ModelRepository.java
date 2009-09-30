@@ -96,7 +96,7 @@ public class ModelRepository {
 				e.printStackTrace();
 				return null;
 			}
-			Model newModel = new Model(documentProvider.getDocument(file), lexer.getCachedInput(), rootAbsy);
+			Model newModel = new Model(documentProvider.getDocument(file), lexer, rootAbsy);
     		repository.put(path, newModel);
     		return newModel;
 		}

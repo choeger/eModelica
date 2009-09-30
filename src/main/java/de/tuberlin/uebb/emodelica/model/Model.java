@@ -12,8 +12,10 @@ import org.eclipse.jface.text.Position;
 
 import de.tuberlin.uebb.modelica.im.ClassNode;
 import de.tuberlin.uebb.modelica.im.generated.moparser.NT_Stored_Definition;
+import de.tuberlin.uebb.modelica.im.generator.AbsyConverter;
 import de.tuberlin.uebb.modelica.im.generator.AbsyToIM;
 import de.tuberlin.uebb.page.grammar.symbols.Terminal;
+import de.tuberlin.uebb.page.lexer.ILexer;
 import de.tuberlin.uebb.page.parser.symbols.Absy;
 import de.tuberlin.uebb.page.parser.util.Range;
 
@@ -31,13 +33,14 @@ public class Model {
 	private ArrayList<Position> foldablePositions;
 	private IDocument document;
 	
-	public Model(IDocument document, List<Terminal> input, Absy rootAbsy) {
+	public Model(IDocument document, ILexer lexer, Absy rootAbsy) {
 		this.document = document;
 		this.child = rootAbsy;
-		this.input = input;
+		this.input = lexer.getCachedInput();
 		foldablePositions = new ArrayList<Position>();
 		
 		try {
+			AbsyConverter.setLexer(lexer);
 			this.rootNode = AbsyToIM.buildFromAbsy((NT_Stored_Definition) rootAbsy);
 			System.err.println("ROOT NODE: " + rootNode.toString());
 			System.err.println("CHILDREN: " + rootNode.getChildren());

@@ -245,7 +245,7 @@ public class LibrariesSelectionView implements IUIElement {
 		return project;
 	}
 
-	/**
+	/**	
 	 * @return the addButton
 	 */
 	public Button getAddButton() {

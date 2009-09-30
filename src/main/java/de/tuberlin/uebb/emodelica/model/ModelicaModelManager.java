@@ -87,7 +87,7 @@ public class ModelicaModelManager implements IModelManager {
 	        		if (!parser.getTokenStack().isEmpty() && (parser.getTokenStack().peek() instanceof Absy))
 	        			rootAbsy = (Absy)parser.getTokenStack().pop();
 	        		
-	        		Model newModel = new Model(contentProvider.getDocument(), lexer.getCachedInput(), rootAbsy);
+	        		Model newModel = new Model(contentProvider.getDocument(), lexer, rootAbsy);
 	        		for (IModelChangedListener l : listeners)
 	        			l.modelChanged(model, newModel);
 	        		model = newModel;
