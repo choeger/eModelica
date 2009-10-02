@@ -53,7 +53,10 @@ public abstract class WorkspaceModelicaPackageContainer extends ModelicaResource
 			try {
 				for (IResource resource : container.members())
 					if (resource.getType() == IResource.FOLDER) {
-						recFind((IFolder) resource);
+						IModelicaResource modRes = (IModelicaResource) resource.getAdapter(IModelicaResource.class);
+						if (modRes != null && modRes instanceof IModelicaPackage)
+							packages.add((IModelicaPackage) modRes);
+						else recFind((IFolder) resource);
 					} else {
 						if (resource.getType() == IResource.FILE && resource.getName().equals("package.mo")) {
 							ModelicaPackage pkg = new ModelicaPackage(this, this.container, container);
@@ -132,8 +135,5 @@ public abstract class WorkspaceModelicaPackageContainer extends ModelicaResource
 			super.setResource(resource);
 			container = (IContainer) resource;
 		}
-	}
-
-	public void markAsDirty() {
 	}
 }

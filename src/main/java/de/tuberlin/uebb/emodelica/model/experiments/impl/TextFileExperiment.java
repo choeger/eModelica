@@ -111,7 +111,7 @@ public class TextFileExperiment extends ModelicaResource implements IExperiment 
 
 			/* set file */
 			setResource(expFolder.getFile(name + "." + dateFormat.format(date)));
-			System.err.println("saving experiment to " + file.getFullPath());
+//			System.err.println("saving experiment to " + file.getFullPath());
 			CreateFileOperation create = new CreateFileOperation(file, null,
 					data, "save experiment");
 
@@ -182,7 +182,7 @@ public class TextFileExperiment extends ModelicaResource implements IExperiment 
 				dataLine = reader.readLine();
 			}
 
-			System.err.println("parsed: " + curves.size() + " curves");
+//			System.err.println("parsed: " + curves.size() + " curves");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

@@ -98,10 +98,8 @@ public class ExperimentContainer extends ModelicaResource implements IExperiment
 			for (IResource member : folder.members()) {
 				if (member instanceof IFile) {
 					IFile file = (IFile)member;
-					System.err.println("checking: " + file.hashCode());
 					IModelicaResource exp = (IModelicaResource) file.getAdapter(IModelicaResource.class);
 					if (exp == null || !(exp instanceof IExperiment)) {
-						System.err.println("adding new exp.");
 						exp = new TextFileExperiment(this, file);
 					}
 				}

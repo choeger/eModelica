@@ -206,8 +206,10 @@ public class MosilabProjectContentProvider implements IPipelinedTreeContentProvi
 		if (anAddModification.getParent() instanceof IResource) {
 			final IResource parent = (IResource)anAddModification.getParent();
 			final IModelicaResource res = (IModelicaResource) parent.getAdapter(IModelicaResource.class);
-			if (res != null)
+			if (res != null) {
 				anAddModification.setParent(res);
+				System.err.println("setting parent to " + res);
+			}
 		}
 		
 		cleanSet(anAddModification.getChildren());
@@ -245,7 +247,7 @@ public class MosilabProjectContentProvider implements IPipelinedTreeContentProvi
 	 * @return
 	 */
 	private boolean cleanSet(final Set refreshTargets) {
-		System.err.println("cleaning set: " + refreshTargets);
+		//System.err.println("cleaning set: " + refreshTargets);
 
 		HashSet<IResource> toReplace = new HashSet<IResource>();
 		

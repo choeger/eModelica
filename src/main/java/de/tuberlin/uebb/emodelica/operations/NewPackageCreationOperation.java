@@ -21,6 +21,8 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.actions.WorkspaceModifyOperation;
 
 import de.tuberlin.uebb.emodelica.EModelicaPlugin;
+import de.tuberlin.uebb.emodelica.model.project.IModelicaResource;
+import de.tuberlin.uebb.emodelica.model.project.IMosilabSource;
 
 /**
  * @author choeger
@@ -46,6 +48,11 @@ public class NewPackageCreationOperation extends WorkspaceModifyOperation {
 		IWorkspaceRoot root = workspace.getRoot();
 		Path path = new Path(sourceFolder);
 		IFolder srcFolder = root.getFolder(path);
+		
+		IMosilabSource source = (IMosilabSource) srcFolder.getAdapter(IModelicaResource.class);
+		if (source == null)
+			return;
+		
 		IFolder last = srcFolder;
 
 		for (String fName : packageName.split("\\.")) {
@@ -93,7 +100,10 @@ public class NewPackageCreationOperation extends WorkspaceModifyOperation {
 			out.close();
 
 			packagemo.create(in, true, null);
-
+			
+			source.markAsDirty();
+			source.refresh();
+			
 		} catch (IOException e) {
 			// TODO change -1 to error constant
 			throw new CoreException(new Status(IStatus.ERROR,

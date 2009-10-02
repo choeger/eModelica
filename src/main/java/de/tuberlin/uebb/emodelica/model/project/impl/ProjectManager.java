@@ -34,41 +34,47 @@ public class ProjectManager implements IProjectManager, IResourceChangeListener 
 
 		@Override
 		public boolean visit(IResourceDelta delta) throws CoreException {
-			
+
 			if (delta.getResource().getType() == IResource.PROJECT) {
 				System.err.println("delta for project! " + delta.getKind());
 				IProject project = (IProject) delta.getResource();
 				String path = project.getFullPath().toOSString();
-				
+
 				if (delta.getKind() == IResourceDelta.OPEN) {
-						if (project.isOpen()) {
-							/* new opened MOSILAB project */
-							if (project.getNature(MOSILAB_PROJECT_NATURE) != null) {
-								System.err.println("adding newly opened " + path);
-								projects.put(path, new MosilabProject(project));
-							}
-						} else {
-							/* closed MOSILAB project */
-							System.err.println("removing closed " + path);
-							projects.remove(path);
+					if (project.isOpen()) {
+						/* new opened MOSILAB project */
+						if (project.getNature(MOSILAB_PROJECT_NATURE) != null) {
+							System.err.println("adding newly opened " + path);
+							projects.put(path, new MosilabProject(project));
 						}
+					} else {
+						/* closed MOSILAB project */
+						System.err.println("removing closed " + path);
+						projects.remove(path);
+					}
 					/* new or closed - our job is done */
 					return false;
 				}
 			}
-			
-			IModelicaResource modelicaResource = (IModelicaResource) delta.getResource().getAdapter(IModelicaResource.class);
-			System.err.println("For: " + delta.getResource() + "Resource: " + modelicaResource);
-			if (modelicaResource != null)
-				 modelicaResource.markAsDirty();
-			
+
+			IResource resource = delta.getResource();
+			while (resource != null) {
+				IModelicaResource modelicaResource = (IModelicaResource) delta
+						.getResource().getAdapter(IModelicaResource.class);
+				System.err.println("For: " + delta.getResource() + "Resource: "
+						+ modelicaResource);
+				if (modelicaResource != null)
+					modelicaResource.markAsDirty();
+				
+				resource = resource.getParent();
+			}
 			return true;
 		}
 	}
 
 	private HashMap<String, IMosilabProject> projects = new HashMap<String, IMosilabProject>();
 	private DeltaVisitor visitor = new DeltaVisitor();
-	
+
 	@Override
 	public IMosilabProject getMosilabProject(IProject eclipseProject) {
 		String path = eclipseProject.getFullPath().toOSString();
@@ -84,9 +90,10 @@ public class ProjectManager implements IProjectManager, IResourceChangeListener 
 	@Override
 	public void resourceChanged(IResourceChangeEvent event) {
 		try {
-			System.err.println("Resource changed! " + event.getSource() + " " + event.getType());
-			if(event.getType() == IResourceChangeEvent.PRE_CLOSE) {
-				IProject project = (IProject)event.getResource();
+			System.err.println("Resource changed! " + event.getSource() + " "
+					+ event.getType());
+			if (event.getType() == IResourceChangeEvent.PRE_CLOSE) {
+				IProject project = (IProject) event.getResource();
 				if (project.getNature(MOSILAB_PROJECT_NATURE) != null) {
 					IMosilabProject mpj = getMosilabProject(project);
 					mpj.writeBackPropertiesGuarded();
@@ -98,13 +105,16 @@ public class ProjectManager implements IProjectManager, IResourceChangeListener 
 			e.printStackTrace();
 		}
 	}
-	
+
 	@Override
 	public void init() {
-		for (IProject project :	ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
+		for (IProject project : ResourcesPlugin.getWorkspace().getRoot()
+				.getProjects()) {
 			try {
-				if (project.isOpen() && project.getNature(MOSILAB_PROJECT_NATURE) != null) {
-					projects.put(project.getFullPath().toOSString(), new MosilabProject(project));
+				if (project.isOpen()
+						&& project.getNature(MOSILAB_PROJECT_NATURE) != null) {
+					projects.put(project.getFullPath().toOSString(),
+							new MosilabProject(project));
 				}
 			} catch (CoreException e) {
 				e.printStackTrace();
@@ -126,21 +136,23 @@ public class ProjectManager implements IProjectManager, IResourceChangeListener 
 	public List<IMosilabProject> getAllMosilabProjects() {
 		return new ArrayList<IMosilabProject>(projects.values());
 	}
-	
+
 	/**
 	 * @param sourceFolder
 	 */
 	@Override
 	public IMosilabSource getMosilabSource(String sourceFolder) {
-		IFolder folder = ResourcesPlugin.getWorkspace().getRoot().getFolder(new Path(sourceFolder));
+		IFolder folder = ResourcesPlugin.getWorkspace().getRoot().getFolder(
+				new Path(sourceFolder));
 		if (folder.exists())
-		//TODO: refactor this to adaptable from IFolder!
-		for (IMosilabProject project : EModelicaPlugin.getDefault().getProjectManager().getAllMosilabProjects())
-			for (IMosilabSource src : project.getSrcFolders())
-				if (src.getBasePath().equals(folder)) {
-					return src;
-				}
-	
+			// TODO: refactor this to adaptable from IFolder!
+			for (IMosilabProject project : EModelicaPlugin.getDefault()
+					.getProjectManager().getAllMosilabProjects())
+				for (IMosilabSource src : project.getSrcFolders())
+					if (src.getBasePath().equals(folder)) {
+						return src;
+					}
+
 		return null;
 	}
 
