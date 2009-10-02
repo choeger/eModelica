@@ -100,10 +100,7 @@ public class NewPackageCreationOperation extends WorkspaceModifyOperation {
 			out.close();
 
 			packagemo.create(in, true, null);
-			
-			source.markAsDirty();
-			source.refresh();
-			
+						
 		} catch (IOException e) {
 			// TODO change -1 to error constant
 			throw new CoreException(new Status(IStatus.ERROR,

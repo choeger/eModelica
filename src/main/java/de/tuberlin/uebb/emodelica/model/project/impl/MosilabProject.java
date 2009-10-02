@@ -295,7 +295,7 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 //				e.printStackTrace();
 //			}
 //		}
-
+		
 	}
 
 	private void refreshExperiments() throws CoreException {

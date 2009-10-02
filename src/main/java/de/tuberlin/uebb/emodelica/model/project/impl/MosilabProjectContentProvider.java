@@ -201,12 +201,13 @@ public class MosilabProjectContentProvider implements IPipelinedTreeContentProvi
 	@Override
 	public PipelinedShapeModification interceptAdd(
 			PipelinedShapeModification anAddModification) {
-		System.err.println("intercept add: " + anAddModification.getChildren());
+		System.err.println("[INTERCEPT] add: " + anAddModification.getChildren());
 		
 		if (anAddModification.getParent() instanceof IResource) {
 			final IResource parent = (IResource)anAddModification.getParent();
 			final IModelicaResource res = (IModelicaResource) parent.getAdapter(IModelicaResource.class);
 			if (res != null) {
+				res.refresh();
 				anAddModification.setParent(res);
 				System.err.println("setting parent to " + res);
 			}
@@ -226,13 +227,15 @@ public class MosilabProjectContentProvider implements IPipelinedTreeContentProvi
 	@Override
 	public PipelinedShapeModification interceptRemove(
 			PipelinedShapeModification removeModification) {
-		System.err.println("remove intercept: " + removeModification.getParent());
+		System.err.println("[INTERCEPT] remove:" + removeModification.getParent() + " : " + removeModification.getChildren());
 		if (removeModification.getParent() instanceof IResource) {
 			final IResource parent = (IResource)removeModification.getParent();
 			final IModelicaResource res = (IModelicaResource) parent.getAdapter(IModelicaResource.class);
 			if (res != null)
 				removeModification.setParent(res);
-		}		
+		}
+		
+		cleanSet(removeModification.getChildren());
 		
 		return removeModification;
 	}

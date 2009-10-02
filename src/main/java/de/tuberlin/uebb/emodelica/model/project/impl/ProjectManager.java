@@ -15,8 +15,12 @@ import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Status;
 
 import de.tuberlin.uebb.emodelica.EModelicaPlugin;
 import de.tuberlin.uebb.emodelica.model.project.IModelicaResource;
@@ -65,7 +69,7 @@ public class ProjectManager implements IProjectManager, IResourceChangeListener 
 						+ modelicaResource);
 				if (modelicaResource != null)
 					modelicaResource.markAsDirty();
-				
+
 				resource = resource.getParent();
 			}
 			return true;
@@ -100,11 +104,44 @@ public class ProjectManager implements IProjectManager, IResourceChangeListener 
 				}
 			} else if (event.getDelta() != null) {
 				event.getDelta().accept(visitor);
+				
+				WorkspaceJob refreshJob = new WorkspaceJob("Refresh MOSILAB workspace") {
+
+					@Override
+					public IStatus runInWorkspace(IProgressMonitor monitor)
+							throws CoreException {
+						refreshProjects();
+						return new Status(IStatus.OK, EModelicaPlugin.PLUGIN_ID, "");
+					}				
+				};
+				
+				refreshJob.schedule();
 			}
+				
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}
 	}
+
+	/**
+		 * 
+		 */
+	private final void refreshProjects() {
+		List<IMosilabProject> toDelete = new ArrayList<IMosilabProject>();
+
+		for (IMosilabProject project : projects.values()) {
+			if (project.getProject().isOpen()) {
+				System.err.println("[REFRESH] " + " refreshing: " + project);
+				project.refresh();
+				project.syncChildren();
+			} else {
+				toDelete.add(project);
+			}
+		}
+
+		for (IMosilabProject project : toDelete)
+			projects.remove(project);
+	};
 
 	@Override
 	public void init() {

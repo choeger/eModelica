@@ -53,10 +53,14 @@ public abstract class ModelicaResource extends PlatformObject implements IModeli
 	@Override
 	public void refresh() {
 		if (dirty) {
+			System.err.println("[RESOURCE_REFRESH] " + " refreshing: " + this);
 			doRefresh();
 			notifyListeners();
 			dirty = false;
 			syncChildren();
+			for (Object child : getChildren())
+				if (child instanceof IModelicaResource)
+					((IModelicaResource)child).refresh();
 		}
 	}
 	
@@ -84,4 +88,5 @@ public abstract class ModelicaResource extends PlatformObject implements IModeli
 		ResourcesToModelicaAdapterFactory.unMap(getResource());
 		super.finalize();
 	}
+
 }
