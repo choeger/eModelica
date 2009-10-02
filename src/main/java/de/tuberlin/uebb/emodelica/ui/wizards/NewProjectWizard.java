@@ -3,6 +3,8 @@
  */
 package de.tuberlin.uebb.emodelica.ui.wizards;
 
+import java.lang.reflect.InvocationTargetException;
+
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.runtime.CoreException;
@@ -18,6 +20,7 @@ import de.tuberlin.uebb.emodelica.EModelicaPlugin;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabEnvironment;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabProject;
 import de.tuberlin.uebb.emodelica.model.project.IProjectManager;
+import de.tuberlin.uebb.emodelica.operations.NewProjectCreationOperation;
 
 /**
  * @author choeger
@@ -49,32 +52,22 @@ public class NewProjectWizard extends Wizard implements INewWizard, IExecutableE
 	 */
 	@Override
 	public boolean performFinish() {
-		IProject project = newProjectPage.getProject();
 
+		NewProjectCreationOperation op = new NewProjectCreationOperation(
+				newProjectPage.getProject(), newProjectPage.useDefaultEnvironment(), 
+				newProjectPage.getMOSILABEnvironment());
+		
 		try {
-			project.create(null);
-			project.open(null);
-			IProjectDescription description = project.getDescription();
-			String[] natures = description.getNatureIds();
-			String[] newNatures = new String[natures.length + 1];
-			System.arraycopy(natures, 0, newNatures, 0, natures.length);
-			newNatures[natures.length] = IProjectManager.MOSILAB_PROJECT_NATURE;
-			description.setNatureIds(newNatures);
-			project.setDescription(description, null);
-		} catch (CoreException e) {
+			op.run(null);
+		} catch (InvocationTargetException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return false;
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return false;
 		}
-
-		IMosilabProject newMosilabProject = EModelicaPlugin.getDefault().getProjectManager().getMosilabProject(project);
-		
-		if (newProjectPage.useDefaultProjectLayout()) {
-			newMosilabProject.setOutputFolder("c++/");
-			newMosilabProject.addSrc("src");
-		}
-		
-		IMosilabEnvironment environment = newProjectPage.getMOSILABEnvironment();
-		newMosilabProject.setMOSILABEnvironment(environment);
 		
 		BasicNewProjectResourceWizard.updatePerspective(configElement);
 		return true;
