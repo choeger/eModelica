@@ -27,6 +27,8 @@ import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
 
 import de.tuberlin.uebb.emodelica.EModelicaPlugin;
+import de.tuberlin.uebb.emodelica.model.project.IModelicaPackage;
+import de.tuberlin.uebb.emodelica.model.project.IModelicaResource;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabProject;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabSource;
 import de.tuberlin.uebb.emodelica.model.project.impl.ProjectManager;
@@ -76,14 +78,16 @@ public class MosilabBuilder extends IncrementalProjectBuilder {
 		monitor.beginTask("Running mosilac", 100);
 
 		/* incremental build */
-		System.err.println("MOSILAB builder starting");
+		System.err.println("MOSILAB builder starting " + kind);
 		if ((kind == AUTO_BUILD) || (kind == INCREMENTAL_BUILD)) {
 			System.err.println("arguments: " + args.keySet());
 
 			monitor.subTask("collecting resources");
 
 			List<IFile> affectedResources = collectResources();
-
+			if (affectedResources.isEmpty())
+				return null;
+			
 			System.err.println("got " + affectedResources.size() + " files to compile.");
 			monitor.subTask("running mosilac");
 
@@ -381,8 +385,12 @@ public class MosilabBuilder extends IncrementalProjectBuilder {
 						if (resource instanceof IFile) {
 							// TODO: adapt source or at least make pattern
 							// configurable
-							if (((IFile) resource).getName().endsWith(".mo"))
-								affectedResources.add((IFile) resource);
+							final IFile file = (IFile) resource;
+							
+							final IModelicaResource adapter = (IModelicaResource) file.getParent().getAdapter(IModelicaResource.class);
+							if (adapter != null && (adapter instanceof IMosilabSource || adapter instanceof IModelicaPackage))
+								affectedResources.add(file);
+							
 							return false;
 						}
 					}

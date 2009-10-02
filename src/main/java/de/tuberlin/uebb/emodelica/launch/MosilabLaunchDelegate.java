@@ -4,14 +4,12 @@
 package de.tuberlin.uebb.emodelica.launch;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.lang.reflect.InvocationTargetException;
@@ -32,6 +30,8 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.ILaunchConfigurationDelegate;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.actions.WorkspaceModifyOperation;
 import org.eclipse.ui.console.ConsolePlugin;
@@ -404,6 +404,15 @@ public class MosilabLaunchDelegate implements ILaunchConfigurationDelegate {
 				System.err.println("make returned with: " + buildOp.exitValue());
 				out.write("\n make returned with: " + buildOp.exitValue() + "\n");
 
+				if (buildOp.exitValue() != 0) {
+					r = -1;
+					out.setColor(new Color(Display.getCurrent(),255,0,0));
+					
+					while ((r = buildOp.getErrorStream().read()) > -1)
+						out.write(r);
+					out.setColor(null);
+				}
+				
 				return buildOp.exitValue();
 			} catch (IOException e) {
 				// TODO throw CoreException
