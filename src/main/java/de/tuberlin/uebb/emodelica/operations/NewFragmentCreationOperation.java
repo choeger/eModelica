@@ -54,8 +54,6 @@ public class NewFragmentCreationOperation extends WorkspaceModifyOperation {
 		IFile sourceFile = last.getFile(typeName + ".mo");
 		
 		try {
-			PipedInputStream in = new PipedInputStream();
-			PipedOutputStream out = new PipedOutputStream(in);
 			String newLine = System.getProperty("line.separator");
 
 			StringBuffer buffer = new StringBuffer();
@@ -75,6 +73,9 @@ public class NewFragmentCreationOperation extends WorkspaceModifyOperation {
 			buffer.append(";");
 			buffer.append(newLine);
 
+			PipedOutputStream out = new PipedOutputStream();
+			PipedInputStream in = new PipedInputStream(out, buffer.length());
+			
 			out.write(buffer.toString().getBytes());
 			out.close();
 

@@ -22,7 +22,6 @@ import javax.xml.validation.SchemaFactory;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -38,7 +37,6 @@ import de.tuberlin.uebb.emodelica.EModelicaPlugin;
 import de.tuberlin.uebb.emodelica.model.experiments.IExperiment;
 import de.tuberlin.uebb.emodelica.model.experiments.IExperimentContainer;
 import de.tuberlin.uebb.emodelica.model.experiments.impl.ExperimentContainer;
-import de.tuberlin.uebb.emodelica.model.experiments.impl.TextFileExperiment;
 import de.tuberlin.uebb.emodelica.model.project.ILibraryContainer;
 import de.tuberlin.uebb.emodelica.model.project.ILibraryEntry;
 import de.tuberlin.uebb.emodelica.model.project.IModelicaResource;
@@ -46,7 +44,6 @@ import de.tuberlin.uebb.emodelica.model.project.IMosilabEnvironment;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabProject;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabSource;
 import de.tuberlin.uebb.emodelica.preferences.PreferenceConstants;
-import de.tuberlin.uebb.emodelica.util.ModelicaToResourcesAdapterFactory;
 import de.tuberlin.uebb.emodelica.util.ResourcesToModelicaAdapterFactory;
 
 /**
@@ -359,8 +356,6 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 	@Override
 	public void writeBackProperties() {
 		try {
-			PipedInputStream in = new PipedInputStream();
-			PipedOutputStream out = new PipedOutputStream(in);
 			String newLine = System.getProperty("line.separator");
 
 			StringBuffer buffer = new StringBuffer();
@@ -387,6 +382,9 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 
 			buffer.append(XML_FOOTER);
 
+			PipedOutputStream out = new PipedOutputStream();
+			PipedInputStream in = new PipedInputStream(out, buffer.length());
+			
 			out.write(buffer.toString().getBytes());
 
 			out.close();

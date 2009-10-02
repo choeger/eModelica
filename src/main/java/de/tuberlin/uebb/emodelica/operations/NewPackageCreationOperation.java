@@ -68,9 +68,7 @@ public class NewPackageCreationOperation extends WorkspaceModifyOperation {
 		if (packagemo.exists())
 			return;
 		
-		try {
-			PipedInputStream in = new PipedInputStream();
-			PipedOutputStream out = new PipedOutputStream(in);
+		try {			
 			String newLine = System.getProperty("line.separator");
 
 			StringBuffer buffer = new StringBuffer();
@@ -96,6 +94,9 @@ public class NewPackageCreationOperation extends WorkspaceModifyOperation {
 			buffer.append(";");
 			buffer.append(newLine);
 
+			PipedOutputStream out = new PipedOutputStream();
+			PipedInputStream in = new PipedInputStream(out, buffer.length());
+			
 			out.write(buffer.toString().getBytes());
 			out.close();
 

@@ -255,7 +255,7 @@ public class MosilabProjectContentProvider implements IPipelinedTreeContentProvi
 		HashSet<IResource> toReplace = new HashSet<IResource>();
 		
 		for (Object object : refreshTargets) {
-			if (object instanceof IResource) {
+			if (object instanceof IResource && !(object instanceof IProject)) {
 				IResource resource = (IResource) object;
 				IModelicaResource modelicaRes = (IModelicaResource) resource.getAdapter(IModelicaResource.class);
 				if (modelicaRes != null)

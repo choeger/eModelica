@@ -208,57 +208,59 @@ public class MosilabLaunchDelegate implements ILaunchConfigurationDelegate {
 		String relevantValues = configuration.getAttribute(
 				SOLVER_DEFINES_PREFIX_KEY, IDASolverTab.IDA_PREFIX);
 		IFile definesFile = sourceFolder.getFile(HEADER_NAME);
-		try {
-			PipedInputStream in = new PipedInputStream();
-			PipedOutputStream out = new PipedOutputStream(in);
-			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
-					out));
-			writer.write("/*");
-			writer.newLine();
-			writer.write(" * " + HEADER_NAME);
-			writer.newLine();
-			writer
-					.write(" * eModelica Experiment definitions - automagically generated, do NOT edit!");
-			writer.newLine();
-			writer.write(" */");
-			writer.newLine();
-			writer.write("#ifndef EMODELICA_DEFINES");
-			writer.newLine();
-			writer.write("#define EMODELICA_DEFINES");
-			writer.newLine();
+		try {			
+			StringBuffer buffer = new StringBuffer();
+			String newLine = System.getProperty("line.separator");
+			
+			buffer.append("/*");
+			buffer.append(newLine);
+			buffer.append(" * " + HEADER_NAME);
+			buffer.append(newLine);
+			buffer.append(" * eModelica Experiment definitions - automagically generated, do NOT edit!");
+			buffer.append(newLine);
+			buffer.append(" */");
+			buffer.append(newLine);
+			buffer.append("#ifndef EMODELICA_DEFINES");
+			buffer.append(newLine);
+			buffer.append("#define EMODELICA_DEFINES");
+			buffer.append(newLine);
 
 			// root class
 			String className = configuration.getAttribute(CLASS_NAME_KEY, "");
-			writer.write("#define ROOT_OBJECT \"");
-			writer.write(className);
-			writer.write("\"");
-			writer.newLine();
+			buffer.append("#define ROOT_OBJECT \"");
+			buffer.append(className);
+			buffer.append("\"");
+			buffer.append(newLine);
 
 			// observables
 			String observables = configuration.getAttribute(OBSERVABLES_KEY,
 					"time ");
-			writer.write("#define OBSERVABLES \"");
-			writer.write(observables);
-			writer.write("\"");
-			writer.newLine();
+			buffer.append("#define OBSERVABLES \"");
+			buffer.append(observables);
+			buffer.append("\"");
+			buffer.append(newLine);
 
 			// solver special values
 			for (Object key : configuration.getAttributes().keySet()) {
 				if (key instanceof String) {
 					if (((String) key).startsWith(relevantValues)) {
-						writer.write("#define "
+						buffer.append("#define "
 								+ ((String) key).replaceFirst(relevantValues,
 										"") + " "
 								+ configuration.getAttributes().get(key));
-						writer.newLine();
+						buffer.append(newLine);
 					}
 				}
 				monitor.worked(1);
 			}
 
-			writer.write("#endif  //EMODELICA_DEFINES");
-			writer.newLine();
-			writer.close();
+			buffer.append("#endif  //EMODELICA_DEFINES");
+			buffer.append(newLine);
+
+			PipedOutputStream out = new PipedOutputStream();
+			PipedInputStream in = new PipedInputStream(out, buffer.length());
+			
+			out.write(buffer.toString().getBytes());
 			out.close();
 
 			if (definesFile.exists())

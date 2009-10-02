@@ -38,6 +38,8 @@ public class NewPackageWizard extends Wizard implements INewWizard {
 		IModelicaResource modelicaResource = EModelicaPlugin.extractSelectionModelicaResource(sel);
 		IResource resource = EModelicaPlugin.extractSelectionResource(sel);
 	
+		System.err.println("[SELECTION] " + modelicaResource + "," + resource);
+		
 		/* walk up tree */
 		while (modelicaResource != null) {
 				if (modelicaResource instanceof IModelicaPackage) {

@@ -81,7 +81,7 @@ public class ProjectManager implements IProjectManager, IResourceChangeListener 
 
 	@Override
 	public IMosilabProject getMosilabProject(IProject eclipseProject) {
-		String path = eclipseProject.getFullPath().toOSString();
+		String path = projectKey(eclipseProject);
 		if (projects.containsKey(path))
 			return projects.get(path);
 		else {
@@ -130,17 +130,18 @@ public class ProjectManager implements IProjectManager, IResourceChangeListener 
 		List<IMosilabProject> toDelete = new ArrayList<IMosilabProject>();
 
 		for (IMosilabProject project : projects.values()) {
-			if (project.getProject().isOpen()) {
-				System.err.println("[REFRESH] " + " refreshing: " + project);
+			if (project.getProject().exists() && project.getProject().isOpen()) {
+				System.err.println("[REFRESH] " + " refreshing: " + project.getProject().getName());
 				project.refresh();
 				project.syncChildren();
 			} else {
+				System.err.println("[REFRESH] " + " deleting: " + project.getProject().getName());
 				toDelete.add(project);
 			}
 		}
 
 		for (IMosilabProject project : toDelete)
-			projects.remove(project);
+			projects.remove(projectKey(project.getProject()));
 	};
 
 	@Override
@@ -150,13 +151,21 @@ public class ProjectManager implements IProjectManager, IResourceChangeListener 
 			try {
 				if (project.isOpen()
 						&& project.getNature(MOSILAB_PROJECT_NATURE) != null) {
-					projects.put(project.getFullPath().toOSString(),
+					projects.put(projectKey(project),
 							new MosilabProject(project));
 				}
 			} catch (CoreException e) {
 				e.printStackTrace();
 			}
 		}
+	}
+
+	/**
+	 * @param project
+	 * @return
+	 */
+	private String projectKey(IProject project) {
+		return project.getFullPath().toOSString();
 	}
 
 	@Override

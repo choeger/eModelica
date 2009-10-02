@@ -96,7 +96,7 @@ public class NewPackageWizardPage extends WizardPage {
 		GridData data = new GridData(GridData.FILL_HORIZONTAL);
 		sourceDirField.setLayoutData(data);
 		if (srcPath != null)
-			sourceDirField.setText(srcPath.getResource().getName());
+			sourceDirField.setText(srcPath.getResource().getFullPath().toOSString());
 	}
 
 	private void browseButtonClicked() {
