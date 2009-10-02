@@ -23,6 +23,7 @@ import de.tuberlin.uebb.emodelica.EModelicaPlugin;
 import de.tuberlin.uebb.emodelica.ModelRepository;
 import de.tuberlin.uebb.emodelica.editors.ModelicaEditor;
 import de.tuberlin.uebb.emodelica.util.ParserFactory;
+import de.tuberlin.uebb.modelica.im.generated.moparser.NT_Stored_Definition;
 import de.tuberlin.uebb.page.exceptions.ParserException;
 import de.tuberlin.uebb.page.grammar.symbols.Terminal;
 import de.tuberlin.uebb.page.lexer.ILexer;
@@ -63,7 +64,8 @@ public class ModelicaModelManager implements IModelManager {
 				}
 			} catch (ParserException e) {
 				System.err.println(e.getMessage());
-				return new Status(Status.ERROR,EModelicaPlugin.PLUGIN_ID,retVal,"parsing failed: " + e.getMessage(),e);
+				arg0.done();
+				return new Status(Status.OK,EModelicaPlugin.PLUGIN_ID,retVal,"parsing failed: " + e.getMessage(),e);
 			}
 			System.err.println("parsing done: " + retVal);
 			arg0.done();
@@ -86,14 +88,16 @@ public class ModelicaModelManager implements IModelManager {
 	        		Absy rootAbsy = null;
 	        		if (!parser.getTokenStack().isEmpty() && (parser.getTokenStack().peek() instanceof Absy))
 	        			rootAbsy = (Absy)parser.getTokenStack().pop();
-	        		
-	        		Model newModel = new Model(contentProvider.getDocument(), lexer, rootAbsy);
-	        		for (IModelChangedListener l : listeners)
-	        			l.modelChanged(model, newModel);
-	        		model = newModel;
-	        		IEditorInput input = modelicaEditor.getEditorInput();
-	        		IFile file = ((FileEditorInput) input).getFile();
-	        		ModelRepository.updateModel(file, newModel);
+	        		if (rootAbsy instanceof NT_Stored_Definition) {
+	        			Model newModel = new Model(contentProvider.getDocument(), lexer, rootAbsy);
+	        			for (IModelChangedListener l : listeners)
+	        				l.modelChanged(model, newModel);
+	        			model = newModel;
+		        		
+	        			IEditorInput input = modelicaEditor.getEditorInput();
+		        		IFile file = ((FileEditorInput) input).getFile();
+		        		ModelRepository.updateModel(file, newModel);
+	        		}
 	        	}
 	        }
 	     });
