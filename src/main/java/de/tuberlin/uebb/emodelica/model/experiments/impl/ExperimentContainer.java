@@ -3,6 +3,8 @@
  */
 package de.tuberlin.uebb.emodelica.model.experiments.impl;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
@@ -78,10 +80,8 @@ public class ExperimentContainer extends ModelicaResource implements IExperiment
 			for (IResource member : folder.members())
 				if (member instanceof IFile) {
 					IModelicaResource exp = (IModelicaResource) member.getAdapter(IModelicaResource.class);
-					System.err.println("syncing: " + member.hashCode() + " == " + exp);
 					
 					if (exp != null && exp instanceof TextFileExperiment) {
-						System.err.println("adding: " + member.getName());
 						experiments.add((IExperiment) exp);
 					}
 				}
@@ -108,7 +108,6 @@ public class ExperimentContainer extends ModelicaResource implements IExperiment
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
 	}
 
 	@Override

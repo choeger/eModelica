@@ -143,7 +143,7 @@ public class TextFileExperiment extends ModelicaResource implements IExperiment 
 		} catch (ParseException e1) {
 			e1.printStackTrace();
 		}
-
+	//	this.name="( " + date.getTime() + ") ";
 		setResource(file);
 
 		try {

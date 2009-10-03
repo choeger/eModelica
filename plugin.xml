@@ -154,6 +154,9 @@
                policy="InvokeAlwaysRegardlessOfSuppressedExt"
                suppressedExtensionId="org.eclipse.ui.navigator.resourceContent">
          </override>
+         <commonSorter
+               class="de.tuberlin.uebb.emodelica.model.project.impl.ProjectContentSorter">
+         </commonSorter>
       </navigatorContent>
    </extension>
    <extension
