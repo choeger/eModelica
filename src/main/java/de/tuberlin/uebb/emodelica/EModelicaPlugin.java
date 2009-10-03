@@ -3,8 +3,10 @@ package de.tuberlin.uebb.emodelica;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.viewers.ISelection;
@@ -31,6 +33,8 @@ public class EModelicaPlugin extends AbstractUIPlugin {
 	// The plug-in ID
 	public static final String PLUGIN_ID = "de.tu-berlin.uebb.emodelica";
 
+	private static final String HIDDEN_PROJECT_NAME = PLUGIN_ID + ".commonMosilabProject";
+
 	// The shared instance
 	private static EModelicaPlugin plugin;
 
@@ -38,11 +42,20 @@ public class EModelicaPlugin extends AbstractUIPlugin {
 
 	private List<IMosilabEnvironment> mosilabEnvironments = new ArrayList<IMosilabEnvironment>();
 	
+	private IProject commonMosilabResources;
+	
 	/**
 	 * The constructor
 	 */
 	public EModelicaPlugin() {
 		System.err.println("EModelicaPlugin()");
+	}
+
+	/**
+	 * @return the commonMosilabResources
+	 */
+	public IProject getCommonMosilabResources() {
+		return commonMosilabResources;
 	}
 
 	/*
@@ -53,8 +66,23 @@ public class EModelicaPlugin extends AbstractUIPlugin {
 		super.start(context);
 		plugin = this;
 		System.err.println("emodelica.start()");
+		
+		commonMosilabResources = ResourcesPlugin.getWorkspace().getRoot().getProject(HIDDEN_PROJECT_NAME);
+		
+		if (!commonMosilabResources.exists()) {
+			try {
+				commonMosilabResources.create(null);
+			} catch (CoreException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		commonMosilabResources.open(null);
+		commonMosilabResources.setHidden(true);
+		
 		//first load environments, then setup projects!
 		loadMosilabEnvironments();
+		
 		projectManager = new ProjectManager();
 		projectManager.init();
 		
@@ -79,6 +107,7 @@ public class EModelicaPlugin extends AbstractUIPlugin {
 	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
 	 */
 	public void stop(BundleContext context) throws Exception {
+		commonMosilabResources.delete(true, true, null);
 		plugin = null;
 		super.stop(context);
 	}

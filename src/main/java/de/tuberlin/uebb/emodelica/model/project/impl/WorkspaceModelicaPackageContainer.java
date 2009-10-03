@@ -29,6 +29,13 @@ public abstract class WorkspaceModelicaPackageContainer extends ModelicaResource
 	public WorkspaceModelicaPackageContainer() {}
 	
 	public WorkspaceModelicaPackageContainer(IContainer container) {
+		setContainer(container);
+	}
+
+	/**
+	 * @param container
+	 */
+	protected void setContainer(IContainer container) {
 		packages = new ArrayList<IModelicaPackage>();
 		contents = new ArrayList<IResource>();
 		children = new ArrayList<Object>();

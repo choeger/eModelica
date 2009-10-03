@@ -28,9 +28,6 @@ public class LibraryEntry extends WorkspaceModelicaPackageContainer implements I
 		super(null);
 		this.parent = parent; 
 		this.name = name;
-		IModelicaResource res = parent;
-		while(!(res instanceof IMosilabProject))
-			res = res.getParent();
 		
 		location = path;
 		this.version = version;
@@ -44,7 +41,7 @@ public class LibraryEntry extends WorkspaceModelicaPackageContainer implements I
 	}
 
 	@Override
-	public List<IModelicaResource> getChildren() {
+	public List<? extends IModelicaResource> getChildren() {
 		return children;
 	}
 

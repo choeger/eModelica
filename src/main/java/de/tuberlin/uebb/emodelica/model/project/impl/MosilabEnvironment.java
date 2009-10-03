@@ -8,8 +8,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
 
+import de.tuberlin.uebb.emodelica.EModelicaPlugin;
 import de.tuberlin.uebb.emodelica.model.project.IModelicaPackage;
 import de.tuberlin.uebb.emodelica.model.project.IModelicaResource;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabEnvironment;
@@ -19,7 +24,7 @@ import de.tuberlin.uebb.emodelica.model.project.IMosilabProject;
  * @author choeger
  *
  */
-public class MosilabEnvironment extends ModelicaResource implements IMosilabEnvironment {
+public class MosilabEnvironment extends WorkspaceModelicaPackageContainer implements IMosilabEnvironment {
 
 	private static final String COMPILER_FIELD = "compiler";
 	private static final String DEFAULT_FIELD = "default";
@@ -106,13 +111,24 @@ public class MosilabEnvironment extends ModelicaResource implements IMosilabEnvi
 	private boolean isDefault = false;
 	private String rootPath;
 	private String name;
-	private List<IModelicaPackage> packages;
 	private Set<IMosilabProject> usedBy = new HashSet<IMosilabProject>();
 	
 	public MosilabEnvironment(String path, String name) {
 		rootPath = path;
 		this.name = name;
-		packages = new ArrayList<IModelicaPackage>();
+		
+		IFolder folder = EModelicaPlugin.getDefault().getCommonMosilabResources().getFolder(name);
+		try {
+			if (folder.exists())
+				folder.delete(true, null);			
+			final IPath extPath = new Path(path).append("base-lib");
+			System.err.println("LINK: " + extPath + " -> " + folder);
+			folder.createLink(extPath, IResource.NONE, null);
+		} catch (CoreException e) {
+			e.printStackTrace();
+		}
+		
+		setContainer(folder);
 	}
 	
 	@Override
@@ -168,29 +184,8 @@ public class MosilabEnvironment extends ModelicaResource implements IMosilabEnvi
 	}
 
 	@Override
-	public List<IModelicaPackage> getPackages() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<? extends Object> getChildren() {
-		return packages;
-	}
-
-	@Override
 	public IModelicaResource getParent() {
 		// Environments do not have unique parents
-		return null;
-	}
-
-	@Override
-	public void syncChildren() {
-				
-	}
-
-	@Override
-	public IResource getResource() {
 		return null;
 	}
 
@@ -207,11 +202,6 @@ public class MosilabEnvironment extends ModelicaResource implements IMosilabEnvi
 	@Override
 	public void setReferencedBy(IMosilabProject project) {
 		usedBy.add(project);
-	}
-
-	@Override
-	protected void doRefresh() {
-				
 	}
 
 	@Override
