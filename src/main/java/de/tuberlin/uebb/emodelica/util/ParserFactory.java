@@ -5,7 +5,7 @@ package de.tuberlin.uebb.emodelica.util;
 
 import java.util.ArrayDeque;
 
-import de.tuberlin.uebb.modelica.im.generated.moparser.mosilaStateFactory;
+import de.tuberlin.uebb.modelica.im.impl.generated.moparser.mosilaStateFactory;
 import de.tuberlin.uebb.page.parser.Automaton;
 
 /**

@@ -23,8 +23,8 @@ import org.eclipse.swt.widgets.Display;
 import de.tuberlin.uebb.emodelica.editors.ModelicaPresentationReconciler;
 import de.tuberlin.uebb.emodelica.editors.ModelicaSourceViewer;
 import de.tuberlin.uebb.emodelica.model.Model;
-import de.tuberlin.uebb.modelica.im.generated.moparser.NT_Component_Reference;
-import de.tuberlin.uebb.modelica.im.generated.moparser.NT_String_Comment;
+import de.tuberlin.uebb.modelica.im.impl.generated.moparser.NT_Component_Reference;
+import de.tuberlin.uebb.modelica.im.impl.generated.moparser.NT_String_Comment;
 import de.tuberlin.uebb.page.parser.symbols.Absy;
 
 /**

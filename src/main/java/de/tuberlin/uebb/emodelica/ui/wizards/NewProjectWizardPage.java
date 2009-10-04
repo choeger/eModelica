@@ -132,15 +132,19 @@ public class NewProjectWizardPage extends WizardPage {
 		
 		if (mosilabSelection.getUseDefaultEnvironment().getSelection())
 			environment = EModelicaPlugin.getDefault().getDefaultMosilabEnvironment();
-		else
+		else if (mosilabSelection.getUseAlternateEnvironment().getSelection())
 			environment = EModelicaPlugin.getDefault().getMosilabEnvironments().get(
 					mosilabSelection.getAlternateEnvironmentSelection().getSelectionIndex());
+		else environment = null;
+		
+		if (environment == null)
+			setMessage("Without a MOSILAB environment the project cannot be build.", NewProjectWizardPage.WARNING);
+		
 		
 		if (projectNameField.getText().isEmpty()) {
 			setDescription("Select a project name");
-		} else if (EModelicaPlugin.getDefault().getDefaultMosilabEnvironment() == null) {
-			setErrorMessage("You have to install a MOSILAB environment first!");
 		} else {
+		
 			project = ResourcesPlugin.getWorkspace().getRoot().getProject(projectNameField.getText());
 			if (project.exists()) {
 				setErrorMessage("A project with this name already exists.");

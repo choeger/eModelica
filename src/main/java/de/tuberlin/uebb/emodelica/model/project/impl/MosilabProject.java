@@ -22,6 +22,7 @@ import javax.xml.validation.SchemaFactory;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -72,7 +73,7 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 
 		setupProperties();
 		readSettings();
-		
+
 		doRefresh();
 		syncChildren();
 	}
@@ -99,12 +100,12 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 					if (env.getName().equals(
 							persistentProperties.get(MOSILAB_ENVIRONMENT_KEY))) {
 						setMosilabInstallation(env);
-						
+
 						break;
 					}
 				}
 			}
-			
+
 			if (mosilabInstallation == null) {
 				mosilabInstallation = EModelicaPlugin.getDefault()
 						.getDefaultMosilabEnvironment();
@@ -122,7 +123,9 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 
 	/**
 	 * set the IMosilabEnvironment of this project
-	 * @param env the new Environment or null if none
+	 * 
+	 * @param env
+	 *            the new Environment or null if none
 	 */
 	public void setMosilabInstallation(IMosilabEnvironment env) {
 		if (mosilabInstallation != null)
@@ -251,7 +254,7 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 
 	@Override
 	public List<? extends Object> getChildren() {
-		
+
 		return children;
 	}
 
@@ -260,17 +263,17 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 		// Projects don't have Modelica parents
 		return null;
 	}
-	
+
 	@Override
 	public void syncChildren() {
 		children.clear();
-		
+
 		if (mosilabInstallation != null)
 			children.add(getMOSILABEnvironment());
-		
+
 		if (experiments != null)
 			children.add(experiments);
-		
+
 		children.add(libs);
 		for (IMosilabSource src : srcFolders)
 			if (!src.isRoot())
@@ -278,32 +281,20 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 			else {
 				children.addAll(src.getPackages());
 				children.addAll(src.getContent());
-			}		
-		
-//		if (getMOSILABEnvironment() == null) {
-//			try {
-//				IMarker probMarker = project.createMarker(IMarker.PROBLEM);
-//				probMarker.setAttribute(IMarker.SEVERITY,
-//						IMarker.SEVERITY_ERROR);
-//				probMarker.setAttribute(IMarker.MESSAGE,
-//						"No MOSILAB environment found!");
-//			} catch (CoreException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-//		}
-		
+			}
 	}
 
 	private void refreshExperiments() throws CoreException {
 		IFolder expFolder = project.getFolder(".experiments");
 
 		if (expFolder.exists()) {
-			IModelicaResource cont = (IModelicaResource) expFolder.getAdapter(IModelicaResource.class);
+			IModelicaResource cont = (IModelicaResource) expFolder
+					.getAdapter(IModelicaResource.class);
 			if (cont != null && cont instanceof IExperimentContainer) {
 				experiments = (IExperimentContainer) cont;
 			} else {
-				experiments = new ExperimentContainer(new ArrayList<IExperiment>(), this, expFolder);
+				experiments = new ExperimentContainer(
+						new ArrayList<IExperiment>(), this, expFolder);
 			}
 			experiments.refresh();
 		} else {
@@ -316,6 +307,7 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 		IFolder folder = project.getFolder(name);
 		if (!folder.exists())
 			try {
+				System.err.println("[CREATE] " + folder);
 				folder.create(true, true, null);
 			} catch (CoreException e) {
 				e.printStackTrace();
@@ -323,7 +315,7 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 			}
 		IMosilabSource source = new MosilabSource(this, folder);
 		this.srcFolders.add(source);
-		
+
 		try {
 			source.getResource().touch(null);
 		} catch (CoreException e) {
@@ -338,8 +330,9 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 		WorkspaceModifyOperation syncOp = new WorkspaceModifyOperation() {
 
 			@Override
-			protected void execute(IProgressMonitor monitor) throws CoreException,
-					InvocationTargetException, InterruptedException {
+			protected void execute(IProgressMonitor monitor)
+					throws CoreException, InvocationTargetException,
+					InterruptedException {
 				writeBackProperties();
 			}
 		};
@@ -352,7 +345,7 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 			e.printStackTrace();
 		}
 	}
-	
+
 	@Override
 	public void writeBackProperties() {
 		try {
@@ -384,7 +377,7 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 
 			PipedOutputStream out = new PipedOutputStream();
 			PipedInputStream in = new PipedInputStream(out, buffer.length());
-			
+
 			out.write(buffer.toString().getBytes());
 
 			out.close();
@@ -412,43 +405,69 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 		return experiments;
 	}
 
-	/* (non-Javadoc)
-	 * @see de.tuberlin.uebb.emodelica.model.project.impl.ModelicaResource#isDirty()
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * de.tuberlin.uebb.emodelica.model.project.impl.ModelicaResource#isDirty()
 	 */
 	@Override
 	protected boolean isDirty() {
 		return dirty;
 	}
 
-	/* (non-Javadoc)
-	 * @see de.tuberlin.uebb.emodelica.model.project.impl.ModelicaResource#refresh()
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * de.tuberlin.uebb.emodelica.model.project.impl.ModelicaResource#refresh()
 	 */
 	@Override
 	public void doRefresh() {
-			try {
-				refreshExperiments();
-			} catch (CoreException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
-			System.err.println("adding libs");
-			if (!EModelicaPlugin.getDefault().getMosilabEnvironments().contains(mosilabInstallation))
-				mosilabInstallation=null;
 
-			if (getMOSILABEnvironment() != null) {			
-				getMOSILABEnvironment().refresh();
-			}
-			
-			getLibraries().refresh();
+//		try {
+//			project.deleteMarkers(IMarker.PROBLEM, true, IResource.DEPTH_ZERO);
+//		} catch (CoreException e1) {
+//			e1.printStackTrace();
+//		}
+		
+		try {
+			refreshExperiments();
+		} catch (CoreException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
-			for (IMosilabSource src : getSrcFolders()) {
-				src.refresh();
-			}
+		if (!EModelicaPlugin.getDefault().getMosilabEnvironments().contains(
+				mosilabInstallation))
+			mosilabInstallation = null;
+
+		if (getMOSILABEnvironment() != null) {
+			getMOSILABEnvironment().refresh();
+		} else {
+//			try {
+//				IMarker probMarker = project.createMarker(IMarker.PROBLEM);
+//				probMarker.setAttribute(IMarker.SEVERITY,
+//						IMarker.SEVERITY_ERROR);
+//				probMarker.setAttribute(IMarker.MESSAGE,"Project cannot be build, no MOSILAB environment found!");
+//			} catch (CoreException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+		}
+		getLibraries().refresh();
+
+		for (IMosilabSource src : getSrcFolders()) {
+			src.refresh();
+		}
 	}
 
-	/* (non-Javadoc)
-	 * @see de.tuberlin.uebb.emodelica.model.project.impl.ModelicaResource#setResource(org.eclipse.core.resources.IResource)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * de.tuberlin.uebb.emodelica.model.project.impl.ModelicaResource#setResource
+	 * (org.eclipse.core.resources.IResource)
 	 */
 	@Override
 	public void setResource(IResource resource) {
@@ -497,6 +516,6 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 
 	@Override
 	public void setParent(IModelicaResource newParent) {
-		//Projects don't have parents		
+		// Projects don't have parents
 	}
 }

@@ -28,6 +28,8 @@ public class Images {
 		ImageDescriptor.createFromFile(Images.class, "/icons/impc_obj.gif");
 	public static final ImageDescriptor PRIVATE_FIELD_DESCRIPTOR =
 		ImageDescriptor.createFromFile(Images.class, "/icons/field_private_obj.gif");
+	public static final ImageDescriptor PUBLIC_FIELD_DESCRIPTOR =
+		ImageDescriptor.createFromFile(Images.class, "/icons/public_obj.gif");
 	public static final ImageDescriptor SOURCE_FOLDER_DESCRIPTOR =
 		ImageDescriptor.createFromFile(Images.class, "/icons/packagefolder_obj.gif");
 	public static final ImageDescriptor LIBRARY_FOLDER_DESCRIPTOR =

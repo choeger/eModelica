@@ -21,5 +21,5 @@ public class Constants {
 	public static final String PART_MODELICA_STRING = "DE.TU_BERLIN.UEBB.EMODELICA.STRING_PARTITION";
 	public static final String[] MODELICA_PART_TYPES = {PART_MODELICA_MULTI_LINE_COMMENT,PART_MODELICA_SINGLE_LINE_COMMENT, PART_MODELICA_STRING};
 
-	public static final String XML_MOSILAB_SETTINGS_XSD = "/xml/mosilabSettings.xsd";
+	public static final String XML_MOSILAB_SETTINGS_XSD = "/xml/schema/mosilabSettings.xsd";
 }

@@ -16,7 +16,7 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 
 import de.tuberlin.uebb.emodelica.model.Model;
 import de.tuberlin.uebb.emodelica.util.ParserFactory;
-import de.tuberlin.uebb.modelica.im.generated.moparser.LexerDefs;
+import de.tuberlin.uebb.modelica.im.impl.generated.moparser.LexerDefs;
 import de.tuberlin.uebb.page.exceptions.ParserException;
 import de.tuberlin.uebb.page.grammar.symbols.Terminal;
 import de.tuberlin.uebb.page.lexer.ILexer;

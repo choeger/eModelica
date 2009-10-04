@@ -17,8 +17,7 @@ import de.tuberlin.uebb.emodelica.model.IModelChangedListener;
 import de.tuberlin.uebb.emodelica.model.Model;
 import de.tuberlin.uebb.emodelica.model.ModelLabelProvider;
 import de.tuberlin.uebb.emodelica.model.ModelTreeContentProvider;
-import de.tuberlin.uebb.modelica.im.Node;
-import de.tuberlin.uebb.page.parser.util.Range;
+import de.tuberlin.uebb.modelica.im.impl.nodes.Node;
 
 /**
  * @author choeger

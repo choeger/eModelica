@@ -38,7 +38,8 @@ public class MosilabSelection {
 	private Button useAlternateEnvironment;
 	private Combo alternateEnvironmentSelection;
 	private Set<ISelectionChangedListener> listeners = new HashSet<ISelectionChangedListener>();
-	private Composite parent; 
+	private Composite parent;
+	private Button useNoEnvironment; 
 	
 	/**
 	 * @return the useDefaultEnvironment
@@ -90,8 +91,7 @@ public class MosilabSelection {
 			public void widgetSelected(SelectionEvent e) {
 				updateWidgetAndNotifyListeners();
 			}
-
-			
+						
 		};
 		
 		alternateEnvironmentSelection = new Combo(group,SWT.READ_ONLY);
@@ -117,6 +117,10 @@ public class MosilabSelection {
 				openPreferencePage();
 				setupEnvironments();
 			}});
+		
+		useNoEnvironment = new Button(group, SWT.RADIO);
+		useNoEnvironment.setLayoutData(layoutData);
+		useNoEnvironment.setText("&No MOSILAB");
 	}
 
 	private void openPreferencePage() {

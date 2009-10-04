@@ -10,10 +10,10 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
 
-import de.tuberlin.uebb.modelica.im.ClassNode;
-import de.tuberlin.uebb.modelica.im.generated.moparser.NT_Stored_Definition;
-import de.tuberlin.uebb.modelica.im.generator.AbsyConverter;
-import de.tuberlin.uebb.modelica.im.generator.AbsyToIM;
+import de.tuberlin.uebb.modelica.im.impl.generated.moparser.NT_Stored_Definition;
+import de.tuberlin.uebb.modelica.im.impl.generator.AbsyConverter;
+import de.tuberlin.uebb.modelica.im.impl.generator.AbsyToIM;
+import de.tuberlin.uebb.modelica.im.impl.nodes.ClassNode;
 import de.tuberlin.uebb.page.grammar.symbols.Terminal;
 import de.tuberlin.uebb.page.lexer.ILexer;
 import de.tuberlin.uebb.page.parser.symbols.Absy;

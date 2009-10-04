@@ -54,7 +54,7 @@ public class NewProjectWizard extends Wizard implements INewWizard, IExecutableE
 	public boolean performFinish() {
 
 		NewProjectCreationOperation op = new NewProjectCreationOperation(
-				newProjectPage.getProject(), newProjectPage.useDefaultEnvironment(), 
+				newProjectPage.getProject(), newProjectPage.useDefaultProjectLayout(), 
 				newProjectPage.getMOSILABEnvironment());
 		
 		try {

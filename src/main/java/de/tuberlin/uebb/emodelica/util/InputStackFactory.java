@@ -16,7 +16,7 @@ import de.tuberlin.uebb.page.lexer.exceptions.LexerException;
  */
 public class InputStackFactory {
 	public static Stack<Terminal> getInputStack(BufferedReader contentReader) throws LexerException {
-		Stack<Terminal> inputStack = Lexer.getInputTokens(contentReader, de.tuberlin.uebb.modelica.im.generated.moparser.LexerDefs.lexerDefs());
+		Stack<Terminal> inputStack = Lexer.getInputTokens(contentReader, de.tuberlin.uebb.modelica.im.impl.generated.moparser.LexerDefs.lexerDefs());
 		return inputStack;
 	}
 }

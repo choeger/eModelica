@@ -9,8 +9,8 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
 import de.tuberlin.uebb.emodelica.ModelRepository;
-import de.tuberlin.uebb.modelica.im.ClassNode;
-import de.tuberlin.uebb.modelica.im.Node;
+import de.tuberlin.uebb.modelica.im.impl.nodes.ClassNode;
+import de.tuberlin.uebb.modelica.im.impl.nodes.Node;
 
 /**
  * @author choeger

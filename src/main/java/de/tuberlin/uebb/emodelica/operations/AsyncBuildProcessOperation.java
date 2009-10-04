@@ -31,7 +31,7 @@ public class AsyncBuildProcessOperation extends AbstractBuildProcessOperation {
 		processBuilder.directory(new File(getLocation(sourceFolder)));
 		processBuilder = new ProcessBuilder(commands);
 		processBuilder.environment().putAll(environment);
-	
+		
 		proc = processBuilder.start();
 		return 0;
 	}

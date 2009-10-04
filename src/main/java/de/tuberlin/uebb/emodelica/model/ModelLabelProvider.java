@@ -6,22 +6,31 @@ import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 
 import de.tuberlin.uebb.emodelica.Images;
-import de.tuberlin.uebb.modelica.im.ClassNode;
-import de.tuberlin.uebb.modelica.im.ClassNode.ClassType;
+import de.tuberlin.uebb.modelica.im.impl.nodes.ClassNode;
+import de.tuberlin.uebb.modelica.im.nodes.EClassType;
+import de.tuberlin.uebb.modelica.im.nodes.ENodeFlags;
+import de.tuberlin.uebb.modelica.im.nodes.IVarDefNode;
 
 
 public class ModelLabelProvider extends LabelProvider {
 
 	public String getText(Object obj) {
-		return obj.toString();
+		return obj.toString() + "[" + obj.getClass().getSimpleName() + "]";
 	}
 	public Image getImage(Object obj) {
+		if (obj instanceof IVarDefNode) {
+			IVarDefNode node = (IVarDefNode)obj;
+			if (node.getFlags().contains(ENodeFlags.PUBLIC))
+				return Images.PUBLIC_FIELD_DESCRIPTOR.createImage();
+			else
+				return Images.PRIVATE_FIELD_DESCRIPTOR.createImage();
+		}
 		
 		if (obj instanceof ClassNode) {
 			ClassNode classNode = (ClassNode)obj;
-			if (classNode.getClassType().equals(ClassType.CLASS_TYPE_CLASS))
+			if (classNode.getClassType().equals(EClassType.CLASS))
 				return Images.CLASS_IMAGE_DESCRIPTOR.createImage();
-			if (classNode.getClassType().equals(ClassType.CLASS_TYPE_PACKAGE))
+			if (classNode.getClassType().equals(EClassType.PACKAGE))
 				return Images.PKG_IMAGE_DESCRIPTOR.createImage();			
 		}
 		
