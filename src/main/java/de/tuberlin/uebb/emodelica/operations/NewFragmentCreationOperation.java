@@ -57,11 +57,14 @@ public class NewFragmentCreationOperation extends WorkspaceModifyOperation {
 			String newLine = System.getProperty("line.separator");
 
 			StringBuffer buffer = new StringBuffer();
-			buffer.append("within ");
-			buffer.append(packageName);
-			buffer.append(";");
-			buffer.append(newLine);
-
+			
+			if (packageName.length() > 0) {		
+				buffer.append("within ");
+				buffer.append(packageName);
+				buffer.append(";");
+				buffer.append(newLine);
+			}
+			
 			buffer.append(kind);
 			buffer.append(" ");
 			buffer.append(typeName);

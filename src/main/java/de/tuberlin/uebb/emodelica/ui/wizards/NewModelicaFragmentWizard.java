@@ -39,26 +39,28 @@ public class NewModelicaFragmentWizard extends Wizard implements INewWizard {
 		ISelection sel = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
 				.getActivePage().getSelection();
 
-		IModelicaResource modelicaResource = EModelicaPlugin.extractSelectionModelicaResource(sel);
+		IModelicaResource modelicaResource = EModelicaPlugin
+				.extractSelectionModelicaResource(sel);
 		IResource resource = EModelicaPlugin.extractSelectionResource(sel);
-	
+
 		/* walk up tree */
 		while (modelicaResource != null) {
-				if (modelicaResource instanceof IModelicaPackage) {
-					page.setPkg((IModelicaPackage) modelicaResource);
-				}
-				if (modelicaResource instanceof IMosilabSource) {
-					page.setSourceDir((IMosilabSource) modelicaResource);
-				}
-				modelicaResource = modelicaResource.getParent();
+			if (modelicaResource instanceof IModelicaPackage) {
+				page.setPkg((IModelicaPackage) modelicaResource);
 			}
-		
+			if (modelicaResource instanceof IMosilabSource) {
+				page.setSourceDir((IMosilabSource) modelicaResource);
+			}
+			modelicaResource = modelicaResource.getParent();
+		}
+
 		if (resource != null) {
 			IProject prj = resource.getProject();
 			IMosilabProject project = EModelicaPlugin.getDefault()
 					.getProjectManager().getMosilabProject(prj);
-			if (project != null && project.getSrcFolders().size() > 0 && (page.getDefaultSrc() == null))
-					page.setSourceDir(project.getSrcFolders().get(0));
+			if (project != null && project.getSrcFolders().size() > 0
+					&& (page.getDefaultSrc() == null))
+				page.setSourceDir(project.getSrcFolders().get(0));
 		}
 		page.setKind("class");
 	}
@@ -71,23 +73,26 @@ public class NewModelicaFragmentWizard extends Wizard implements INewWizard {
 	@Override
 	public boolean performFinish() {
 
+		final String packageName = page.getPackageName();
+
 		/* make sure the package does exist */
-		WorkspaceModifyOperation createPkg = new NewPackageCreationOperation(
-				page.getSourceFolder(), page.getPackageName());
+		if (packageName.length() > 0) {
+			WorkspaceModifyOperation createPkg = new NewPackageCreationOperation(
+					page.getSourceFolder(), packageName);
 
-		try {
-			createPkg.run(null);
-		} catch (InvocationTargetException e) {
-			e.printStackTrace();
-			return false;
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-			return false;
+			try {
+				createPkg.run(null);
+			} catch (InvocationTargetException e) {
+				e.printStackTrace();
+				return false;
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+				return false;
+			}
 		}
-
 		WorkspaceModifyOperation modifyOp = new NewFragmentCreationOperation(
-				page.getSourceFolder(), page.getPackageName(), page
-						.getTypeName(), page.getFragmentKind());
+				page.getSourceFolder(), packageName, page.getTypeName(), page
+						.getFragmentKind());
 		try {
 			this.getContainer().run(false, false, modifyOp);
 		} catch (InvocationTargetException e) {
@@ -104,7 +109,7 @@ public class NewModelicaFragmentWizard extends Wizard implements INewWizard {
 	@Override
 	public void init(IWorkbench arg0, IStructuredSelection arg1) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 }
