@@ -71,14 +71,15 @@ public class EModelicaPlugin extends AbstractUIPlugin {
 		
 		if (!commonMosilabResources.exists()) {
 			try {
-				commonMosilabResources.create(null);
+				commonMosilabResources.create(null, IResource.HIDDEN,null);
 			} catch (CoreException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+		} else {
+			commonMosilabResources.setHidden(true);
 		}
 		commonMosilabResources.open(null);
-		commonMosilabResources.setHidden(true);
 		
 		//first load environments, then setup projects!
 		loadMosilabEnvironments();
