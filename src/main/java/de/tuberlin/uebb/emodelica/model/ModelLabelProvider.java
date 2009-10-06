@@ -20,10 +20,10 @@ public class ModelLabelProvider extends LabelProvider {
 	public Image getImage(Object obj) {
 		if (obj instanceof IVarDefNode) {
 			IVarDefNode node = (IVarDefNode)obj;
-			if (node.getFlags().contains(ENodeFlags.PUBLIC))
-				return Images.PUBLIC_FIELD_DESCRIPTOR.createImage();
-			else
+			if (node.getFlags().contains(ENodeFlags.PROTECTED))
 				return Images.PRIVATE_FIELD_DESCRIPTOR.createImage();
+			else
+				return Images.PUBLIC_FIELD_DESCRIPTOR.createImage();
 		}
 		
 		if (obj instanceof ClassNode) {
