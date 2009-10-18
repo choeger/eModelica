@@ -34,7 +34,7 @@ public class ModelicaSourceViewerConfiguration extends
 
 	public IReconciler getReconciler(ISourceViewer sourceViewer) {
 		if (reconciler == null)
-			reconciler= new MonoReconciler(editor.getModelManager().getReconcilingStrategy(), false);
+			reconciler= new MonoReconciler(editor.getModelManager().getReconcilingStrategy(), true);
 		
 		return reconciler;
 	}

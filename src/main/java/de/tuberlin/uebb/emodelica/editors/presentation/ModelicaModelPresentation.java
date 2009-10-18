@@ -25,6 +25,7 @@ import de.tuberlin.uebb.emodelica.editors.ModelicaSourceViewer;
 import de.tuberlin.uebb.emodelica.model.Model;
 import de.tuberlin.uebb.modelica.im.impl.generated.moparser.NT_Component_Reference;
 import de.tuberlin.uebb.modelica.im.impl.generated.moparser.NT_String_Comment;
+import de.tuberlin.uebb.page.grammar.symbols.Terminal;
 import de.tuberlin.uebb.page.parser.symbols.Absy;
 
 /**
@@ -90,8 +91,10 @@ public class ModelicaModelPresentation implements ITextPresentationListener, ITe
 		}
 
 		private HighlightingPosition createHighlighting(Absy child, TextAttribute textAttribute) { 
-			int start = model.getInput().get(child.getRange().getStartToken()).getStartOffset();			
-			int length = model.getInput().get(child.getRange().getEndToken()).getEndOffset() - start;
+			final Terminal first = model.getInput().get(child.getRange().getStartToken());
+			final int start = first.getStartOffset();			
+			final Terminal last = model.getInput().get(child.getRange().getEndToken());
+			final int length = last.getEndOffset() - start;
 			
 			HighlightingPosition pos = new HighlightingPosition(start, length, textAttribute);
 			

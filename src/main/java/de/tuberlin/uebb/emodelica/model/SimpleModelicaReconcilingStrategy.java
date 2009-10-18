@@ -40,8 +40,7 @@ public class SimpleModelicaReconcilingStrategy implements IReconcilingStrategy, 
 	 */
 	@Override
 	public void reconcile(DirtyRegion dirtyRegion, IRegion subRegion) {
-		// TODO Auto-generated method stub
-
+		modelManager.contentChanged(dirtyRegion);
 	}
 
 	/* (non-Javadoc)

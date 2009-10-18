@@ -4,6 +4,10 @@
 package de.tuberlin.uebb.emodelica.model;
 
 import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Stack;
@@ -15,6 +19,8 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.reconciler.DirtyRegion;
 import org.eclipse.jface.text.reconciler.IReconcilingStrategy;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.part.FileEditorInput;
@@ -26,6 +32,7 @@ import de.tuberlin.uebb.emodelica.util.ParserFactory;
 import de.tuberlin.uebb.modelica.im.impl.generated.moparser.NT_Stored_Definition;
 import de.tuberlin.uebb.page.exceptions.ParserException;
 import de.tuberlin.uebb.page.grammar.symbols.Terminal;
+import de.tuberlin.uebb.page.grammar.symbols.TerminalEOF;
 import de.tuberlin.uebb.page.lexer.ILexer;
 import de.tuberlin.uebb.page.lexer.NonStaticLexer;
 import de.tuberlin.uebb.page.lexer.exceptions.InvalidCharacterException;
@@ -120,7 +127,8 @@ public class ModelicaModelManager implements IModelManager {
 
 	@Override
 	public void contentChanged() {
-		parseModel();
+		Stack<Terminal> inputStack = doLexing();
+		parseModel(inputStack);
 	}
 
 	@Override
@@ -129,10 +137,18 @@ public class ModelicaModelManager implements IModelManager {
 		listener.modelChanged(model, model);
 	}
 	
-	private void parseModel() {
+	private void parseModel(Stack<Terminal> inputStack) {
 		if (parseJob.getState() == Job.RUNNING)
 			parseJob.cancel();
+		
+		parser.init();
+		parser.setInputStack(inputStack);
+		System.err.println("in: " + inputStack.size());
+		System.err.println("starting job...");
+		parseJob.schedule();		
+	}
 
+	private Stack<Terminal> doLexing() {
 		//parsing
 		Stack<Terminal> inputStack = null;
 		BufferedReader contentReader = contentProvider.getContent();
@@ -148,17 +164,12 @@ public class ModelicaModelManager implements IModelManager {
 			e.printStackTrace();
 			inputStack = null;
 			lexerError = new ParseError(e.getOffset(),e.getOffset() + 1, e.getMessage());
-			return;
+			return null;
 		} catch (LexerException e) {
 			e.printStackTrace();
-			return;
+			return null;
 		}
-		
-		parser.init();
-		parser.setInputStack(inputStack);
-		System.err.println("in: " + inputStack.size());
-		System.err.println("starting job...");
-		parseJob.schedule();		
+		return inputStack;
 	}
 
 	@Override
@@ -175,6 +186,57 @@ public class ModelicaModelManager implements IModelManager {
 			errors.add(lexerError);
 			return errors;
 		}
+	}
+
+	@Override
+	public void contentChanged(DirtyRegion dirtyRegion) {
+		BufferedReader reader = contentProvider.getContent();
+		System.err.println("INCREMENTAL CHANGE! "  + dirtyRegion.getText());
+		int index = bisectToStart(dirtyRegion);
+		
+		int offsetDifference = dirtyRegion.getType().equals(DirtyRegion.REMOVE) ? - dirtyRegion.getLength() : dirtyRegion.getLength();
+		
+		try {
+			//if between two terminals our bisect search will deliver the right next terminal index
+			if (index < 0) {
+				index = -(index+1);
+			}
+			
+			Stack<Terminal> inputStack = lexer.relexFromIndex(index, offsetDifference, reader , de.tuberlin.uebb.modelica.im.impl.generated.moparser.LexerDefs.lexerDefs());
+			parseModel(inputStack);
+		} catch (InvalidCharacterException e) {
+			e.printStackTrace();
+			return;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return;
+		}
+	}
+
+	private int bisectToStart(DirtyRegion dirtyRegion) {
+		/* Bisection Search for the change spot */
+		TerminalEOF eof = new TerminalEOF();
+		eof.setStartOffset(dirtyRegion.getOffset());
+		eof.setEndOffset(dirtyRegion.getOffset() + dirtyRegion.getLength());
+
+		Comparator<Terminal> comp = new Comparator<Terminal>() {
+
+			@Override
+			public int compare(Terminal o1, Terminal o2) {
+				//System.err.println("INCREMENTAL comparing: " + o1.getValue() + " " + o1.getStartOffset() + ":" + o1.getEndOffset() + " with " + o2.getStartOffset());
+				
+ 				if (o1.getEndOffset() <= o2.getStartOffset())
+					return -1;
+				
+				if (o1.getStartOffset() > o2.getStartOffset())
+					return 1;
+				
+				return 0;
+			}
+			
+		};
+		
+		return Collections.binarySearch(lexer.getCachedInput(), eof , comp);
 	}
 	
 }

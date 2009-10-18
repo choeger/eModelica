@@ -5,6 +5,8 @@ package de.tuberlin.uebb.emodelica.model;
 
 import java.util.Set;
 
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.reconciler.DirtyRegion;
 import org.eclipse.jface.text.reconciler.IReconcilingStrategy;
 
 import de.tuberlin.uebb.page.parser.ParseError;
@@ -49,5 +51,11 @@ public interface IModelManager {
 	 * @return all parse Errors
 	 */
 	public Set<ParseError> getParseErrors();
+
+	/**
+	 * Incrementally update the model from a dirty region description
+	 * @param dirtyRegion
+	 */
+	public void contentChanged(DirtyRegion dirtyRegion);
 	
 }
