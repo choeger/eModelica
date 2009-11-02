@@ -5,7 +5,7 @@ package de.tuberlin.uebb.emodelica.model;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -19,7 +19,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
-import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.reconciler.DirtyRegion;
 import org.eclipse.jface.text.reconciler.IReconcilingStrategy;
 import org.eclipse.ui.IEditorInput;
@@ -33,6 +32,8 @@ import de.tuberlin.uebb.modelica.im.impl.generated.moparser.NT_Stored_Definition
 import de.tuberlin.uebb.page.exceptions.ParserException;
 import de.tuberlin.uebb.page.grammar.symbols.Terminal;
 import de.tuberlin.uebb.page.grammar.symbols.TerminalEOF;
+import de.tuberlin.uebb.page.incremental.parser.IIncrementalParser;
+import de.tuberlin.uebb.page.incremental.parser.impl.IncrementalParser;
 import de.tuberlin.uebb.page.lexer.ILexer;
 import de.tuberlin.uebb.page.lexer.NonStaticLexer;
 import de.tuberlin.uebb.page.lexer.exceptions.InvalidCharacterException;
@@ -40,6 +41,7 @@ import de.tuberlin.uebb.page.lexer.exceptions.LexerException;
 import de.tuberlin.uebb.page.parser.Automaton;
 import de.tuberlin.uebb.page.parser.ParseError;
 import de.tuberlin.uebb.page.parser.symbols.Absy;
+import de.tuberlin.uebb.page.parser.util.Range;
 
 /**
  * @author choeger
@@ -74,12 +76,13 @@ public class ModelicaModelManager implements IModelManager {
 				arg0.done();
 				return new Status(Status.OK,EModelicaPlugin.PLUGIN_ID,retVal,"parsing failed: " + e.getMessage(),e);
 			}
-			System.err.println("parsing done: " + retVal);
 			arg0.done();
 			return new Status(Status.OK,EModelicaPlugin.PLUGIN_ID,retVal,"parsing finished",null);
 		}
 	}
-	
+
+	private static final int LOOKAHEAD = 3;
+		
 	private Model model = null;
 	private IModelContentProvider contentProvider = null;
 	private Set<IModelChangedListener> listeners = new HashSet<IModelChangedListener>();
@@ -128,7 +131,7 @@ public class ModelicaModelManager implements IModelManager {
 	@Override
 	public void contentChanged() {
 		Stack<Terminal> inputStack = doLexing();
-		parseModel(inputStack);
+		parseModel(inputStack, null);
 	}
 
 	@Override
@@ -137,15 +140,31 @@ public class ModelicaModelManager implements IModelManager {
 		listener.modelChanged(model, model);
 	}
 	
-	private void parseModel(Stack<Terminal> inputStack) {
+	private void parseModel(Stack<Terminal> inputStack, Range damagedRegion) {
 		if (parseJob.getState() == Job.RUNNING)
 			parseJob.cancel();
 		
-		parser.init();
-		parser.setInputStack(inputStack);
-		System.err.println("in: " + inputStack.size());
-		System.err.println("starting job...");
-		parseJob.schedule();		
+		if (damagedRegion != null && model.getChild() != null) {
+			
+			IIncrementalParser iParser = new IncrementalParser();
+			iParser.setup(parser, lexer);
+			try {
+				final Absy newChild = iParser.doParsing(model.getChild(), damagedRegion);
+				
+				if (newChild instanceof NT_Stored_Definition) {
+					model.updateFromAbsy(newChild, lexer);
+				}
+				for (IModelChangedListener l : listeners)
+					l.modelChanged(model, model);
+				
+			} catch (ParserException e) {
+				e.printStackTrace();
+			}
+		} else {
+			parser.init();
+			parser.setInputStack(inputStack);
+			parseJob.schedule();
+		}
 	}
 
 	private Stack<Terminal> doLexing() {
@@ -202,8 +221,16 @@ public class ModelicaModelManager implements IModelManager {
 				index = -(index+1);
 			}
 			
+			System.err.println("BEFORE RE-LEXING: " + model.getChild().getRange() + " " + model.getChild().getLeftMostTerminal() + " - " + model.getChild().getRightMostTerminal());
 			Stack<Terminal> inputStack = lexer.relexFromIndex(index, offsetDifference, reader , de.tuberlin.uebb.modelica.im.impl.generated.moparser.LexerDefs.lexerDefs());
-			parseModel(inputStack);
+			System.err.println("AFTER RE-LEXING: " + model.getChild().getRange());
+			int end = index + 1;
+			while(end < lexer.getCachedInput().size() && lexer.getCachedInput().get(end).getParent() == null)
+				end++;
+			
+			final Range range = new Range(Math.max(index,index - LOOKAHEAD), end);
+			
+			parseModel(inputStack, range);
 		} catch (InvalidCharacterException e) {
 			e.printStackTrace();
 			return;
@@ -225,7 +252,7 @@ public class ModelicaModelManager implements IModelManager {
 			public int compare(Terminal o1, Terminal o2) {
 				//System.err.println("INCREMENTAL comparing: " + o1.getValue() + " " + o1.getStartOffset() + ":" + o1.getEndOffset() + " with " + o2.getStartOffset());
 				
- 				if (o1.getEndOffset() <= o2.getStartOffset())
+ 				if (o1.getEndOffset() < o2.getStartOffset())
 					return -1;
 				
 				if (o1.getStartOffset() > o2.getStartOffset())

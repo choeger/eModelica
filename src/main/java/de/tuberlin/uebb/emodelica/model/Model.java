@@ -39,6 +39,10 @@ public class Model {
 		this.input = lexer.getCachedInput();
 		foldablePositions = new ArrayList<Position>();
 		
+		updateIM(lexer, rootAbsy);
+	}
+
+	private void updateIM(ILexer lexer, Absy rootAbsy) {
 		try {
 			AbsyConverter.setLexer(lexer);
 			this.rootNode = AbsyToIM.buildFromAbsy((NT_Stored_Definition) rootAbsy);
@@ -59,10 +63,11 @@ public class Model {
 	}
 
 	/**
-	 * @param child the child to set
+	 * @param child the new Absy
 	 */
-	public void setChild(Absy child) {
+	public void updateFromAbsy(Absy child, ILexer lexer) {
 		this.child = child;
+		updateIM(lexer, child);
 	}
 
 	public void setInput(List<Terminal> input) {
