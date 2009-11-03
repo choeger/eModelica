@@ -54,7 +54,7 @@ public class ModelicaOutline extends ContentOutlinePage implements IModelChanged
 		if (node == null)
 			return;
 		try {
-			System.err.println("setting highlighting to " + node.getStartOffset() + ":" + node.getEndOffset());
+			System.err.println("setting highlighting to " + node.toString() + " [" + node.getClass().getSimpleName() + "]" + node.getStartOffset() + ":" + node.getEndOffset());
 			Position pos = new Position(node.getStartOffset(),node.getEndOffset()-node.getStartOffset());
 			editor.setHighlightRange(pos.offset, pos.length, true);
 			//TODO: change this to happen on a flattened model only for identifiers (see java outline)

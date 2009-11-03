@@ -51,11 +51,5 @@ public interface IModelManager {
 	 * @return all parse Errors
 	 */
 	public Set<ParseError> getParseErrors();
-
-	/**
-	 * Incrementally update the model from a dirty region description
-	 * @param dirtyRegion
-	 */
-	public void contentChanged(DirtyRegion dirtyRegion);
 	
 }

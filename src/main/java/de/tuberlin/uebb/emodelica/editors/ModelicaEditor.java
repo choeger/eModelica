@@ -29,8 +29,8 @@ import de.tuberlin.uebb.emodelica.model.IModelChangedListener;
 import de.tuberlin.uebb.emodelica.model.IModelManager;
 import de.tuberlin.uebb.emodelica.model.Model;
 import de.tuberlin.uebb.emodelica.model.ModelicaModelManager;
+import de.tuberlin.uebb.page.parser.LexerError;
 import de.tuberlin.uebb.page.parser.ParseError;
-
 
 /**
  * 
@@ -47,9 +47,9 @@ public class ModelicaEditor extends TextEditor implements IModelChangedListener 
 	private IModelManager modelManager;
 	private ProjectionSupport projectionSupport;
 	private ProjectionAnnotationModel annotationModel;
-	private TreeMap<Integer, Annotation> oldAnnotations = new TreeMap<Integer,Annotation>();
+	private TreeMap<Integer, Annotation> oldAnnotations = new TreeMap<Integer, Annotation>();
 	private ModelicaModelPresentation modelPresentation;
-	
+
 	/* Methods for code folding support */
 	@Override
 	public void createPartControl(Composite parent) {
@@ -74,7 +74,7 @@ public class ModelicaEditor extends TextEditor implements IModelChangedListener 
 		// ensure decoration support has been created and configured.
 		getSourceViewerDecorationSupport(viewer);
 		modelPresentation = new ModelicaModelPresentation(viewer);
-		
+
 		return viewer;
 	}
 
@@ -83,31 +83,32 @@ public class ModelicaEditor extends TextEditor implements IModelChangedListener 
 		// with their corresponding positions
 		HashMap<ProjectionAnnotation, Position> newAnnotations = new HashMap<ProjectionAnnotation, Position>();
 		TreeMap<Integer, Annotation> newMap = new TreeMap<Integer, Annotation>();
-		
+
 		for (int i = 0; i < positions.size(); i++) {
 			final Position key = positions.get(i);
 			ProjectionAnnotation annotation = new ProjectionAnnotation();
 			annotation.setRangeIndication(true);
-			
+
 			/*
 			 * try to keep old annotations
 			 */
 			if (oldAnnotations.containsKey(key.offset)) {
 				final Annotation value = oldAnnotations.get(key.offset);
-				if ((value instanceof ProjectionAnnotation) && (annotationModel.getPosition(value).length == key.length)) {
+				if ((value instanceof ProjectionAnnotation)
+						&& (annotationModel.getPosition(value).length == key.length)) {
 					annotation = (ProjectionAnnotation) value;
-				} 
+				}
 			}
-			
+
 			newAnnotations.put(annotation, key);
 			newMap.put(key.offset, annotation);
 		}
 
 		// TODO: use this method for incremental stuff
 		// delete old Annotations add all new ones
-		annotationModel.modifyAnnotations(oldAnnotations.values().toArray(new ProjectionAnnotation[] {}), 
-				newAnnotations, null);
-	
+		annotationModel.modifyAnnotations(oldAnnotations.values().toArray(
+				new ProjectionAnnotation[] {}), newAnnotations, null);
+
 		oldAnnotations = newMap;
 	}
 
@@ -118,7 +119,8 @@ public class ModelicaEditor extends TextEditor implements IModelChangedListener 
 		super();
 		this.modelManager = new ModelicaModelManager(this);
 		this.modelManager.registerListener(this);
-		this.setSourceViewerConfiguration(new ModelicaSourceViewerConfiguration(
+		this
+				.setSourceViewerConfiguration(new ModelicaSourceViewerConfiguration(
 						this));
 	}
 
@@ -167,10 +169,11 @@ public class ModelicaEditor extends TextEditor implements IModelChangedListener 
 			input.getFile().deleteMarkers(IMarker.PROBLEM, true, 1);
 			addErrorMarkers(newModel, input);
 
-			updateFoldingStructure(newModel.getAllFoldablePositions());
-			Display.getDefault().asyncExec(
-					modelPresentation.getModelPresentationUpdater(
-							newModel));
+			if (newModel != null) {
+				updateFoldingStructure(newModel.getAllFoldablePositions());
+				Display.getDefault().asyncExec(
+					modelPresentation.getModelPresentationUpdater(newModel));
+			}
 
 		} catch (CoreException e) {
 			e.printStackTrace();
@@ -189,26 +192,33 @@ public class ModelicaEditor extends TextEditor implements IModelChangedListener 
 		for (ParseError parseError : modelManager.getParseErrors()) {
 			int errStart = parseError.getStartOffset();
 			int errEnd = parseError.getEndOffset();
-			int startOffset = newModel.getInput().get(
-					newModel.getInput().size() - 1).getEndOffset();
-			int endOffset = startOffset;
+			if (parseError instanceof LexerError) {
+				addErrorMarker(input, parseError, parseError.getStartOffset(),
+						parseError.getEndOffset());
+			} else if (newModel != null) {
+				int startOffset = newModel.getInput().get(
+						newModel.getInput().size() - 1).getEndOffset();
+				int endOffset = startOffset;
 
-			if (errStart >= 0)
-				startOffset = newModel.getInput().get(errStart)
-						.getStartOffset();
+				if (errStart >= 0)
+					startOffset = newModel.getInput().get(errStart)
+							.getStartOffset();
 
-			if (errEnd >= 0)
-				endOffset = newModel.getInput().get(errEnd).getEndOffset();
+				if (errEnd >= 0)
+					endOffset = newModel.getInput().get(errEnd).getEndOffset();
 
-			System.err.println("Error! StartOffset: " + startOffset);
-			System.err.println("Error! EndOffset: " + endOffset);
-			IMarker errorMarker = input.getFile().createMarker(IMarker.PROBLEM);
-			errorMarker.setAttribute(IMarker.MESSAGE, parseError
-					.getDescription());
-			errorMarker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
-			errorMarker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
-			errorMarker.setAttribute(IMarker.CHAR_START, startOffset);
-			errorMarker.setAttribute(IMarker.CHAR_END, endOffset);
+				addErrorMarker(input, parseError, startOffset, endOffset);
+			}
 		}
+	}
+
+	private void addErrorMarker(FileEditorInput input, ParseError parseError,
+			int startOffset, int endOffset) throws CoreException {
+		IMarker errorMarker = input.getFile().createMarker(IMarker.PROBLEM);
+		errorMarker.setAttribute(IMarker.MESSAGE, parseError.getDescription());
+		errorMarker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
+		errorMarker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+		errorMarker.setAttribute(IMarker.CHAR_START, startOffset);
+		errorMarker.setAttribute(IMarker.CHAR_END, endOffset);
 	}
 }

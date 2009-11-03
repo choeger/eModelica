@@ -40,7 +40,7 @@ public class SimpleModelicaReconcilingStrategy implements IReconcilingStrategy, 
 	 */
 	@Override
 	public void reconcile(DirtyRegion dirtyRegion, IRegion subRegion) {
-		modelManager.contentChanged(dirtyRegion);
+		
 	}
 
 	/* (non-Javadoc)
@@ -62,7 +62,6 @@ public class SimpleModelicaReconcilingStrategy implements IReconcilingStrategy, 
 	@Override
 	public void setProgressMonitor(IProgressMonitor monitor) {
 		// TODO Auto-generated method stub
-		
 	}
 
 	@Override

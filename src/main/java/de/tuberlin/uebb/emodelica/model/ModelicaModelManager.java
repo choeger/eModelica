@@ -4,11 +4,9 @@
 package de.tuberlin.uebb.emodelica.model;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 
@@ -19,7 +17,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
-import org.eclipse.jface.text.reconciler.DirtyRegion;
 import org.eclipse.jface.text.reconciler.IReconcilingStrategy;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.part.FileEditorInput;
@@ -31,7 +28,6 @@ import de.tuberlin.uebb.emodelica.util.ParserFactory;
 import de.tuberlin.uebb.modelica.im.impl.generated.moparser.NT_Stored_Definition;
 import de.tuberlin.uebb.page.exceptions.ParserException;
 import de.tuberlin.uebb.page.grammar.symbols.Terminal;
-import de.tuberlin.uebb.page.grammar.symbols.TerminalEOF;
 import de.tuberlin.uebb.page.incremental.parser.IIncrementalParser;
 import de.tuberlin.uebb.page.incremental.parser.impl.IncrementalParser;
 import de.tuberlin.uebb.page.lexer.ILexer;
@@ -39,6 +35,7 @@ import de.tuberlin.uebb.page.lexer.NonStaticLexer;
 import de.tuberlin.uebb.page.lexer.exceptions.InvalidCharacterException;
 import de.tuberlin.uebb.page.lexer.exceptions.LexerException;
 import de.tuberlin.uebb.page.parser.Automaton;
+import de.tuberlin.uebb.page.parser.LexerError;
 import de.tuberlin.uebb.page.parser.ParseError;
 import de.tuberlin.uebb.page.parser.symbols.Absy;
 import de.tuberlin.uebb.page.parser.util.Range;
@@ -90,24 +87,17 @@ public class ModelicaModelManager implements IModelManager {
 	private final ILexer lexer = new NonStaticLexer();
 	private final Automaton parser = ParserFactory.getAutomatonInstance();
 	private final ModelicaParseJob parseJob = new ModelicaParseJob("resource",parser);
+	private final ModelicaEditor modelicaEditor;
 	
 	public ModelicaModelManager(final ModelicaEditor modelicaEditor) {
+		this.modelicaEditor = modelicaEditor;
 		parseJob.addJobChangeListener(new JobChangeAdapter() {
 	        public void done(IJobChangeEvent event) {
 	        	if (event.getResult().isOK()) {
 	        		Absy rootAbsy = null;
 	        		if (!parser.getTokenStack().isEmpty() && (parser.getTokenStack().peek() instanceof Absy))
 	        			rootAbsy = (Absy)parser.getTokenStack().pop();
-	        		if (rootAbsy instanceof NT_Stored_Definition) {
-	        			Model newModel = new Model(contentProvider.getDocument(), lexer, rootAbsy);
-	        			for (IModelChangedListener l : listeners)
-	        				l.modelChanged(model, newModel);
-	        			model = newModel;
-		        		
-	        			IEditorInput input = modelicaEditor.getEditorInput();
-		        		IFile file = ((FileEditorInput) input).getFile();
-		        		ModelRepository.updateModel(file, newModel);
-	        		}
+	        		parsingDone(rootAbsy);
 	        	}
 	        }
 	     });
@@ -130,8 +120,41 @@ public class ModelicaModelManager implements IModelManager {
 
 	@Override
 	public void contentChanged() {
+		ArrayList<Terminal> oldInput = lexer.getCachedInput();
 		Stack<Terminal> inputStack = doLexing();
-		parseModel(inputStack, null);
+		
+		if (inputStack == null) {
+			lexer.setCachedInput(oldInput);
+			parsingDone(null);
+			return;
+		}
+		
+		if (model == null)		
+			parseModel(inputStack, null);
+		else {
+			Range changed = applyDiff(oldInput, lexer.getCachedInput());
+			incrementalParseModel(inputStack, changed);
+		}
+	}
+
+	private void incrementalParseModel(Stack<Terminal> inputStack, Range changed) {
+		System.err.print("CHANGED region: " + changed);
+		for (int i = changed.getStartToken(); i < changed.getEndToken(); i++)
+			System.err.print(lexer.getCachedInput().get(i));
+		System.err.println();
+		
+		IIncrementalParser iParser = new IncrementalParser();
+		iParser.setup(parser, lexer);
+		try {
+			//Modelica Lookahead
+			changed.setStartToken(Math.max(0,changed.getStartToken() - LOOKAHEAD));
+			Absy root = iParser.doParsing(model.getChild(), changed);
+			parsingDone(root);
+			
+		} catch (ParserException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	@Override
@@ -180,9 +203,8 @@ public class ModelicaModelManager implements IModelManager {
 			 * simply set inputStack to null.
 			 * Parser will handle that, save the lexer error for the user
 			 */
-			e.printStackTrace();
 			inputStack = null;
-			lexerError = new ParseError(e.getOffset(),e.getOffset() + 1, e.getMessage());
+			lexerError = new LexerError(e.getOffset(),e.getOffset() + 1, e.getMessage());
 			return null;
 		} catch (LexerException e) {
 			e.printStackTrace();
@@ -191,6 +213,44 @@ public class ModelicaModelManager implements IModelManager {
 		return inputStack;
 	}
 
+	private Range applyDiff(List<Terminal> oldInput, List<Terminal> cachedInput) {
+		
+		//common prefix elimination
+		int left = 0;
+		final int maxl = Math.min(oldInput.size(), cachedInput.size());
+		while(left < maxl) {
+			final Terminal oldTerminal = oldInput.get(left);
+			final Terminal newTerminal = cachedInput.get(left);
+			//System.err.println("PREFIX: " + oldTerminal + " == " + newTerminal + "??");
+			if (oldTerminal.equals(newTerminal) && oldTerminal.valueHash == newTerminal.valueHash) {
+				oldTerminal.setStartOffset(newTerminal.getStartOffset());
+				oldTerminal.setEndOffset(newTerminal.getEndOffset());
+				cachedInput.set(left, oldTerminal);
+			} else break;
+			left++;
+		}
+		
+		//common suffix elimination
+		final int maxr = Math.min(oldInput.size() - left, cachedInput.size() - left);
+		if (maxr == 0) return new Range(left + 1, left+1);
+		
+		int right = 1;
+		while(right <= maxr) {
+			final Terminal oldTerminal = oldInput.get(oldInput.size() - right);
+			final Terminal newTerminal = cachedInput.get(cachedInput.size() - right);
+			//System.err.println("SUFFIX: " + oldTerminal + " == " + newTerminal + "??");
+			if (oldTerminal.equals(newTerminal) && oldTerminal.valueHash == newTerminal.valueHash) {
+				oldTerminal.setRange(newTerminal.getRange());
+				oldTerminal.setStartOffset(newTerminal.getStartOffset());
+				oldTerminal.setEndOffset(newTerminal.getEndOffset());
+				cachedInput.set(cachedInput.size() - right, oldTerminal);
+			} else break;
+			right++;
+		}
+
+		return new Range(left, (cachedInput.size() - right) + 1);
+	}
+	
 	@Override
 	public IReconcilingStrategy getReconcilingStrategy() {
 		return new SimpleModelicaReconcilingStrategy(this);
@@ -207,63 +267,18 @@ public class ModelicaModelManager implements IModelManager {
 		}
 	}
 
-	@Override
-	public void contentChanged(DirtyRegion dirtyRegion) {
-		BufferedReader reader = contentProvider.getContent();
-		System.err.println("INCREMENTAL CHANGE! "  + dirtyRegion.getText());
-		int index = bisectToStart(dirtyRegion);
-		
-		int offsetDifference = dirtyRegion.getType().equals(DirtyRegion.REMOVE) ? - dirtyRegion.getLength() : dirtyRegion.getLength();
-		
-		try {
-			//if between two terminals our bisect search will deliver the right next terminal index
-			if (index < 0) {
-				index = -(index+1);
-			}
+	private void parsingDone(Absy rootAbsy) {
+		if (rootAbsy instanceof NT_Stored_Definition) {
+			Model newModel = new Model(contentProvider.getDocument(), lexer, rootAbsy);
+			for (IModelChangedListener l : listeners)
+				l.modelChanged(model, newModel);
+			model = newModel;
 			
-			System.err.println("BEFORE RE-LEXING: " + model.getChild().getRange() + " " + model.getChild().getLeftMostTerminal() + " - " + model.getChild().getRightMostTerminal());
-			Stack<Terminal> inputStack = lexer.relexFromIndex(index, offsetDifference, reader , de.tuberlin.uebb.modelica.im.impl.generated.moparser.LexerDefs.lexerDefs());
-			System.err.println("AFTER RE-LEXING: " + model.getChild().getRange());
-			int end = index + 1;
-			while(end < lexer.getCachedInput().size() && lexer.getCachedInput().get(end).getParent() == null)
-				end++;
-			
-			final Range range = new Range(Math.max(index,index - LOOKAHEAD), end);
-			
-			parseModel(inputStack, range);
-		} catch (InvalidCharacterException e) {
-			e.printStackTrace();
-			return;
-		} catch (IOException e) {
-			e.printStackTrace();
-			return;
+			IEditorInput input = modelicaEditor.getEditorInput();
+			IFile file = ((FileEditorInput) input).getFile();
+			ModelRepository.updateModel(file, newModel);
+		} else {
+			modelicaEditor.modelChanged(model, model);
 		}
 	}
-
-	private int bisectToStart(DirtyRegion dirtyRegion) {
-		/* Bisection Search for the change spot */
-		TerminalEOF eof = new TerminalEOF();
-		eof.setStartOffset(dirtyRegion.getOffset());
-		eof.setEndOffset(dirtyRegion.getOffset() + dirtyRegion.getLength());
-
-		Comparator<Terminal> comp = new Comparator<Terminal>() {
-
-			@Override
-			public int compare(Terminal o1, Terminal o2) {
-				//System.err.println("INCREMENTAL comparing: " + o1.getValue() + " " + o1.getStartOffset() + ":" + o1.getEndOffset() + " with " + o2.getStartOffset());
-				
- 				if (o1.getEndOffset() < o2.getStartOffset())
-					return -1;
-				
-				if (o1.getStartOffset() > o2.getStartOffset())
-					return 1;
-				
-				return 0;
-			}
-			
-		};
-		
-		return Collections.binarySearch(lexer.getCachedInput(), eof , comp);
-	}
-	
 }
