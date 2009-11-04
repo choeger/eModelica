@@ -56,13 +56,13 @@
 		<dependency>
 			<groupId>de.tuberlin.uebb.modelica</groupId>
 			<artifactId>im</artifactId>
-			<version>[0.0.5,0.2)</version>
+			<version>[0.0.6,0.2)</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>de.tuberlin.uebb.page</groupId>
 			<artifactId>page-runtime</artifactId>
-			<version>[0.1.3,0.2)</version>
+			<version>[0.1.6,0.2)</version>
 			<scope>compile</scope>
 		</dependency>
 	<?eclipse dependencies?>

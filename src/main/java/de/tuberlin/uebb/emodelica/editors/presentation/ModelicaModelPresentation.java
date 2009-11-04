@@ -26,7 +26,7 @@ import de.tuberlin.uebb.emodelica.model.Model;
 import de.tuberlin.uebb.modelica.im.impl.generated.moparser.NT_Component_Reference;
 import de.tuberlin.uebb.modelica.im.impl.generated.moparser.NT_String_Comment;
 import de.tuberlin.uebb.page.grammar.symbols.Terminal;
-import de.tuberlin.uebb.page.parser.symbols.Absy;
+import de.tuberlin.uebb.page.parser.symbols.IAbsy;
 
 /**
  * @author choeger
@@ -90,7 +90,7 @@ public class ModelicaModelPresentation implements ITextPresentationListener, ITe
 			return reconciler.createRepairDescription(damage, document);
 		}
 
-		private HighlightingPosition createHighlighting(Absy child, TextAttribute textAttribute) { 
+		private HighlightingPosition createHighlighting(IAbsy child, TextAttribute textAttribute) { 
 			final Terminal first = model.getInput().get(child.getRange().getStartToken());
 			final int start = first.getStartOffset();			
 			final Terminal last = model.getInput().get(child.getRange().getEndToken());
@@ -101,16 +101,16 @@ public class ModelicaModelPresentation implements ITextPresentationListener, ITe
 			return pos;
 		}
 
-		private void recalculateHighlighting(Absy start) {
+		private void recalculateHighlighting(IAbsy start) {
 			if (start != null)
-				for (Absy absy : start.getChildren()) {
+				for (IAbsy absy : start.getChildren()) {
 					if (absy instanceof NT_String_Comment) {
 						HighlightingPosition pos = createHighlighting(absy, ModelicaColors.stringCommentText);
 						highlighted.add(pos);
 					} else if (absy instanceof NT_Component_Reference) {
 						NT_Component_Reference reference = (NT_Component_Reference)absy;
 						TextAttribute attr = new TextAttribute(Display.getCurrent().getSystemColor(SWT.COLOR_DARK_BLUE), null, SWT.ITALIC);
-						Absy last = reference.getNt_referencepart().getLastChild();
+						IAbsy last = reference.getNt_referencepart().getLastChild();
 						HighlightingPosition pos = createHighlighting(last, attr);
 						highlighted.add(pos);
 					} else recalculateHighlighting(absy);

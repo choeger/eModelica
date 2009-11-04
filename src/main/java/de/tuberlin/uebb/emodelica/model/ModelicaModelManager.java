@@ -27,6 +27,7 @@ import de.tuberlin.uebb.emodelica.editors.ModelicaEditor;
 import de.tuberlin.uebb.emodelica.util.ParserFactory;
 import de.tuberlin.uebb.modelica.im.impl.generated.moparser.NT_Stored_Definition;
 import de.tuberlin.uebb.page.exceptions.ParserException;
+import de.tuberlin.uebb.page.exceptions.UnexpectedEOFException;
 import de.tuberlin.uebb.page.grammar.symbols.Terminal;
 import de.tuberlin.uebb.page.incremental.parser.IIncrementalParser;
 import de.tuberlin.uebb.page.incremental.parser.impl.IncrementalParser;
@@ -38,6 +39,7 @@ import de.tuberlin.uebb.page.parser.Automaton;
 import de.tuberlin.uebb.page.parser.LexerError;
 import de.tuberlin.uebb.page.parser.ParseError;
 import de.tuberlin.uebb.page.parser.symbols.Absy;
+import de.tuberlin.uebb.page.parser.symbols.IAbsy;
 import de.tuberlin.uebb.page.parser.util.Range;
 
 /**
@@ -148,12 +150,15 @@ public class ModelicaModelManager implements IModelManager {
 		try {
 			//Modelica Lookahead
 			changed.setStartToken(Math.max(0,changed.getStartToken() - LOOKAHEAD));
-			Absy root = iParser.doParsing(model.getChild(), changed);
+			IAbsy root = iParser.doParsing(model.getChild(), changed);
 			parsingDone(root);
 			
 		} catch (ParserException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			if (e instanceof UnexpectedEOFException) {
+				parser.getErrorSet().add(new ParseError(lexer.getCachedInput().size() - 1,lexer.getCachedInput().size() - 1, e.getMessage()));
+				parsingDone(null);
+			}
+			else e.printStackTrace();
 		}
 	}
 
@@ -168,11 +173,11 @@ public class ModelicaModelManager implements IModelManager {
 			parseJob.cancel();
 		
 		if (damagedRegion != null && model.getChild() != null) {
-			
+			/* incremental parsing */
 			IIncrementalParser iParser = new IncrementalParser();
 			iParser.setup(parser, lexer);
 			try {
-				final Absy newChild = iParser.doParsing(model.getChild(), damagedRegion);
+				final IAbsy newChild = iParser.doParsing(model.getChild(), damagedRegion);
 				
 				if (newChild instanceof NT_Stored_Definition) {
 					model.updateFromAbsy(newChild, lexer);
@@ -184,6 +189,7 @@ public class ModelicaModelManager implements IModelManager {
 				e.printStackTrace();
 			}
 		} else {
+			/* batch parsing */
 			parser.init();
 			parser.setInputStack(inputStack);
 			parseJob.schedule();
@@ -267,7 +273,7 @@ public class ModelicaModelManager implements IModelManager {
 		}
 	}
 
-	private void parsingDone(Absy rootAbsy) {
+	private void parsingDone(IAbsy rootAbsy) {
 		if (rootAbsy instanceof NT_Stored_Definition) {
 			Model newModel = new Model(contentProvider.getDocument(), lexer, rootAbsy);
 			for (IModelChangedListener l : listeners)
@@ -278,6 +284,7 @@ public class ModelicaModelManager implements IModelManager {
 			IFile file = ((FileEditorInput) input).getFile();
 			ModelRepository.updateModel(file, newModel);
 		} else {
+			model.setInput(lexer.getCachedInput());
 			modelicaEditor.modelChanged(model, model);
 		}
 	}

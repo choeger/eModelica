@@ -96,6 +96,6 @@ Import-Package: de.tuberlin.uebb.emodelica,de.tuberlin.uebb.emodelica.
  ws.contentoutline,org.eclipse.ui.wizards,org.eclipse.ui.wizards.newre
  source,org.osgi.framework;version="1.4",org.w3c.dom,org.xml.sax
 Bundle-ClassPath: .,
- im-0.0.5.jar,
- page-runtime-0.1.5.jar,
+ im-0.0.6.jar,
+ page-runtime-0.1.6.jar,
  getopt-1.0.12.jar

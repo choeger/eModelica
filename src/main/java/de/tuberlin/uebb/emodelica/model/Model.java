@@ -11,12 +11,13 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
 
 import de.tuberlin.uebb.modelica.im.impl.generated.moparser.NT_Stored_Definition;
-import de.tuberlin.uebb.modelica.im.impl.generator.AbsyConverter;
 import de.tuberlin.uebb.modelica.im.impl.generator.AbsyToIM;
+import de.tuberlin.uebb.modelica.im.impl.mappings.nodes.StoredDefinitionMapping;
 import de.tuberlin.uebb.modelica.im.impl.nodes.ClassNode;
 import de.tuberlin.uebb.page.grammar.symbols.Terminal;
 import de.tuberlin.uebb.page.lexer.ILexer;
 import de.tuberlin.uebb.page.parser.symbols.Absy;
+import de.tuberlin.uebb.page.parser.symbols.IAbsy;
 import de.tuberlin.uebb.page.parser.util.Range;
 
 /**
@@ -27,13 +28,13 @@ public class Model {
 	
 	private List<Terminal> input;
 	
-	private Absy child = null;
+	private IAbsy child = null;
 
 	private ClassNode rootNode;
 	private ArrayList<Position> foldablePositions;
 	private IDocument document;
 	
-	public Model(IDocument document, ILexer lexer, Absy rootAbsy) {
+	public Model(IDocument document, ILexer lexer, IAbsy rootAbsy) {
 		this.document = document;
 		this.child = rootAbsy;
 		this.input = lexer.getCachedInput();
@@ -42,10 +43,13 @@ public class Model {
 		updateIM(lexer, rootAbsy);
 	}
 
-	private void updateIM(ILexer lexer, Absy rootAbsy) {
+	private void updateIM(ILexer lexer, IAbsy rootAbsy) {
 		try {
-			AbsyConverter.setLexer(lexer);
-			this.rootNode = AbsyToIM.buildFromAbsy((NT_Stored_Definition) rootAbsy);
+			StoredDefinitionMapping mapping = new StoredDefinitionMapping();
+			mapping.init((NT_Stored_Definition) rootAbsy);
+			mapping.update();
+			rootNode = mapping.getResultIM();
+			
 			System.err.println("ROOT NODE: " + rootNode.toString());
 			System.err.println("CHILDREN: " + rootNode.getChildren());
 			System.err.println("ERRORS:" + AbsyToIM.getErrorList());
@@ -58,14 +62,14 @@ public class Model {
 	/**
 	 * @return the child
 	 */
-	public Absy getChild() {
+	public IAbsy getChild() {
 		return child;
 	}
 
 	/**
 	 * @param child the new Absy
 	 */
-	public void updateFromAbsy(Absy child, ILexer lexer) {
+	public void updateFromAbsy(IAbsy child, ILexer lexer) {
 		this.child = child;
 		updateIM(lexer, child);
 	}

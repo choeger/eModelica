@@ -4,9 +4,8 @@
 package de.tuberlin.uebb.emodelica.views.statistics;
 
 import de.tuberlin.uebb.emodelica.model.Model;
-import de.tuberlin.uebb.page.parser.symbols.Absy;
+import de.tuberlin.uebb.page.parser.symbols.IAbsy;
 import de.tuberlin.uebb.page.parser.symbols.ListToken;
-import de.tuberlin.uebb.page.parser.symbols.Token;
 
 /**
  * @author choeger
@@ -78,13 +77,13 @@ public class ModelStatistic {
 		this.lists = lists;
 	}
 
-	private void gatherStats(Absy node){
+	private void gatherStats(IAbsy node){
 		nodes++;
 		if (node instanceof ListToken)
 			lists++;
 		
 		if (node.hasChildren()) {
-			for (Absy child : node.getChildren())
+			for (IAbsy child : node.getChildren())
 				gatherStats(child);
 		}
 	}
