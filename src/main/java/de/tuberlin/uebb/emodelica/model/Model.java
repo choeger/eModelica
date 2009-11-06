@@ -45,8 +45,12 @@ public class Model {
 
 	private void updateIM(ILexer lexer, IAbsy rootAbsy) {
 		try {
-			StoredDefinitionMapping mapping = new StoredDefinitionMapping();
-			mapping.init((NT_Stored_Definition) rootAbsy);
+			StoredDefinitionMapping mapping = (StoredDefinitionMapping) rootAbsy.adapt(StoredDefinitionMapping.class);
+			if (mapping == null) {
+				mapping = new StoredDefinitionMapping();
+				mapping.init((NT_Stored_Definition) rootAbsy);
+				rootAbsy.addAdapter(StoredDefinitionMapping.class, mapping);
+			}
 			mapping.update();
 			rootNode = mapping.getResultIM();
 			
