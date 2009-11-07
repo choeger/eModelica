@@ -9,7 +9,10 @@ import de.tuberlin.uebb.emodelica.Images;
 import de.tuberlin.uebb.modelica.im.impl.nodes.ClassNode;
 import de.tuberlin.uebb.modelica.im.nodes.EClassType;
 import de.tuberlin.uebb.modelica.im.nodes.ENodeFlags;
+import de.tuberlin.uebb.modelica.im.nodes.IImportNode;
+import de.tuberlin.uebb.modelica.im.nodes.IImports;
 import de.tuberlin.uebb.modelica.im.nodes.IVarDefNode;
+import de.tuberlin.uebb.modelica.im.nodes.IWithinStatement;
 
 
 public class ModelLabelProvider extends LabelProvider {
@@ -26,12 +29,24 @@ public class ModelLabelProvider extends LabelProvider {
 				return Images.PUBLIC_FIELD_DESCRIPTOR.createImage();
 		}
 		
+		if (obj instanceof IWithinStatement) {
+			return Images.WITHIN_PKG_IMAGE_DESCRIPTOR.createImage();
+		}
+		
+		if (obj instanceof IImports) {
+			return Images.IMPORT_IMAGE_DESCRIPTOR.createImage();
+		}
+		
+		if (obj instanceof IImportNode) {
+			return Images.SINGLE_IMPORT_IMAGE_DESCRIPTOR.createImage();
+		}
+		
 		if (obj instanceof ClassNode) {
 			ClassNode classNode = (ClassNode)obj;
 			if (classNode.getClassType().equals(EClassType.CLASS))
 				return Images.CLASS_IMAGE_DESCRIPTOR.createImage();
 			if (classNode.getClassType().equals(EClassType.PACKAGE))
-				return Images.PKG_IMAGE_DESCRIPTOR.createImage();			
+				return Images.PKG_IMAGE_DESCRIPTOR.createImage();
 		}
 		
 		String imageKey = ISharedImages.IMG_OBJ_ELEMENT;
