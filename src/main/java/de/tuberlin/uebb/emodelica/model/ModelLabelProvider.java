@@ -15,7 +15,7 @@ import de.tuberlin.uebb.modelica.im.nodes.IVarDefNode;
 public class ModelLabelProvider extends LabelProvider {
 
 	public String getText(Object obj) {
-		return obj.toString() + "[" + obj.getClass().getSimpleName() + "]";
+		return obj.toString() + "[" + obj.getClass().getSimpleName() + "] @" + Integer.toHexString(System.identityHashCode(obj));
 	}
 	public Image getImage(Object obj) {
 		if (obj instanceof IVarDefNode) {

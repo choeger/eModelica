@@ -81,7 +81,9 @@ public class ModelicaOutline extends ContentOutlinePage implements IModelChanged
 	}
 
 	private void updateTree() {
+		Object[] expanded = this.getTreeViewer().getExpandedElements();
 		if (input != null)
 			this.getTreeViewer().setInput(input.getRootNode());
+		this.getTreeViewer().setExpandedElements(expanded);
 	}
 }

@@ -14,6 +14,7 @@ import de.tuberlin.uebb.modelica.im.impl.generated.moparser.NT_Stored_Definition
 import de.tuberlin.uebb.modelica.im.impl.generator.AbsyToIM;
 import de.tuberlin.uebb.modelica.im.impl.mappings.nodes.StoredDefinitionMapping;
 import de.tuberlin.uebb.modelica.im.impl.nodes.ClassNode;
+import de.tuberlin.uebb.modelica.im.impl.nodes.StoredDefinitionNode;
 import de.tuberlin.uebb.page.grammar.symbols.Terminal;
 import de.tuberlin.uebb.page.lexer.ILexer;
 import de.tuberlin.uebb.page.parser.symbols.Absy;
@@ -30,7 +31,7 @@ public class Model {
 	
 	private IAbsy child = null;
 
-	private ClassNode rootNode;
+	private StoredDefinitionNode rootNode;
 	private ArrayList<Position> foldablePositions;
 	private IDocument document;
 	
@@ -90,7 +91,7 @@ public class Model {
 		return foldablePositions;
 	}
 
-	public ClassNode getRootNode() {
+	public StoredDefinitionNode getRootNode() {
 		return rootNode;
 	}
 
