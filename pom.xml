@@ -6,7 +6,7 @@
 	<artifactId>emodelica</artifactId>
 	<packaging>bundle</packaging>
 	<name>eModelica</name>
-	<version>0.1.6</version>
+	<version>0.1.7</version>
 	<description>Modelica Integration for eclipse</description>
 	<properties>
 		<bundle.symbolicName>de.tuberlin.uebb.emodelica</bundle.symbolicName>
@@ -62,7 +62,7 @@
 		<dependency>
 			<groupId>de.tuberlin.uebb.page</groupId>
 			<artifactId>page-runtime</artifactId>
-			<version>[0.1.6,0.2)</version>
+			<version>[0.1.7,0.2)</version>
 			<scope>compile</scope>
 		</dependency>
 	<?eclipse dependencies?>
@@ -142,7 +142,11 @@
 				<configuration>
 					<pde>true</pde>
 					<manifest>${basedir}/META-INF/MANIFEST.MF</manifest>
-					<sourceIncludes>src/main/java/**/*.java</sourceIncludes>
+					<sourceIncludes>
+						<sourceInclude>
+							src/main/java/**/*.java
+						</sourceInclude>
+					</sourceIncludes>
 				</configuration>
 			</plugin>
 			<plugin>

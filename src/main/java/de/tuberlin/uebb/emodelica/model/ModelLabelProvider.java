@@ -47,6 +47,8 @@ public class ModelLabelProvider extends LabelProvider {
 				return Images.CLASS_IMAGE_DESCRIPTOR.createImage();
 			if (classNode.getClassType().equals(EClassType.PACKAGE))
 				return Images.PKG_IMAGE_DESCRIPTOR.createImage();
+			if (classNode.getClassType().equals(EClassType.MODEL))
+				return Images.MODEL_IMAGE_DESCRIPTOR.createImage();
 		}
 		
 		String imageKey = ISharedImages.IMG_OBJ_ELEMENT;

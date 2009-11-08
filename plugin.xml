@@ -420,4 +420,21 @@
             id="de.tuberlin.uebb.emodelica.views.tabularView">
       </Viewer>
    </extension>
+   <extension
+         point="org.eclipse.ui.decorators">
+      <decorator
+            class="de.tuberlin.uebb.emodelica.model.ModelDecorator"
+            id="emodelica.decorator1"
+            label="Modelica Modell Decorator"
+            lightweight="true"
+            state="true">
+         <enablement>
+            <or>
+               <objectClass
+                     name="de.tuberlin.uebb.modelica.im.nodes.INode">
+               </objectClass>
+            </or>
+         </enablement>
+      </decorator>
+   </extension>
 </plugin>

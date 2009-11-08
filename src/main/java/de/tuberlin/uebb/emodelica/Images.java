@@ -21,7 +21,7 @@ public class Images {
 	public static final ImageDescriptor PLUGIN_IMAGE_DESCRIPTOR =
 		ImageDescriptor.createFromFile(Images.class, "/icons/plugin.gif");
 	public static final ImageDescriptor MODEL_IMAGE_DESCRIPTOR =
-		ImageDescriptor.createFromFile(Images.class, "/icons/hierarchical.gif");
+		ImageDescriptor.createFromFile(Images.class, "/icons/model.png");
 	public static final ImageDescriptor SINGLE_IMPORT_IMAGE_DESCRIPTOR =
 		ImageDescriptor.createFromFile(Images.class, "/icons/imp_obj.gif");
 	public static final ImageDescriptor IMPORT_IMAGE_DESCRIPTOR =
@@ -40,4 +40,8 @@ public class Images {
 		ImageDescriptor.createFromFile(Images.class, "/icons/experiment.png");
 	public static final ImageDescriptor EXPERIMENTS_DESCRIPTOR =
 		ImageDescriptor.createFromFile(Images.class, "/icons/experiments.png");
+	public static final ImageDescriptor FINAL_OVERLAY =
+		ImageDescriptor.createFromFile(Images.class, "/icons/final_co.gif");
+	
+
 }

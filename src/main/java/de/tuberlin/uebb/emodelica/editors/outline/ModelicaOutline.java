@@ -6,9 +6,12 @@ package de.tuberlin.uebb.emodelica.editors.outline;
 
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.TextSelection;
+import org.eclipse.jface.viewers.DecoratingLabelProvider;
+import org.eclipse.jface.viewers.ILabelDecorator;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 
@@ -40,7 +43,8 @@ public class ModelicaOutline extends ContentOutlinePage implements IModelChanged
 	public void createControl(Composite parent) {
 		super.createControl(parent);
 		this.getTreeViewer().setContentProvider(new ModelTreeContentProvider());
-		this.getTreeViewer().setLabelProvider(new ModelLabelProvider());
+		ILabelDecorator decorator = PlatformUI.getWorkbench().getDecoratorManager().getLabelDecorator();
+		this.getTreeViewer().setLabelProvider(new DecoratingLabelProvider(new ModelLabelProvider(), decorator));
 		this.getTreeViewer().setInput(input);
 		this.getTreeViewer().addSelectionChangedListener(this);
 		modelChanged(null,this.editor.getModelManager().getModel());
