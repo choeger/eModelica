@@ -11,19 +11,30 @@ import org.eclipse.jface.text.source.IVerticalRuler;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.swt.widgets.Composite;
 
+import de.tuberlin.uebb.emodelica.model.IModelManager;
+
 /**
  * @author choeger
  * 
  */
 public class ModelicaSourceViewer extends ProjectionViewer {
 
+	private IModelManager modelManager;
+
+
 	public ModelicaSourceViewer(Composite parent, IVerticalRuler ruler,
 			IOverviewRuler overviewRuler, boolean overviewRulerVisible,
-			int styles) {
+			int styles, IModelManager modelManager) {
 		super(parent, ruler, overviewRuler, overviewRulerVisible, styles);
+		this.modelManager = modelManager;
 	}
 
 	
+	public IModelManager getModelManager() {
+		return modelManager;
+	}
+
+
 	/* taken from jdts JavaSourceViewer, should probably go into ITextViewerExtension ... */
 	/**
 	 * Prepends the text presentation listener at the beginning of the viewer's

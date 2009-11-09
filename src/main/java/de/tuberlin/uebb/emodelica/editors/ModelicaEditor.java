@@ -2,10 +2,12 @@ package de.tuberlin.uebb.emodelica.editors;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.ResourceBundle;
 import java.util.TreeMap;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.ISourceViewer;
@@ -21,6 +23,8 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.ui.texteditor.ContentAssistAction;
+import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
 import de.tuberlin.uebb.emodelica.editors.outline.ModelicaOutline;
@@ -66,10 +70,21 @@ public class ModelicaEditor extends TextEditor implements IModelChangedListener 
 	}
 
 	@Override
+	protected void createActions() {
+		// TODO Auto-generated method stub
+		super.createActions();
+		Action action = new ContentAssistAction(ResourceBundle.getBundle("org.eclipse.ui.internal.messages"), "ContentAssistProposal.", this); 
+		String id = ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS;
+		action.setActionDefinitionId(id);
+		setAction("ContentAssistProposal", action); 
+		markAsStateDependentAction("ContentAssistProposal", true);
+	}
+
+	@Override
 	protected ISourceViewer createSourceViewer(Composite parent,
 			IVerticalRuler ruler, int styles) {
 		ModelicaSourceViewer viewer = new ModelicaSourceViewer(parent, ruler,
-				getOverviewRuler(), isOverviewRulerVisible(), styles);
+				getOverviewRuler(), isOverviewRulerVisible(), styles, modelManager);
 
 		// ensure decoration support has been created and configured.
 		getSourceViewerDecorationSupport(viewer);

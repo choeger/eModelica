@@ -2,6 +2,7 @@ package de.tuberlin.uebb.emodelica;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ResourceBundle;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;

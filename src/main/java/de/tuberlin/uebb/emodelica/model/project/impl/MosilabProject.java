@@ -4,6 +4,7 @@
 package de.tuberlin.uebb.emodelica.model.project.impl;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.lang.reflect.InvocationTargetException;
@@ -146,11 +147,13 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 				// create a SchemaFactory capable of understanding WXS schemas
 				SchemaFactory factory = SchemaFactory
 						.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-
+				
 				// load a WXS schema, represented by a Schema instance
+				final InputStream stream = this.getClass().getResourceAsStream(
+						Constants.XML_MOSILAB_SETTINGS_XSD);
 				Source schemaFile = new StreamSource(
-						this.getClass().getResourceAsStream(
-								Constants.XML_MOSILAB_SETTINGS_XSD));
+						stream);
+
 				Schema schema = factory.newSchema(schemaFile);
 
 				DocumentBuilderFactory dbf = DocumentBuilderFactory

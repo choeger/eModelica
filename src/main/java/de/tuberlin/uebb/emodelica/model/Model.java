@@ -4,20 +4,25 @@
 package de.tuberlin.uebb.emodelica.model;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
 
+import de.tuberlin.uebb.modelica.im.ILocation;
+import de.tuberlin.uebb.modelica.im.impl.Location;
 import de.tuberlin.uebb.modelica.im.impl.generated.moparser.NT_Stored_Definition;
 import de.tuberlin.uebb.modelica.im.impl.generator.AbsyToIM;
 import de.tuberlin.uebb.modelica.im.impl.mappings.nodes.StoredDefinitionMapping;
-import de.tuberlin.uebb.modelica.im.impl.nodes.ClassNode;
 import de.tuberlin.uebb.modelica.im.impl.nodes.StoredDefinitionNode;
+import de.tuberlin.uebb.modelica.im.nodes.IClassNode;
+import de.tuberlin.uebb.modelica.im.nodes.INode;
 import de.tuberlin.uebb.page.grammar.symbols.Terminal;
+import de.tuberlin.uebb.page.grammar.symbols.TerminalEOF;
 import de.tuberlin.uebb.page.lexer.ILexer;
-import de.tuberlin.uebb.page.parser.symbols.Absy;
 import de.tuberlin.uebb.page.parser.symbols.IAbsy;
 import de.tuberlin.uebb.page.parser.util.Range;
 
@@ -54,6 +59,10 @@ public class Model {
 			}
 			mapping.update();
 			rootNode = mapping.getResultIM();
+			
+//			for (INode node : rootNode.getChildren().values())
+//				if (node instanceof ClassNode)
+//				Flattening.flatten((ClassNode)node);
 			
 			System.err.println("ROOT NODE: " + rootNode.toString());
 			System.err.println("CHILDREN: " + rootNode.getChildren());
@@ -123,5 +132,35 @@ public class Model {
 		int startOffset = input.get(range.getStartToken()).getStartOffset();
 		int endOffset = input.get(range.getEndToken()).getEndOffset();
 		return endOffset - startOffset;
+	}
+
+	public Terminal getTerminalBefore(int offset) {
+	
+		TerminalEOF searchTerm = new TerminalEOF();
+		searchTerm.setEndOffset(offset);
+		searchTerm.setStartOffset(offset);
+		
+		int i = Collections.binarySearch(input, searchTerm, new Comparator<Terminal>(){
+
+			@Override
+			public int compare(Terminal term1, Terminal term2) {
+				return term1.getEndOffset() - term2.getEndOffset();
+			}});
+		
+		if (i < 0)
+			return null;
+		return input.get(i);
+	}
+
+	public void getEnclosingLexicalNodes(int offset, INode startNode, List<IClassNode> enclosingNodes) {
+		for (String childName : startNode.getChildrenInOrder()) {
+			INode child = startNode.getChild(childName);
+			if (child instanceof IClassNode) {
+				if (child.getStartOffset() <= offset && offset < child.getEndOffset()) {
+					enclosingNodes.add((IClassNode) child);
+					getEnclosingLexicalNodes(offset, child, enclosingNodes);
+				}
+			}
+		}
 	}
 }
