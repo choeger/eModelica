@@ -90,6 +90,10 @@ public class ModelicaModelManager implements IModelManager {
 	private final Automaton parser = ParserFactory.getAutomatonInstance();
 	private final ModelicaParseJob parseJob = new ModelicaParseJob("resource",parser);
 	private final ModelicaEditor modelicaEditor;
+
+	private Range lastChanged;
+
+	private ArrayList<Terminal> lastParsedInput;
 	
 	public ModelicaModelManager(final ModelicaEditor modelicaEditor) {
 		this.modelicaEditor = modelicaEditor;
@@ -122,20 +126,24 @@ public class ModelicaModelManager implements IModelManager {
 
 	@Override
 	public void contentChanged() {
-		ArrayList<Terminal> oldInput = lexer.getCachedInput();
+		long startTime = System.currentTimeMillis();
 		Stack<Terminal> inputStack = doLexing();
 		
 		if (inputStack == null) {
-			lexer.setCachedInput(oldInput);
 			parsingDone(null);
 			return;
 		}
 		
-		if (model == null)		
+		if (model == null) {
 			parseModel(inputStack, null);
-		else {
-			Range changed = applyDiff(oldInput, lexer.getCachedInput());
-			incrementalParseModel(inputStack, changed);
+			lastParsedInput = lexer.getCachedInput();
+		} else {
+			lastChanged = applyDiff(lastParsedInput, lexer.getCachedInput());
+			long endTime = System.currentTimeMillis();
+			System.err.println("CHANGE: Lexing finished after " + (endTime - startTime) + "ms");
+			if (lastChanged != null)
+				incrementalParseModel(inputStack, lastChanged);
+			lastParsedInput = lexer.getCachedInput();
 		}
 	}
 
@@ -220,7 +228,6 @@ public class ModelicaModelManager implements IModelManager {
 	}
 
 	private Range applyDiff(List<Terminal> oldInput, List<Terminal> cachedInput) {
-		
 		//common prefix elimination
 		int left = 0;
 		final int maxl = Math.min(oldInput.size(), cachedInput.size());
@@ -236,9 +243,11 @@ public class ModelicaModelManager implements IModelManager {
 			left++;
 		}
 		
-		//common suffix elimination
-		final int maxr = Math.min(oldInput.size() - left, cachedInput.size() - left);
-		if (maxr == 0) return new Range(left + 1, left+1);
+		//common suffix elimination		
+		if (oldInput.size() == cachedInput.size() && cachedInput.size() == (left+1)) {
+			return null;
+		}
+		final int maxr = Math.min(oldInput.size() - left, cachedInput.size() - left);	
 		
 		int right = 1;
 		while(right <= maxr) {
@@ -253,7 +262,7 @@ public class ModelicaModelManager implements IModelManager {
 			} else break;
 			right++;
 		}
-
+		
 		return new Range(left, (cachedInput.size() - right) + 1);
 	}
 	

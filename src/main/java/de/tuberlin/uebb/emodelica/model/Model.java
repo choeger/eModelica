@@ -33,9 +33,9 @@ import de.tuberlin.uebb.page.parser.util.Range;
 public class Model {
 	
 	private List<Terminal> input;
-	
-	private IAbsy child = null;
 
+	private IAbsy child = null;
+	
 	private StoredDefinitionNode rootNode;
 	private ArrayList<Position> foldablePositions;
 	private IDocument document;
@@ -57,6 +57,7 @@ public class Model {
 				mapping.init((NT_Stored_Definition) rootAbsy);
 				rootAbsy.addAdapter(StoredDefinitionMapping.class, mapping);
 			}
+
 			mapping.update();
 			rootNode = mapping.getResultIM();
 			

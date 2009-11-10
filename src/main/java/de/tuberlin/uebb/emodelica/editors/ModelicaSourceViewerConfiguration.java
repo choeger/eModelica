@@ -47,6 +47,9 @@ public class ModelicaSourceViewerConfiguration extends
 		ContentAssistant assistant =  new ContentAssistant();
 		assistant.setContentAssistProcessor(new ModelicaContentAssistProcessor(), IDocument.DEFAULT_CONTENT_TYPE);
 		assistant.setInformationControlCreator(getInformationControlCreator(sourceViewer));
+		assistant.enableColoredLabels(true);
+		assistant.setShowEmptyList(true);
+		assistant.setEmptyMessage("No MODELICA Proposals");
 		return assistant;
 	}
 
