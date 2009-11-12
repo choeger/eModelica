@@ -6,10 +6,15 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IInformationControlCreator;
 import org.eclipse.jface.text.ITextViewer;
+import org.eclipse.jface.text.contentassist.ContextInformation;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.jface.text.contentassist.ICompletionProposalExtension3;
+import org.eclipse.jface.text.contentassist.ICompletionProposalExtension5;
 import org.eclipse.jface.text.contentassist.ICompletionProposalExtension6;
 import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContextInformation;
@@ -24,14 +29,14 @@ import org.eclipse.swt.widgets.Display;
 
 import de.tuberlin.uebb.emodelica.Images;
 import de.tuberlin.uebb.emodelica.model.Model;
-import de.tuberlin.uebb.modelica.im.impl.types.TypeException;
+import de.tuberlin.uebb.modelica.im.ICommentable;
 import de.tuberlin.uebb.modelica.im.nodes.IClassNode;
 import de.tuberlin.uebb.modelica.im.nodes.INode;
 import de.tuberlin.uebb.modelica.im.nodes.IVarDefNode;
 
 public class ModelicaContentAssistProcessor implements IContentAssistProcessor {
 
-	class IDECompletion implements ICompletionProposal,
+	class IDECompletion implements ICompletionProposal, ICompletionProposalExtension5, ICompletionProposalExtension3, 
 			ICompletionProposalExtension6 {
 
 		private final int offset;
@@ -39,15 +44,18 @@ public class ModelicaContentAssistProcessor implements IContentAssistProcessor {
 		private final INode value;
 		private String type;
 		private final StyledString styledString;
+		private IContextInformation contextInformation;
+		private String oldString;
 
-		public IDECompletion(int offset, int length, INode value) {
+		public IDECompletion(int offset, int length, INode value, String oldString) {
 			super();
 			this.length = length;
 			this.offset = offset;
 			this.value = value;
 			type = getTypeString();
-
+			
 			styledString = createStyledString();
+			this.oldString = oldString;
 		}
 
 		private StyledString createStyledString() {
@@ -92,8 +100,7 @@ public class ModelicaContentAssistProcessor implements IContentAssistProcessor {
 
 		@Override
 		public IContextInformation getContextInformation() {
-			// TODO Auto-generated method stub
-			return null;
+			return contextInformation;
 		}
 
 		@Override
@@ -115,6 +122,31 @@ public class ModelicaContentAssistProcessor implements IContentAssistProcessor {
 		@Override
 		public StyledString getStyledDisplayString() {
 			return styledString;
+		}
+
+		@Override
+		public Object getAdditionalProposalInfo(IProgressMonitor monitor) {
+			if (value instanceof ICommentable) {
+				return ((ICommentable) value).getComment();
+			} return null;
+		}
+
+		@Override
+		public IInformationControlCreator getInformationControlCreator() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public int getPrefixCompletionStart(IDocument document,
+				int completionOffset) {
+			return offset;
+		}
+
+		@Override
+		public CharSequence getPrefixCompletionText(IDocument document,
+				int completionOffset) {
+			return value.getName();
 		}
 
 	}
@@ -149,9 +181,9 @@ public class ModelicaContentAssistProcessor implements IContentAssistProcessor {
 				ideDetector.region(--start, offset);
 			}
 			
-			ideDetector.region(start, end);
+			ideDetector.region(offset, end);
 			while(end < string.length() && ideDetector.matches()) {
-				ideDetector.region(start, ++end);
+				ideDetector.region(offset, ++end);
 			}
 			
 			start++;
@@ -168,7 +200,7 @@ public class ModelicaContentAssistProcessor implements IContentAssistProcessor {
 			ArrayList<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>(elements.size());
 			for (String entry : elements.keySet())
 				if (entry.startsWith(lhsValue) && entry.endsWith(rhsValue))
-					proposals.add(new IDECompletion(start, end - start, elements.get(entry)));
+					proposals.add(new IDECompletion(start, end - start, elements.get(entry), lhsValue + rhsValue));
 				
 			return proposals.toArray(new ICompletionProposal[] {});	
 		}
