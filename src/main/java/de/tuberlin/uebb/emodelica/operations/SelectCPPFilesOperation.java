@@ -23,9 +23,8 @@ import de.tuberlin.uebb.emodelica.model.project.IMosilabProject;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabSource;
 
 /**
- * @author choeger
- * This class resembles the mkSelector.sh script from the MOSILAB distribution
- * for the reasons of a) performance and b) latency
+ * @author choeger This class resembles the mkSelector.sh script from the
+ *         MOSILAB distribution for the reasons of a) performance and b) latency
  */
 public class SelectCPPFilesOperation extends WorkspaceModifyOperation {
 
@@ -49,7 +48,8 @@ public class SelectCPPFilesOperation extends WorkspaceModifyOperation {
 		StringBuilder builder = new StringBuilder();
 		String newLine = System.getProperty("line.separator");
 
-		builder.append("// this file was automatically generated! Do not edit!!!");
+		builder
+				.append("// this file was automatically generated! Do not edit!!!");
 		builder.append(newLine);
 		builder.append("#include <iostream>");
 		builder.append(newLine);
@@ -69,20 +69,21 @@ public class SelectCPPFilesOperation extends WorkspaceModifyOperation {
 		}
 
 		builder.append(newLine);
-		
+
 		builder.append("NumObject* _failToLoadRootClass(char *classname) {");
 		builder.append(newLine);
 		builder.append("	if (!classname)");
 		builder.append(newLine);
 		builder.append("		classname = \"(null)\";");
 		builder.append(newLine);
-		builder.append("	std::cerr << \"Class '\" << classname << \"' not found!\\n\";");
+		builder
+				.append("	std::cerr << \"Class '\" << classname << \"' not found!\\n\";");
 		builder.append(newLine);
 		builder.append("	return 0;");
 		builder.append(newLine);
 		builder.append("}");
 		builder.append(newLine);
-		
+
 		builder.append(newLine);
 
 		builder.append("NumObject* _selectRootObject(char *classname) {");
@@ -91,10 +92,10 @@ public class SelectCPPFilesOperation extends WorkspaceModifyOperation {
 		builder.append(newLine);
 		builder.append("		return _failToLoadRootClass(classname);");
 		builder.append(newLine);
-		
+
 		for (String name : names) {
 			String cname = name.replaceAll("__", ".");
-			
+
 			builder.append("	else if (!strcmp(classname,\"" + name + "\"))");
 			builder.append(newLine);
 			builder.append("		return new " + name + "(0);");
@@ -107,13 +108,14 @@ public class SelectCPPFilesOperation extends WorkspaceModifyOperation {
 		builder.append("	else return _failToLoadRootClass(classname);");
 		builder.append(newLine);
 		builder.append("}");
-		
+
 		try {
-			
+
 			PipedOutputStream out = new PipedOutputStream();
-			PipedInputStream source = new PipedInputStream(out, builder.length());
-			
+			PipedInputStream source = new PipedInputStream(out, builder
+					.length());
 			out.write(builder.toString().getBytes());
+			out.flush();
 			out.close();
 			
 			IFile file = folder.getFile("_selector.cpp");
@@ -121,6 +123,11 @@ public class SelectCPPFilesOperation extends WorkspaceModifyOperation {
 				file.create(source, true, monitor);
 			else
 				file.setContents(source, true, false, monitor);
+			
+
+			source.close();
+			
+			//file.refreshLocal(1, monitor);
 		} catch (IOException e) {
 			System.err.println(e.getMessage());
 		}
@@ -131,24 +138,35 @@ public class SelectCPPFilesOperation extends WorkspaceModifyOperation {
 	 * @throws CoreException
 	 */
 	private void initNames() throws CoreException {
-		for (IMosilabSource source : mosilabProject.getSrcFolders())
+		for (IMosilabSource source : mosilabProject.getSrcFolders()) {
 			for (IModelicaPackage pkg : source.getPackages()) {
 				IFolder packageFolder = (IFolder) pkg.getResource();
 
 				IPath path = packageFolder.getFullPath();
-				
-				path = path.removeFirstSegments(source.getResource().getFullPath().segmentCount());
+
+				path = path.removeFirstSegments(source.getResource()
+						.getFullPath().segmentCount());
 				String prefix = "";
 				for (String segment : path.segments())
 					prefix += segment + "__";
 				for (IResource member : packageFolder.members())
 					if (member instanceof IFile
-							&& member.getName().endsWith(".mo") && (!member.getName().equals("package.mo"))) {
+							&& member.getName().endsWith(".mo")
+							&& (!member.getName().equals("package.mo"))) {
 						String name = member.getName().substring(0,
 								member.getName().lastIndexOf(".mo"));
 						names.add(prefix + name);
 					}
 			}
-	}
 
+			for (IResource member : source.getContent()) {
+				if (member instanceof IFile && member.getName().endsWith(".mo")
+						&& (!member.getName().equals("package.mo"))) {
+					String name = member.getName().substring(0,
+							member.getName().lastIndexOf(".mo"));
+					names.add(name);
+				}
+			}
+		}
+	}
 }

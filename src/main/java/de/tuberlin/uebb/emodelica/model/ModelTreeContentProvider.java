@@ -12,7 +12,7 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
 import de.tuberlin.uebb.emodelica.ModelRepository;
-import de.tuberlin.uebb.modelica.im.impl.nodes.ClassNode;
+import de.tuberlin.uebb.modelica.im.ILocation;
 import de.tuberlin.uebb.modelica.im.impl.nodes.Node;
 import de.tuberlin.uebb.modelica.im.nodes.INode;
 import de.tuberlin.uebb.modelica.im.nodes.IStoredDefinitionNode;
@@ -23,20 +23,20 @@ import de.tuberlin.uebb.modelica.im.nodes.IStoredDefinitionNode;
  */
 public class ModelTreeContentProvider implements IStructuredContentProvider, ITreeContentProvider {
 	
-	private static final Comparator<INode> modelComparator = new Comparator<INode>() {
+	private static final Comparator<ILocation> modelComparator = new Comparator<ILocation>() {
 
 		@Override 
-		public int compare(INode o1,INode o2){
+		public int compare(ILocation o1,ILocation o2){
 			return o1.getEndOffset() - o2.getEndOffset();
 		}
 		
 	};
 	
-	private ClassNode invisibleRoot;
+	private IStoredDefinitionNode invisibleRoot;
 
 	public void inputChanged(Viewer v, Object oldInput, Object newInput) {
-		if (newInput instanceof ClassNode) {
-			invisibleRoot = (ClassNode)newInput;
+		if (newInput instanceof IStoredDefinitionNode) {
+			invisibleRoot = (IStoredDefinitionNode)newInput;
 			v.refresh();
 		}
 	}
@@ -51,7 +51,7 @@ public class ModelTreeContentProvider implements IStructuredContentProvider, ITr
 				return model.getRootNode().getChildren().values().toArray();
 		}
 		
-		if (!(parent instanceof Node)) {
+		if (!(parent instanceof INode)) {
 			if (invisibleRoot==null) initialize();
 			return getChildren(invisibleRoot);
 		} else
@@ -75,10 +75,10 @@ public class ModelTreeContentProvider implements IStructuredContentProvider, ITr
 		
 		if (parent instanceof IStoredDefinitionNode) {
 			final IStoredDefinitionNode storedDefinitionNode = (IStoredDefinitionNode) parent;
-			Object[] children;
+			ILocation[] children;
 			if (storedDefinitionNode.getWithinStatement() != null) {
 				final int size = storedDefinitionNode.getChildren().size() + 1;
-				children = new Object[size];
+				children = new ILocation[size];
 				children[0] = storedDefinitionNode.getWithinStatement();
 				for (int i = 1; i  < size; i++) {
 					INode[] modelChildren = storedDefinitionNode.getChildren().values().toArray(new INode[] {});
@@ -87,14 +87,13 @@ public class ModelTreeContentProvider implements IStructuredContentProvider, ITr
 				}
 			}	
 			else {
-				children = storedDefinitionNode.getChildren().values().toArray();
-				Arrays.sort((INode[])children, modelComparator);
+				children = storedDefinitionNode.getChildren().values().toArray(new INode[]{});
+				Arrays.sort((ILocation[])children, modelComparator);
 			}
 			return children;
 		}
 		
 		if (parent instanceof Node) {
-			System.err.println(parent + ": " + ((Node)parent).getChildren().values());
 			final INode[] array = ((Node)parent).getChildren().values().toArray(new INode[]{});
 			Arrays.sort(array, modelComparator);
 			return array;

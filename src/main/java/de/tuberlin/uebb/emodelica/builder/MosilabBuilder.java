@@ -47,7 +47,8 @@ public class MosilabBuilder extends IncrementalProjectBuilder {
 	private final class ColorSetterRunnable implements Runnable {
 		private final MessageConsoleStream out;
 		private final Color color;
-
+		public boolean done = false;
+		
 		private ColorSetterRunnable(MessageConsoleStream out, Color color) {
 			this.out = out;
 			this.color = color;
@@ -57,6 +58,7 @@ public class MosilabBuilder extends IncrementalProjectBuilder {
 		public void run() {
 			out.setColor(color);
 			synchronized (this) {
+				done = true;
 				this.notifyAll();
 			}
 		}
@@ -96,7 +98,7 @@ public class MosilabBuilder extends IncrementalProjectBuilder {
 	@Override
 	protected IProject[] build(int kind, Map args, IProgressMonitor monitor)
 			throws CoreException {
-
+		mosilabProject = (IMosilabProject)getProject().getAdapter(IModelicaResource.class);
 		if (mosilabProject == null)
 			return null;
 
@@ -190,6 +192,10 @@ public class MosilabBuilder extends IncrementalProjectBuilder {
 		buildOp = new AsyncBuildProcessOperation(mosilabProject);
 		this.monitor = monitor;
 
+		monitor.subTask("creating selector");
+		runSelector(monitor);
+		monitor.worked(1);
+
 		for (IResource resource : sourceFiles) {
 			String sourceFile = buildOp.getLocation(resource);
 			try {
@@ -206,14 +212,11 @@ public class MosilabBuilder extends IncrementalProjectBuilder {
 				return;
 			}
 		}
-
-		monitor.subTask("creating selector");
-		runSelector(monitor);
-		monitor.worked(1);
-
+		
 		monitor.subTask("running make");
 		runMakeLibFake(monitor);
 		monitor.worked(1);
+		
 	}
 
 	/**
@@ -287,6 +290,7 @@ public class MosilabBuilder extends IncrementalProjectBuilder {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
 		System.err.println("selector done.");
 	}
 
@@ -456,7 +460,8 @@ public class MosilabBuilder extends IncrementalProjectBuilder {
 		Display.getDefault().asyncExec(colorSetter);
 		try {
 			synchronized (colorSetter) {
-				colorSetter.wait();
+				if (!colorSetter.done)
+					colorSetter.wait();
 			}
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block

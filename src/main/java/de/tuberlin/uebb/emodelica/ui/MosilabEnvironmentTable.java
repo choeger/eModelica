@@ -10,6 +10,7 @@ import java.util.Set;
 
 import org.eclipse.core.databinding.observable.ChangeEvent;
 import org.eclipse.core.databinding.observable.IChangeListener;
+import org.eclipse.core.databinding.observable.IDisposeListener;
 import org.eclipse.core.databinding.observable.IObservable;
 import org.eclipse.core.databinding.observable.IStaleListener;
 import org.eclipse.core.databinding.observable.Realm;
@@ -376,6 +377,24 @@ public class MosilabEnvironmentTable extends FieldEditor implements IObservable 
 	 */
 	public List<IMosilabEnvironment> getEnvironments() {
 		return environments;
+	}
+
+	@Override
+	public void addDisposeListener(IDisposeListener listener) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public boolean isDisposed() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void removeDisposeListener(IDisposeListener listener) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

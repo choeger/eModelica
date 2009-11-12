@@ -93,7 +93,7 @@ public class MosilabProjectContentProvider implements IPipelinedTreeContentProvi
 		if (arg0 instanceof IMosilabProject)
 			return ((IMosilabProject)arg0).getProject();
 		
-		if (arg0 instanceof IResource) {
+		if (arg0 instanceof IResource && ((IResource) arg0).getParent() != null) {
 			IModelicaResource possibleParent = (IModelicaResource) 
 			((IResource)arg0).getParent().getAdapter(IModelicaResource.class);
 			if (possibleParent != null)

@@ -6,6 +6,7 @@ package de.tuberlin.uebb.emodelica.model;
 import java.io.BufferedReader;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
@@ -141,7 +142,7 @@ public class ModelicaModelManager implements IModelManager {
 			lastChanged = applyDiff(lastParsedInput, lexer.getCachedInput());
 			long endTime = System.currentTimeMillis();
 			System.err.println("CHANGE: Lexing finished after " + (endTime - startTime) + "ms");
-			if (lastChanged != null)
+			if (lastChanged != null && lastChanged.getStartToken() < lexer.getCachedInput().size())
 				incrementalParseModel(inputStack, lastChanged);
 			lastParsedInput = lexer.getCachedInput();
 		}
@@ -154,11 +155,20 @@ public class ModelicaModelManager implements IModelManager {
 		System.err.println();
 		
 		IIncrementalParser iParser = new IncrementalParser();
+		
+		Set<ParseError> preserved = new HashSet<ParseError>();
+		
+		for (ParseError parseError : parser.getErrorSet()) {
+			if(!(parseError instanceof LexerError) && (parseError.getEndOffset() < changed.getStartToken()))
+					preserved.add(parseError);
+		}
+		
 		iParser.setup(parser, lexer);
 		try {
 			//Modelica Lookahead
 			changed.setStartToken(Math.max(0,changed.getStartToken() - LOOKAHEAD));
 			IAbsy root = iParser.doParsing(model.getChild(), changed);
+			parser.getErrorSet().addAll(preserved);
 			parsingDone(root);
 			
 		} catch (ParserException e) {

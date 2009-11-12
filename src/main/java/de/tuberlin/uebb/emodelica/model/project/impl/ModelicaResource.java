@@ -71,6 +71,7 @@ public abstract class ModelicaResource extends PlatformObject implements
 				doRefresh();
 				notifyListeners();
 				syncChildren();
+				if (getChildren() != null)
 				for (Object child : getChildren())
 					if (child instanceof IModelicaResource)
 						((IModelicaResource) child).refresh();
