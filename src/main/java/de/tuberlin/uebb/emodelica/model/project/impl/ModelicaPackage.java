@@ -14,8 +14,14 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
 
 import de.tuberlin.uebb.emodelica.ModelRepository;
+import de.tuberlin.uebb.emodelica.ModelRepository.IModelReturn;
+import de.tuberlin.uebb.emodelica.model.Model;
 import de.tuberlin.uebb.emodelica.model.project.IModelicaPackage;
 import de.tuberlin.uebb.emodelica.model.project.IModelicaResource;
+import de.tuberlin.uebb.modelica.im.impl.nodes.DocumentationAnnotation;
+import de.tuberlin.uebb.modelica.im.nodes.IAnnotation;
+import de.tuberlin.uebb.modelica.im.nodes.IClassNode;
+import de.tuberlin.uebb.modelica.im.nodes.INode;
 
 /**
  * @author choeger
@@ -24,10 +30,12 @@ import de.tuberlin.uebb.emodelica.model.project.IModelicaResource;
 public class ModelicaPackage extends ModelicaResource  implements IModelicaPackage, IAdaptable {
 
 	private String fullName;
+	private String shortName;
 	private ArrayList<IFile> children;
 	private IContainer completePath;
 	private IModelicaResource parent;
 	private boolean onlyModelicaResources = false;
+	private IClassNode packageDef;
 	
 	public ModelicaPackage(IModelicaResource parent, IContainer parentDir, IContainer completePath) {
 		this.parent = parent;
@@ -35,6 +43,8 @@ public class ModelicaPackage extends ModelicaResource  implements IModelicaPacka
 		
 		IPath suffix = completePath.getFullPath().removeFirstSegments(parentDir.getFullPath().segmentCount());
 		this.fullName = suffix.toString().replace(IPath.SEPARATOR, '.');
+		this.shortName = suffix.lastSegment().toString();
+		
 		children = new ArrayList<IFile>();
 		
 		doRefresh();
@@ -103,16 +113,33 @@ public class ModelicaPackage extends ModelicaResource  implements IModelicaPacka
 		try {
 			onlyModelicaResources = true;
 			for (IResource member : completePath.members()) {
-				if (member.getType() == IResource.FILE && member.getName().endsWith(".mo") && 
-						!member.getName().equals("package.mo")) {
-					children.add((IFile)member);
-					ModelRepository.enqueueFile((IFile) member);					
+				if (member.getType() == IResource.FILE && member.getName().endsWith(".mo")) {
+					if (member.getName().equals("package.mo")) {
+						ModelRepository.getModelForFileAsync((IFile) member, new IModelReturn() {
+							@Override
+							public void setModel(Model newModel) {
+								setPackageDef(newModel);
+							}
+						});
+						
+					} else { 
+						children.add((IFile)member);
+						ModelRepository.enqueueFile((IFile) member);
+					}
 				} else onlyModelicaResources = false;	
 			}
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}	
 		
+	}
+
+	private void setPackageDef(Model packageModel) {
+		//parsing successfull?
+		if (packageModel.getRootNode() == null) return;
+		final INode child = packageModel.getRootNode().getChild(shortName);
+		if (child instanceof IClassNode)
+			packageDef = (IClassNode) child;
 	}
 
 	/* (non-Javadoc)
@@ -129,5 +156,14 @@ public class ModelicaPackage extends ModelicaResource  implements IModelicaPacka
 	@Override
 	public void setParent(IModelicaResource newParent) {
 		this.parent = newParent;		
+	}
+	
+	public String getDocumentation() {
+		if (packageDef == null)
+			return null;
+		final IAnnotation annotation = packageDef.getAnnotationForName("Documentation");
+		if (annotation != null)
+			return ((DocumentationAnnotation)annotation).getHTMLComment();
+		return null;
 	}
 }

@@ -127,7 +127,7 @@ public class ModelicaModelManager implements IModelManager {
 			return;
 		}
 		
-		if (model == null) {
+		if (model == null || model.isCompacted()) {
 			parseModel(inputStack, null);
 			lastParsedInput = lexer.getCachedInput();
 		} else {
@@ -159,12 +159,13 @@ public class ModelicaModelManager implements IModelManager {
 		try {
 			//Modelica Lookahead
 			changed.setStartToken(Math.max(0,changed.getStartToken() - LOOKAHEAD));
-			IAbsy root = iParser.doParsing(model.getChild(), changed);
 			parser.getErrorSet().addAll(preserved);
+			IAbsy root = iParser.doParsing(model.getChild(), changed);
 			parsingDone(root);
 			
 		} catch (ParserException e) {
 			if (e instanceof UnexpectedEOFException) {
+				parser.getErrorSet().addAll(preserved);
 				parser.getErrorSet().add(new ParseError(lexer.getCachedInput().size() - 1,lexer.getCachedInput().size() - 1, e.getMessage()));
 				parsingDone(null);
 			}

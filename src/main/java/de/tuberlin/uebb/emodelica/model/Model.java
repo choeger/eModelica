@@ -69,9 +69,9 @@ public class Model {
 //				if (node instanceof ClassNode)
 //				Flattening.flatten((ClassNode)node);
 			
-			System.err.println("ROOT NODE: " + rootNode.toString());
-			System.err.println("CHILDREN: " + rootNode.getChildren());
-			System.err.println("ERRORS:" + AbsyToIM.getErrorList());
+//			System.err.println("ROOT NODE: " + rootNode.toString());
+//			System.err.println("CHILDREN: " + rootNode.getChildren());
+//			System.err.println("ERRORS:" + AbsyToIM.getErrorList());
 		} catch (Exception e) {
 			e.printStackTrace();
 			rootNode = null;

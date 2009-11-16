@@ -46,7 +46,7 @@ public class ModelTreeContentProvider implements IStructuredContentProvider, ITr
 	public Object[] getElements(Object parent) {
 		if (parent instanceof IFile) {
 			IFile file = (IFile)parent;
-			Model model = ModelRepository.getModelForFile(file);
+			Model model = ModelRepository.getModelForFileBlocking(file);
 			if (model != null)
 				return model.getRootNode().getChildren().values().toArray();
 		}
@@ -68,7 +68,7 @@ public class ModelTreeContentProvider implements IStructuredContentProvider, ITr
 	public Object [] getChildren(Object parent) {
 		if (parent instanceof IFile) {
 			IFile file = (IFile)parent;
-			Model model = ModelRepository.getModelForFile(file);
+			Model model = ModelRepository.getModelForFileBlocking(file);
 			if (model != null)
 				return model.getRootNode().getChildren().values().toArray();
 		}		
@@ -104,7 +104,7 @@ public class ModelTreeContentProvider implements IStructuredContentProvider, ITr
 	public boolean hasChildren(Object parent) {
 		if (parent instanceof IFile) {
 			IFile file = (IFile)parent;
-			Model model = ModelRepository.getModelForFile(file);
+			Model model = ModelRepository.getModelForFileBlocking(file);
 			if (model != null)
 				return model.getRootNode().getChildren().size() > 0;
 		}

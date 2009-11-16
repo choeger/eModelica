@@ -67,7 +67,7 @@ public abstract class WorkspaceModelicaPackageContainer extends ModelicaResource
 						else recFind((IFolder) resource);
 					} else {
 						if (resource.getType() == IResource.FILE && resource.getName().equals("package.mo")) {
-							ModelicaPackage pkg = new ModelicaPackage(this, this.container, container);
+							IModelicaPackage pkg = new ModelicaPackage(this, this.container, container);
 							packages.add(pkg);
 						}
 					}

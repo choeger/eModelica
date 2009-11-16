@@ -36,4 +36,6 @@ public interface IModelicaPackage extends IModelicaResource {
 	 * @return
 	 */
 	public IContainer getContainer();
+
+	public String getDocumentation();
 }

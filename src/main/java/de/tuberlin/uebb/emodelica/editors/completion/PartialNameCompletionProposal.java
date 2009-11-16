@@ -6,7 +6,6 @@ package de.tuberlin.uebb.emodelica.editors.completion;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.IInformationControlCreator;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.ICompletionProposalExtension3;
 import org.eclipse.jface.text.contentassist.ICompletionProposalExtension5;
@@ -24,8 +23,8 @@ import de.tuberlin.uebb.modelica.im.ICommentable;
  * @author choeger
  * 
  */
-public class PartialNameCompletionProposal implements ICompletionProposal,
-		ICompletionProposalExtension5, ICompletionProposalExtension3,
+public class PartialNameCompletionProposal extends AbstractModelicaCompletionProposal implements ICompletionProposal,
+		ICompletionProposalExtension5,
 		ICompletionProposalExtension6 {
 
 	private final int offset;
@@ -92,17 +91,8 @@ public class PartialNameCompletionProposal implements ICompletionProposal,
 	}
 
 	@Override
-	public Object getAdditionalProposalInfo(IProgressMonitor monitor) {
-		if (value instanceof ICommentable) {
-			return ((ICommentable) value).getComment();
-		}
-		return null;
-	}
-
-	@Override
-	public IInformationControlCreator getInformationControlCreator() {
-		// TODO Auto-generated method stub
-		return null;
+	public Object getAdditionalProposalInfo(IProgressMonitor monitor) { 
+		return value.getDocumentation();
 	}
 
 	@Override
