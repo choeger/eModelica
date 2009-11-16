@@ -283,7 +283,7 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 				children.add(src);
 			else {
 				children.addAll(src.getPackages());
-				children.addAll(src.getContent());
+				children.addAll(src.getContents());
 			}
 	}
 

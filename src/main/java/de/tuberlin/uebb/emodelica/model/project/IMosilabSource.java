@@ -23,7 +23,7 @@ public interface IMosilabSource extends IModelicaPackageContainer, IModelicaReso
 	 * 
 	 * @return the list of (top-level) source files in this source folder
 	 */
-	public List<IResource> getContent();
+	public List<IResource> getContents();
 	
 	//TODO: put source preferences in here
 }

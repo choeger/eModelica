@@ -17,6 +17,7 @@ import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
 
 import de.tuberlin.uebb.emodelica.Constants;
+import de.tuberlin.uebb.emodelica.editors.completion.ModelicaContentAssistProcessor;
 import de.tuberlin.uebb.emodelica.editors.formatting.MultiLineCommentAutoEditStrategy;
 import de.tuberlin.uebb.emodelica.editors.formatting.SingleLineCommentAutoEditStrategy;
 

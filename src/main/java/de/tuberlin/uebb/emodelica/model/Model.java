@@ -39,6 +39,8 @@ public class Model {
 	private StoredDefinitionNode rootNode;
 	private ArrayList<Position> foldablePositions;
 	private IDocument document;
+
+	private boolean compacted;
 	
 	public Model(IDocument document, ILexer lexer, IAbsy rootAbsy) {
 		this.document = document;
@@ -46,7 +48,9 @@ public class Model {
 		this.input = lexer.getCachedInput();
 		foldablePositions = new ArrayList<Position>();
 		
-		updateIM(lexer, rootAbsy);
+		if (rootAbsy != null)
+			updateIM(lexer, rootAbsy);
+		compacted=false;
 	}
 
 	private void updateIM(ILexer lexer, IAbsy rootAbsy) {
@@ -163,5 +167,17 @@ public class Model {
 				}
 			}
 		}
+	}
+	
+	public void compact() {
+		if (!compacted) {
+			this.input=null;
+			this.child=null;
+			compacted=true;
+		}
+	}
+	
+	public boolean isCompacted() {
+		return compacted;
 	}
 }

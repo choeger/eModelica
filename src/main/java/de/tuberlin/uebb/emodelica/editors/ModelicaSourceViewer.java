@@ -10,6 +10,7 @@ import org.eclipse.jface.text.source.IOverviewRuler;
 import org.eclipse.jface.text.source.IVerticalRuler;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.IEditorInput;
 
 import de.tuberlin.uebb.emodelica.model.IModelManager;
 
@@ -20,16 +21,22 @@ import de.tuberlin.uebb.emodelica.model.IModelManager;
 public class ModelicaSourceViewer extends ProjectionViewer {
 
 	private IModelManager modelManager;
-
+	private IEditorInput editorInput;
 
 	public ModelicaSourceViewer(Composite parent, IVerticalRuler ruler,
 			IOverviewRuler overviewRuler, boolean overviewRulerVisible,
-			int styles, IModelManager modelManager) {
+			int styles, IModelManager modelManager, IEditorInput iEditorInput) {
 		super(parent, ruler, overviewRuler, overviewRulerVisible, styles);
 		this.modelManager = modelManager;
+		this.editorInput = iEditorInput;
 	}
 
 	
+	public IEditorInput getEditorInput() {
+		return editorInput;
+	}
+
+
 	public IModelManager getModelManager() {
 		return modelManager;
 	}

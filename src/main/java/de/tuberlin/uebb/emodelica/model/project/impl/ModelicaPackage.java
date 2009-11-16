@@ -13,6 +13,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
 
+import de.tuberlin.uebb.emodelica.ModelRepository;
 import de.tuberlin.uebb.emodelica.model.project.IModelicaPackage;
 import de.tuberlin.uebb.emodelica.model.project.IModelicaResource;
 
@@ -105,6 +106,7 @@ public class ModelicaPackage extends ModelicaResource  implements IModelicaPacka
 				if (member.getType() == IResource.FILE && member.getName().endsWith(".mo") && 
 						!member.getName().equals("package.mo")) {
 					children.add((IFile)member);
+					ModelRepository.enqueueFile((IFile) member);					
 				} else onlyModelicaResources = false;	
 			}
 		} catch (CoreException e) {

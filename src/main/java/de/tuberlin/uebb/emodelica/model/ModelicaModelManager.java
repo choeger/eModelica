@@ -6,7 +6,6 @@ package de.tuberlin.uebb.emodelica.model;
 import java.io.BufferedReader;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
@@ -62,18 +61,11 @@ public class ModelicaModelManager implements IModelManager {
 			int retVal = 1;
 			arg0.beginTask("parsing", automaton.getInputStack().size());
 			try {			
-				while (retVal >= 1) {
-					final int l = automaton.getInputStack().size();
-					if (arg0.isCanceled())
-						return Status.CANCEL_STATUS;
-					retVal = automaton.doParseStep();
-					//one step per shift
-					if (automaton.getInputStack().size() < l)
-						arg0.worked(1);
-				}
+				automaton.runParser();
 			} catch (ParserException e) {
-				System.err.println(e.getMessage());
+				//System.err.println(e.getMessage());
 				arg0.done();
+				parser.getErrorSet().add(new ParseError(lexer.getCachedInput().size()-1,lexer.getCachedInput().size()-1,e.getMessage()));
 				return new Status(Status.OK,EModelicaPlugin.PLUGIN_ID,retVal,"parsing failed: " + e.getMessage(),e);
 			}
 			arg0.done();
@@ -293,18 +285,22 @@ public class ModelicaModelManager implements IModelManager {
 	}
 
 	private void parsingDone(IAbsy rootAbsy) {
+		IEditorInput input = modelicaEditor.getEditorInput();
+		IFile file = ((FileEditorInput) input).getFile();
+		//System.err.println("Parsing finished. Got: " + rootAbsy + " " + rootAbsy.getClass().getCanonicalName());
 		if (rootAbsy instanceof NT_Stored_Definition) {
 			Model newModel = new Model(contentProvider.getDocument(), lexer, rootAbsy);
 			for (IModelChangedListener l : listeners)
 				l.modelChanged(model, newModel);
 			model = newModel;
-			
-			IEditorInput input = modelicaEditor.getEditorInput();
-			IFile file = ((FileEditorInput) input).getFile();
 			ModelRepository.updateModel(file, newModel);
-		} else {
+		} else if (model != null) {
 			model.setInput(lexer.getCachedInput());
 			modelicaEditor.modelChanged(model, model);
+		} else {
+			model = new Model(contentProvider.getDocument(), lexer, null);
+			modelicaEditor.modelChanged(null, model);
+			ModelRepository.updateModel(file, model);
 		}
 	}
 }

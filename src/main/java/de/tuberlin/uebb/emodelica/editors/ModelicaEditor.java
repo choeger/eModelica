@@ -84,10 +84,9 @@ public class ModelicaEditor extends TextEditor implements IModelChangedListener 
 	protected ISourceViewer createSourceViewer(Composite parent,
 			IVerticalRuler ruler, int styles) {
 		ModelicaSourceViewer viewer = new ModelicaSourceViewer(parent, ruler,
-				getOverviewRuler(), isOverviewRulerVisible(), styles, modelManager);
-
+				getOverviewRuler(), isOverviewRulerVisible(), styles, modelManager, this.getEditorInput());
+		
 		// ensure decoration support has been created and configured.
-		getSourceViewerDecorationSupport(viewer);
 		modelPresentation = new ModelicaModelPresentation(viewer);
 
 		return viewer;

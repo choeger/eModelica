@@ -4,9 +4,11 @@
 package de.tuberlin.uebb.emodelica.util;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 
 import de.tuberlin.uebb.modelica.im.impl.generated.moparser.mosilaStateFactory;
 import de.tuberlin.uebb.page.parser.Automaton;
+import de.tuberlin.uebb.page.parser.symbols.State;
 
 /**
  * @author choeger This class returns a parser Singleton
@@ -17,6 +19,7 @@ public class ParserFactory {
 
 		private ArrayDeque<Automaton> parserQue;
 		private mosilaStateFactory stateFactory;
+		private ArrayList<State> generatedStates;
 
 		public ParserConstructor(ArrayDeque<Automaton> parser) {
 			this.parserQue = parser;
@@ -25,9 +28,10 @@ public class ParserFactory {
 
 		@Override
 		public void run() {
+			generatedStates = stateFactory.generateStates();
 			while (true) {
-				Automaton parser = new Automaton();
-				parser.setStateList(stateFactory.generateStates());
+				Automaton parser = new Automaton(false);
+				parser.setStateList(generatedStates);
 				synchronized (parserQue) {
 						parserQue.add(parser);
 						parserQue.notifyAll();

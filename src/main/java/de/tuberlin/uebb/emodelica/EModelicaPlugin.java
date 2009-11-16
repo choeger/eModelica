@@ -66,8 +66,6 @@ public class EModelicaPlugin extends AbstractUIPlugin {
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
-		System.err.println("emodelica.start()");
-		
 		commonMosilabResources = ResourcesPlugin.getWorkspace().getRoot().getProject(HIDDEN_PROJECT_NAME);
 		
 		if (!commonMosilabResources.exists()) {
@@ -92,6 +90,7 @@ public class EModelicaPlugin extends AbstractUIPlugin {
 		Platform.getAdapterManager().registerAdapters(new ModelicaToResourcesAdapterFactory(), IModelicaPackage.class);
 
 		ResourcesPlugin.getWorkspace().addResourceChangeListener(projectManager);
+		ModelRepository.startSync();
 	}
 
 	private void loadMosilabEnvironments() {

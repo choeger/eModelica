@@ -159,7 +159,7 @@ public class SelectCPPFilesOperation extends WorkspaceModifyOperation {
 					}
 			}
 
-			for (IResource member : source.getContent()) {
+			for (IResource member : source.getContents()) {
 				if (member instanceof IFile && member.getName().endsWith(".mo")
 						&& (!member.getName().equals("package.mo"))) {
 					String name = member.getName().substring(0,

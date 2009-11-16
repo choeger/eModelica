@@ -10,8 +10,6 @@ import org.eclipse.core.resources.IResource;
 import de.tuberlin.uebb.emodelica.model.project.IModelicaResource;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabProject;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabSource;
-import de.tuberlin.uebb.emodelica.util.ModelicaToResourcesAdapterFactory;
-import de.tuberlin.uebb.emodelica.util.ResourcesToModelicaAdapterFactory;
 
 /**
  * @author choeger

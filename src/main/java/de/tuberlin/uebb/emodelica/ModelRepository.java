@@ -8,9 +8,13 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Stack;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.ui.editors.text.TextFileDocumentProvider;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
@@ -32,18 +36,79 @@ import de.tuberlin.uebb.page.parser.symbols.Absy;
  */
 public class ModelRepository {
 
+	static class ModelGenerator extends Job {
+
+		public ModelGenerator(String name) {
+			super(name);
+		}
+
+		private final ConcurrentLinkedQueue<IFile> sources = new ConcurrentLinkedQueue<IFile>();
+		
+		@Override
+		protected IStatus run(IProgressMonitor monitor) {
+			if (parser == null)
+				parser = ParserFactory.getAutomatonInstance();
+			while(true) {
+				IFile next = null;
+				next = sources.poll();
+
+				if (next != null) {
+					Model model = getModelForFile(next);
+					model.compact();
+					System.err.println("BACKGROUND MODEL DONE: " + next + " " + sources.size() + " TODO");
+				}
+				if (sources.isEmpty()) sleep();
+			}
+		}
+	}
+	
 	private static HashMap<String, Model> repository = new HashMap<String, Model>();
 	private static final ILexer lexer = new NonStaticLexer();
-	private static final Automaton parser = ParserFactory.getAutomatonInstance();
+	private static Automaton parser;
+	private static final ModelGenerator synchronizer = new ModelGenerator("synchronize Modelica source models");
+	
+	public static void startSync() {
+		synchronizer.setSystem(true);
+		synchronizer.schedule();
+	}
+	
+	public static void enqueueFile(IFile file) {
+		synchronized(synchronizer.sources) {
+			synchronizer.sources.add(file);
+		}
+		synchronizer.wakeUp();
+	}
 	
 	public static void updateModel(IFile file, Model model) {
 		repository.put(file.getFullPath().toString(), model);
 	}
 	
+	/**
+	 * This method returns the (compacted) Model for the given file
+	 * or null if the synchronizer did not finish the file yet
+	 * @param file
+	 * @return
+	 */
+	public static Model getModelForFileUnblocking(IFile file) {
+		final String path = file.getFullPath().toString();
+		synchronized (repository) {
+			if (repository.containsKey(path))
+				return repository.get(path);
+			else {
+				synchronizer.sources.add(file);
+				synchronizer.wakeUp();
+			}
+		}
+		return null;
+	}
+	
+	
 	public static Model getModelForFile(IFile file) {
-		String path = file.getFullPath().toString();
-		if (repository.containsKey(path))
-			return repository.get(path);
+		final String path = file.getFullPath().toString();
+		synchronized (repository) {
+			if (repository.containsKey(path))
+				return repository.get(path);
+		}
 		
 		Stack<Terminal> inputStack = null;
 		BufferedReader contentReader;
@@ -97,7 +162,11 @@ public class ModelRepository {
 				return null;
 			}
 			Model newModel = new Model(documentProvider.getDocument(file), lexer, rootAbsy);
-    		repository.put(path, newModel);
+    		
+			synchronized (repository) {
+    			repository.put(path, newModel);
+    		}
+
     		return newModel;
 		}
 		return null;

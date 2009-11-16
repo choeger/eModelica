@@ -12,6 +12,7 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 
+import de.tuberlin.uebb.emodelica.ModelRepository;
 import de.tuberlin.uebb.emodelica.model.project.IModelicaPackage;
 import de.tuberlin.uebb.emodelica.model.project.IModelicaResource;
 
@@ -92,8 +93,10 @@ public abstract class WorkspaceModelicaPackageContainer extends ModelicaResource
 		try {
 			if (container != null)
 			for (IResource member : container.members())
-				if (member.getType() == IResource.FILE && member.getName().endsWith(".mo"))
+				if (member.getType() == IResource.FILE && member.getName().endsWith(".mo")) {
 					contents.add((IFile)member);
+					ModelRepository.enqueueFile((IFile) member);
+				}
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}
@@ -129,7 +132,7 @@ public abstract class WorkspaceModelicaPackageContainer extends ModelicaResource
 		return container;
 	}
 	
-	public List<IResource> getContent() {
+	public List<IResource> getContents() {
 		return contents;
 	}
 
