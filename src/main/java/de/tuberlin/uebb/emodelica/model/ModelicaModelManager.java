@@ -86,7 +86,7 @@ public class ModelicaModelManager implements IModelManager {
 
 	private Range lastChanged;
 
-	private ArrayList<Terminal> lastParsedInput;
+	private List<Terminal> lastParsedInput;
 	
 	public ModelicaModelManager(final ModelicaEditor modelicaEditor) {
 		this.modelicaEditor = modelicaEditor;
@@ -127,7 +127,13 @@ public class ModelicaModelManager implements IModelManager {
 			return;
 		}
 		
-		if (model == null || model.isCompacted()) {
+		if (lastParsedInput == null) {
+			model = ModelRepository.getModelForFileUnblocking(
+					((FileEditorInput) modelicaEditor.getEditorInput()).getFile());
+			if (model != null) lastParsedInput = model.getInput();
+		}
+		
+		if (model == null || model.isCompacted() || lastParsedInput == null) {
 			parseModel(inputStack, null);
 			lastParsedInput = lexer.getCachedInput();
 		} else {
@@ -136,6 +142,9 @@ public class ModelicaModelManager implements IModelManager {
 			System.err.println("CHANGE: Lexing finished after " + (endTime - startTime) + "ms");
 			if (lastChanged != null && lastChanged.getStartToken() < lexer.getCachedInput().size())
 				incrementalParseModel(inputStack, lastChanged);
+			else
+				for (IModelChangedListener l : listeners) l.modelChanged(model, model);
+				
 			lastParsedInput = lexer.getCachedInput();
 		}
 	}
@@ -289,6 +298,7 @@ public class ModelicaModelManager implements IModelManager {
 			for (IModelChangedListener l : listeners)
 				l.modelChanged(model, newModel);
 			model = newModel;
+			model.setToCompact(false);
 			ModelRepository.updateModel(file, newModel);
 		} else if (model != null) {
 			model.setInput(lexer.getCachedInput());
@@ -296,6 +306,7 @@ public class ModelicaModelManager implements IModelManager {
 		} else {
 			model = new Model(contentProvider.getDocument(), lexer, null);
 			modelicaEditor.modelChanged(null, model);
+			model.setToCompact(false);
 			ModelRepository.updateModel(file, model);
 		}
 	}

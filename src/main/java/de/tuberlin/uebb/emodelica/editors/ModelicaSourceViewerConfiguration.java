@@ -5,6 +5,7 @@ package de.tuberlin.uebb.emodelica.editors;
 
 import org.eclipse.jface.text.DefaultIndentLineAutoEditStrategy;
 import org.eclipse.jface.text.DefaultTextHover;
+import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextHover;
@@ -20,6 +21,7 @@ import org.eclipse.jface.text.source.SourceViewerConfiguration;
 
 import de.tuberlin.uebb.emodelica.Constants;
 import de.tuberlin.uebb.emodelica.editors.completion.ModelicaContentAssistProcessor;
+import de.tuberlin.uebb.emodelica.editors.formatting.ModelicaSourceAutoEditStrategy;
 import de.tuberlin.uebb.emodelica.editors.formatting.MultiLineCommentAutoEditStrategy;
 import de.tuberlin.uebb.emodelica.editors.formatting.SingleLineCommentAutoEditStrategy;
 
@@ -97,7 +99,9 @@ public class ModelicaSourceViewerConfiguration extends
 	@Override
 	public IAutoEditStrategy[] getAutoEditStrategies(
 			ISourceViewer sourceViewer, String contentType) {
-		if (contentType.equals(Constants.PART_MODELICA_MULTI_LINE_COMMENT)) {		
+		if (contentType.equals(Document.DEFAULT_CONTENT_TYPE))
+			return new IAutoEditStrategy[] {new DefaultIndentLineAutoEditStrategy(), new ModelicaSourceAutoEditStrategy()};
+		else if (contentType.equals(Constants.PART_MODELICA_MULTI_LINE_COMMENT)) {		
 			return new IAutoEditStrategy[] {new DefaultIndentLineAutoEditStrategy(), new MultiLineCommentAutoEditStrategy()};
 		} else if (contentType.equals(Constants.PART_MODELICA_SINGLE_LINE_COMMENT)) {
 			return new IAutoEditStrategy[] {new DefaultIndentLineAutoEditStrategy(), new SingleLineCommentAutoEditStrategy()};

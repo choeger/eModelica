@@ -1,6 +1,7 @@
 package de.tuberlin.uebb.emodelica.editors.completion;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -38,7 +39,7 @@ public class ModelicaContentAssistProcessor implements IContentAssistProcessor {
 		Pattern ideDetectorPattern = Pattern.compile("(_|\\p{Alnum})*");
 		ideDetector = ideDetectorPattern.matcher("");
 
-		Pattern nameDetectorPattern = Pattern.compile("(_|\\p{Alnum}\\.)+$");
+		Pattern nameDetectorPattern = Pattern.compile("((_|\\p{Alnum})+\\.)+$");
 		nameDetector = nameDetectorPattern.matcher("");
 
 	}
@@ -50,7 +51,8 @@ public class ModelicaContentAssistProcessor implements IContentAssistProcessor {
 			Model model = ((ModelicaSourceViewer) viewer).getModelManager().getModel();
 		
 			enclosingClasses.clear();
-			model.getEnclosingLexicalNodes(offset, model.getRootNode(),enclosingClasses);						
+			if (model.getRootNode() != null)
+				model.getEnclosingLexicalNodes(offset, model.getRootNode(),enclosingClasses);						
 
 			int start = offset - 1;
 			int end = offset+1;
@@ -78,22 +80,26 @@ public class ModelicaContentAssistProcessor implements IContentAssistProcessor {
 			IClassNode prefixClass = null;
 			ArrayList<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>();
 			
-			if (start > 1 && string.charAt(start - 1) == '.') {	
-				nameDetector.region(0, start-1);		
+			if (start > 1 && string.charAt(start - 1) == '.') {
+				nameDetector.reset(string);
+				nameDetector.region(0, start);
+				
 				if (nameDetector.find()) {
+					start = nameDetector.start();
 					String name = nameDetector.group();
 					IMosilabProject project = getMosilabProject(viewer);
 					if (project != null) {
-						IClassNode classNode = project.lookUpClassNode(name.split("\\."));
-						if (classNode != null) {
-							for (String child : classNode.getChildren().keySet())
-								if (child.startsWith(lhsValue) && child.endsWith(rhsValue));
+						//TODO: search in the lexical order
+						Collection<IClassNode> classNodes = project.lookUpClassNode(name.split("\\."));
+						for (IClassNode classNode : classNodes) {
+							if (classNode.getName().startsWith(lhsValue) && classNode.getName().endsWith(rhsValue))
+								proposals.add(new PartialNameCompletionProposal(start, end-start, classNode));
 						}
 					}	
 				}
 			} else if (!lhsValue.isEmpty()) {
 				addAllVisibleProposals(viewer, start, end, lhsValue, rhsValue, proposals);
-			}
+			} else {
 			
 			HashMap<String, INode> elements = new HashMap<String, INode>();
 			if (prefixClass == null)
@@ -104,7 +110,7 @@ public class ModelicaContentAssistProcessor implements IContentAssistProcessor {
 			for (String entry : elements.keySet())
 				if (entry.startsWith(lhsValue) && entry.endsWith(rhsValue))
 					proposals.add(new IDECompletionProposal(start, end - start, elements.get(entry)));
-				
+			}
 			return proposals.toArray(new ICompletionProposal[] {});	
 		}
 
@@ -173,8 +179,7 @@ public class ModelicaContentAssistProcessor implements IContentAssistProcessor {
 			IModelicaPackage pkg) {
 		if (pkg.getFullName().startsWith(lhsValue)
 				&& pkg.getFullName().endsWith(rhsValue))
-			proposals.add(new PartialNameCompletionProposal(start, end - start,
-					pkg));
+			proposals.add(new PartialNameCompletionProposal(start, end - start, pkg.getPackageDef()));
 	}
 
 	private final void addProposalForFile(int start, int end, String lhsValue,

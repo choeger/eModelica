@@ -19,9 +19,6 @@ import org.eclipse.swt.widgets.Display;
 
 import de.tuberlin.uebb.emodelica.Images;
 import de.tuberlin.uebb.modelica.im.ICommentable;
-import de.tuberlin.uebb.modelica.im.impl.nodes.DocumentationAnnotation;
-import de.tuberlin.uebb.modelica.im.nodes.IAnnotable;
-import de.tuberlin.uebb.modelica.im.nodes.IAnnotation;
 import de.tuberlin.uebb.modelica.im.nodes.INode;
 import de.tuberlin.uebb.modelica.im.nodes.IVarDefNode;
 
@@ -115,15 +112,7 @@ public class IDECompletionProposal extends AbstractModelicaCompletionProposal im
 
 	@Override
 	public Object getAdditionalProposalInfo(IProgressMonitor monitor) {
-		String htmlString = "<h>" + value.toString() + "</h>";
-		
-		if (value instanceof IAnnotable) {
-			final IAnnotation annotation = ((IAnnotable) value).getAnnotationForName("Documentation");
-			if (annotation != null && annotation instanceof DocumentationAnnotation)
-				htmlString += "<br>" + ((DocumentationAnnotation)annotation).getHTMLComment();
-			
-		}
-		return htmlString;
+		return getAnnotation(value);
 	}
 
 	@Override

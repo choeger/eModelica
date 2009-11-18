@@ -9,8 +9,12 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
@@ -23,7 +27,6 @@ import javax.xml.validation.SchemaFactory;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -36,11 +39,14 @@ import org.xml.sax.SAXException;
 
 import de.tuberlin.uebb.emodelica.Constants;
 import de.tuberlin.uebb.emodelica.EModelicaPlugin;
+import de.tuberlin.uebb.emodelica.ModelRepository;
+import de.tuberlin.uebb.emodelica.model.Model;
 import de.tuberlin.uebb.emodelica.model.experiments.IExperiment;
 import de.tuberlin.uebb.emodelica.model.experiments.IExperimentContainer;
 import de.tuberlin.uebb.emodelica.model.experiments.impl.ExperimentContainer;
 import de.tuberlin.uebb.emodelica.model.project.ILibraryContainer;
 import de.tuberlin.uebb.emodelica.model.project.ILibraryEntry;
+import de.tuberlin.uebb.emodelica.model.project.IModelicaPackage;
 import de.tuberlin.uebb.emodelica.model.project.IModelicaResource;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabEnvironment;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabProject;
@@ -48,6 +54,7 @@ import de.tuberlin.uebb.emodelica.model.project.IMosilabSource;
 import de.tuberlin.uebb.emodelica.preferences.PreferenceConstants;
 import de.tuberlin.uebb.emodelica.util.ResourcesToModelicaAdapterFactory;
 import de.tuberlin.uebb.modelica.im.nodes.IClassNode;
+import de.tuberlin.uebb.modelica.im.nodes.INode;
 
 /**
  * @author choeger
@@ -148,12 +155,11 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 				// create a SchemaFactory capable of understanding WXS schemas
 				SchemaFactory factory = SchemaFactory
 						.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-				
+
 				// load a WXS schema, represented by a Schema instance
 				final InputStream stream = this.getClass().getResourceAsStream(
 						Constants.XML_MOSILAB_SETTINGS_XSD);
-				Source schemaFile = new StreamSource(
-						stream);
+				Source schemaFile = new StreamSource(stream);
 
 				Schema schema = factory.newSchema(schemaFile);
 
@@ -429,12 +435,12 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 	@Override
 	public void doRefresh() {
 
-//		try {
-//			project.deleteMarkers(IMarker.PROBLEM, true, IResource.DEPTH_ZERO);
-//		} catch (CoreException e1) {
-//			e1.printStackTrace();
-//		}
-		
+		// try {
+		// project.deleteMarkers(IMarker.PROBLEM, true, IResource.DEPTH_ZERO);
+		// } catch (CoreException e1) {
+		// e1.printStackTrace();
+		// }
+
 		try {
 			refreshExperiments();
 		} catch (CoreException e) {
@@ -449,15 +455,15 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 		if (getMOSILABEnvironment() != null) {
 			getMOSILABEnvironment().refresh();
 		} else {
-//			try {
-//				IMarker probMarker = project.createMarker(IMarker.PROBLEM);
-//				probMarker.setAttribute(IMarker.SEVERITY,
-//						IMarker.SEVERITY_ERROR);
-//				probMarker.setAttribute(IMarker.MESSAGE,"Project cannot be build, no MOSILAB environment found!");
-//			} catch (CoreException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
+			// try {
+			// IMarker probMarker = project.createMarker(IMarker.PROBLEM);
+			// probMarker.setAttribute(IMarker.SEVERITY,
+			// IMarker.SEVERITY_ERROR);
+			// probMarker.setAttribute(IMarker.MESSAGE,"Project cannot be build, no MOSILAB environment found!");
+			// } catch (CoreException e) {
+			// // TODO Auto-generated catch block
+			// e.printStackTrace();
+			// }
 		}
 		getLibraries().refresh();
 
@@ -524,7 +530,73 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 	}
 
 	@Override
-	public IClassNode lookUpClassNode(String[] split) {
-		return null;
+	public Collection<IClassNode> lookUpClassNode(String[] split) {
+		Set<IModelicaPackage> possiblePackages = new HashSet<IModelicaPackage>();
+		Set<IFile> possibleSourceFiles = new HashSet<IFile>();
+		Set<IClassNode> possibleClasses = new HashSet<IClassNode>();
+
+		possiblePackages.addAll(mosilabInstallation.getPackages());
+
+		for (IMosilabSource source : this.srcFolders) {
+			possiblePackages.addAll(source.getPackages());
+			for (IResource resource : source.getContents())
+				if (resource instanceof IFile
+						&& resource.getName().endsWith(".mo"))
+					possibleSourceFiles.add((IFile) resource);
+		}
+
+		for (ILibraryEntry lib : this.libs.getLibraries()) {
+			possiblePackages.addAll(lib.getPackages());
+		}
+		String pkgName = "";
+
+		for (String nameElement : split) {
+			Set<IClassNode> nextChildren = new HashSet<IClassNode>();
+			for (IClassNode classNode : possibleClasses) {
+				for (String child : classNode.getChildren().keySet()) {
+					final INode childNode = classNode.getChild(child);
+					if (child.equals(nameElement)
+							&& childNode instanceof IClassNode)
+						nextChildren.add((IClassNode) childNode);
+				}
+			}
+
+			possibleClasses = nextChildren;
+
+			for (Iterator<IFile> iterator = possibleSourceFiles.iterator(); iterator
+					.hasNext();) {
+				IFile file = (IFile) iterator.next();
+				if (file.getName().endsWith(nameElement + ".mo")) {
+					Model model = ModelRepository.getModelForFileBlocking(file);
+
+					for (INode node : model.getRootNode().getChildren()
+							.values())
+						if (node instanceof IClassNode)
+							possibleClasses.add((IClassNode) node);
+				}
+				iterator.remove();
+			}
+
+			// handle valid packages
+			pkgName += nameElement;
+			for (Iterator<IModelicaPackage> iterator = possiblePackages
+					.iterator(); iterator.hasNext();) {
+				IModelicaPackage pkg = iterator.next();
+				if (pkg.getFullName().equals(pkgName)
+						|| pkg.getFullName().startsWith(pkgName + "."))
+					possibleSourceFiles.addAll(pkg.getContents());
+				else {
+					iterator.remove();
+				}
+			}
+			pkgName += ".";
+		}
+
+		for (IModelicaPackage pkg : possiblePackages) {
+			if (pkg != null)
+				possibleClasses.add(pkg.getPackageDef());
+		}
+		
+		return possibleClasses;
 	}
 }

@@ -3,6 +3,7 @@
  */
 package de.tuberlin.uebb.emodelica.model.project;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.core.resources.IProject;
@@ -112,7 +113,7 @@ public interface IMosilabProject extends IModelicaResource {
 	/**
 	 * Get the classnode for each of the identifiers in its name
 	 * @param split
-	 * @return the matching class node or none if none exists
+	 * @return the matching class nodes or none if none exists
 	 */
-	public IClassNode lookUpClassNode(String[] split);
+	public Collection<IClassNode> lookUpClassNode(String[] split);
 }

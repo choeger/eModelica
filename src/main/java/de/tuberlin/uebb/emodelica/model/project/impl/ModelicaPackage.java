@@ -37,6 +37,11 @@ public class ModelicaPackage extends ModelicaResource  implements IModelicaPacka
 	private boolean onlyModelicaResources = false;
 	private IClassNode packageDef;
 	
+	@Override
+	public String toString() {
+		return fullName;
+	}
+
 	public ModelicaPackage(IModelicaResource parent, IContainer parentDir, IContainer completePath) {
 		this.parent = parent;
 		setResource(completePath);
@@ -138,8 +143,10 @@ public class ModelicaPackage extends ModelicaResource  implements IModelicaPacka
 		//parsing successfull?
 		if (packageModel.getRootNode() == null) return;
 		final INode child = packageModel.getRootNode().getChild(shortName);
-		if (child instanceof IClassNode)
+		if (child instanceof IClassNode) {
 			packageDef = (IClassNode) child;
+			packageDef.setFullComponentName(this.fullName);
+		}
 	}
 
 	/* (non-Javadoc)
@@ -156,6 +163,10 @@ public class ModelicaPackage extends ModelicaResource  implements IModelicaPacka
 	@Override
 	public void setParent(IModelicaResource newParent) {
 		this.parent = newParent;		
+	}
+	
+	public IClassNode getPackageDef() {
+		return packageDef;
 	}
 	
 	public String getDocumentation() {

@@ -40,6 +40,7 @@ public class Model {
 	private ArrayList<Position> foldablePositions;
 	private IDocument document;
 
+	private boolean shouldCompact = true;
 	private boolean compacted;
 	
 	public Model(IDocument document, ILexer lexer, IAbsy rootAbsy) {
@@ -179,5 +180,13 @@ public class Model {
 	
 	public boolean isCompacted() {
 		return compacted;
+	}
+	
+	public boolean shouldCompact() {
+		return shouldCompact;
+	}
+	
+	public void setToCompact(boolean shouldCompact) {
+		this.shouldCompact = shouldCompact; 
 	}
 }

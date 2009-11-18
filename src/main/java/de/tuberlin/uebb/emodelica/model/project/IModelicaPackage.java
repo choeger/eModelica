@@ -5,6 +5,8 @@ import java.util.List;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 
+import de.tuberlin.uebb.modelica.im.nodes.IClassNode;
+
 /**
  * 
  * @author choeger
@@ -38,4 +40,6 @@ public interface IModelicaPackage extends IModelicaResource {
 	public IContainer getContainer();
 
 	public String getDocumentation();
+
+	public IClassNode getPackageDef();
 }

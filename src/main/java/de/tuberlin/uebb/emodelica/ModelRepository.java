@@ -74,7 +74,7 @@ public class ModelRepository {
 				
 				if (next != null) {
 					Model model = getModelForFile(next);
-					if (model != null)
+					if (model != null && model.shouldCompact())
 						model.compact();
 					
 					synchronized(next) {

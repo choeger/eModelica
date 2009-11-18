@@ -8,6 +8,10 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Shell;
 
 import de.tuberlin.uebb.emodelica.util.BrowserInformationControl;
+import de.tuberlin.uebb.modelica.im.impl.nodes.DocumentationAnnotation;
+import de.tuberlin.uebb.modelica.im.nodes.IAnnotable;
+import de.tuberlin.uebb.modelica.im.nodes.IAnnotation;
+import de.tuberlin.uebb.modelica.im.nodes.INode;
 
 public abstract class AbstractModelicaCompletionProposal implements
 		ICompletionProposalExtension3 {
@@ -36,6 +40,18 @@ public abstract class AbstractModelicaCompletionProposal implements
 	@Override
 	public IInformationControlCreator getInformationControlCreator() {
 		return controlCreator;
+	}
+
+	protected Object getAnnotation(INode value) {
+		String htmlString = "<h>" + value.toString() + "</h>";
+		
+		if (value instanceof IAnnotable) {
+			final IAnnotation annotation = ((IAnnotable) value).getAnnotationForName("Documentation");
+			if (annotation != null && annotation instanceof DocumentationAnnotation)
+				htmlString += "<br>" + ((DocumentationAnnotation)annotation).getHTMLComment();
+			
+		}
+		return htmlString;
 	}
 
 }
