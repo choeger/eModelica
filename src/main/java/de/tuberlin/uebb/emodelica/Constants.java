@@ -3,6 +3,8 @@
  */
 package de.tuberlin.uebb.emodelica;
 
+import org.eclipse.jface.text.IDocument;
+
 /**
  * @author choeger
  *
@@ -19,7 +21,9 @@ public class Constants {
 	public static final String PART_MODELICA_MULTI_LINE_COMMENT = "DE.TU_BERLIN.UEBB.EMODELICA.MULTI_LINE_COMMENT_PARTITION";
 	public static final String PART_MODELICA_SINGLE_LINE_COMMENT = "DE.TU_BERLIN.UEBB.EMODELICA.SINGLE_LINE_COMMENT_PARTITION";
 	public static final String PART_MODELICA_STRING = "DE.TU_BERLIN.UEBB.EMODELICA.STRING_PARTITION";
-	public static final String[] MODELICA_PART_TYPES = {PART_MODELICA_MULTI_LINE_COMMENT,PART_MODELICA_SINGLE_LINE_COMMENT, PART_MODELICA_STRING};
+	public static final String[] MODELICA_PART_TYPES = {PART_MODELICA_MULTI_LINE_COMMENT,PART_MODELICA_SINGLE_LINE_COMMENT, PART_MODELICA_STRING, IDocument.DEFAULT_CONTENT_TYPE};
 
 	public static final String XML_MOSILAB_SETTINGS_XSD = "/xml/schema/mosilabSettings.xsd";
+	
+	public static final String PARSE_ERROR_MARKERS = "de.tuberlin.uebb.emodelica.markers.parsererror";
 }

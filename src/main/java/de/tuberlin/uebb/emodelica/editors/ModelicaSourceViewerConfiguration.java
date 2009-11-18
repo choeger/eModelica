@@ -13,6 +13,8 @@ import org.eclipse.jface.text.contentassist.IContentAssistant;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.reconciler.IReconciler;
 import org.eclipse.jface.text.reconciler.MonoReconciler;
+import org.eclipse.jface.text.source.DefaultAnnotationHover;
+import org.eclipse.jface.text.source.IAnnotationHover;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
 
@@ -30,6 +32,7 @@ public class ModelicaSourceViewerConfiguration extends
 
 	private ModelicaEditor editor = null;
 	private MonoReconciler reconciler = null;
+	private ITextHover textHover;
 
 	public ModelicaSourceViewerConfiguration(ModelicaEditor editor) {
 		super();
@@ -51,20 +54,33 @@ public class ModelicaSourceViewerConfiguration extends
 		assistant.enableColoredLabels(true);
 		assistant.setShowEmptyList(true);
 		assistant.setEmptyMessage("No MODELICA Proposals");
+		
 		return assistant;
 	}
-
+	
 	@Override
 	public IPresentationReconciler getPresentationReconciler(ISourceViewer sourceViewer) {
 		return ModelicaPresentationReconciler.getInstance();
 	}
 	
 	@Override
-	public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType)
-	{
-		return new DefaultTextHover(sourceViewer);
+	public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType) {
+		textHover = new ModelicaTextHover(sourceViewer);
+		return textHover;
 	}
 	
+	@Override
+	public IAnnotationHover getAnnotationHover(ISourceViewer sourceViewer) {
+		final IAnnotationHover hover = new DefaultAnnotationHover();
+		return hover;
+	}
+
+	@Override
+	public ITextHover getTextHover(ISourceViewer sourceViewer,
+			String contentType, int stateMask) {
+		return getTextHover(sourceViewer, contentType);
+	}
+
 	@Override
 	public String getConfiguredDocumentPartitioning(ISourceViewer sourceViewer) {
 	    return Constants.ModelicaDocumentPartitioner;

@@ -31,14 +31,18 @@ public class ModelicaContentAssistProcessor implements IContentAssistProcessor {
 
 	private final Matcher ideDetector;
 	private List<IClassNode> enclosingClasses = new ArrayList<IClassNode>();
-	
+	private final Matcher nameDetector;
+
 	public ModelicaContentAssistProcessor() {
 
 		Pattern ideDetectorPattern = Pattern.compile("(_|\\p{Alnum})*");
-		
 		ideDetector = ideDetectorPattern.matcher("");
+
+		Pattern nameDetectorPattern = Pattern.compile("(_|\\p{Alnum}\\.)+$");
+		nameDetector = nameDetectorPattern.matcher("");
+
 	}
-	
+
 	@Override
 	public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer,
 			int offset) {
@@ -74,7 +78,20 @@ public class ModelicaContentAssistProcessor implements IContentAssistProcessor {
 			IClassNode prefixClass = null;
 			ArrayList<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>();
 			
-			if (!lhsValue.isEmpty()) {
+			if (start > 1 && string.charAt(start - 1) == '.') {	
+				nameDetector.region(0, start-1);		
+				if (nameDetector.find()) {
+					String name = nameDetector.group();
+					IMosilabProject project = getMosilabProject(viewer);
+					if (project != null) {
+						IClassNode classNode = project.lookUpClassNode(name.split("\\."));
+						if (classNode != null) {
+							for (String child : classNode.getChildren().keySet())
+								if (child.startsWith(lhsValue) && child.endsWith(rhsValue));
+						}
+					}	
+				}
+			} else if (!lhsValue.isEmpty()) {
 				addAllVisibleProposals(viewer, start, end, lhsValue, rhsValue, proposals);
 			}
 			
@@ -94,52 +111,70 @@ public class ModelicaContentAssistProcessor implements IContentAssistProcessor {
 		return new ICompletionProposal[]{};
 	}
 
-	private final void addAllVisibleProposals(ITextViewer viewer, int start, int end,
-			String lhsValue, String rhsValue,
+	private final void addAllVisibleProposals(ITextViewer viewer, int start,
+			int end, String lhsValue, String rhsValue,
 			ArrayList<ICompletionProposal> proposals) {
-		final IEditorInput editorInput = ((ModelicaSourceViewer) viewer).getEditorInput();
-		if (editorInput instanceof FileEditorInput) {
-			final IFile file = ((FileEditorInput) editorInput).getFile();
-			final IProject project = file.getProject();
-			IMosilabProject adapter = (IMosilabProject) project.getAdapter(IModelicaResource.class);
-			if (adapter != null) {
-				
-				if (adapter.getMOSILABEnvironment() != null) 
-					for (IModelicaPackage pkg : adapter.getMOSILABEnvironment().getPackages())
-						addProposalsForPackage(start, end, lhsValue, rhsValue, proposals, pkg);
-				
-				for (IMosilabSource source : adapter.getSrcFolders()) {
-					addProposalForSourceFolder(start, end, lhsValue, rhsValue, proposals, source);
-					for (IResource res : source.getContents())
-						if (res instanceof IFile) {
-							IFile srcFile = (IFile)res;
-							addProposalForFile(start, end, lhsValue, rhsValue, proposals, srcFile);
-						}
-				}
+		IMosilabProject mosilabProject = getMosilabProject(viewer);
+		if (mosilabProject != null) {
+
+			if (mosilabProject.getMOSILABEnvironment() != null)
+				for (IModelicaPackage pkg : mosilabProject
+						.getMOSILABEnvironment().getPackages())
+					addProposalsForPackage(start, end, lhsValue, rhsValue,
+							proposals, pkg);
+
+			for (IMosilabSource source : mosilabProject.getSrcFolders()) {
+				addProposalForSourceFolder(start, end, lhsValue, rhsValue,
+						proposals, source);
+				for (IResource res : source.getContents())
+					if (res instanceof IFile) {
+						IFile srcFile = (IFile) res;
+						addProposalForFile(start, end, lhsValue, rhsValue,
+								proposals, srcFile);
+					}
 			}
 		}
 	}
 
-	private final void addProposalForSourceFolder(int start, int end, String lhsValue,
-			String rhsValue, ArrayList<ICompletionProposal> proposals,
-			IMosilabSource source) {
-		
-		for (IModelicaPackage pkg : source.getPackages()) {
-			addProposalsForPackage(start, end, lhsValue, rhsValue, proposals, pkg);
+	private final IMosilabProject getMosilabProject(ITextViewer viewer) {
+		final IEditorInput editorInput = ((ModelicaSourceViewer) viewer)
+				.getEditorInput();
+		if (editorInput instanceof FileEditorInput) {
+			final IFile file = ((FileEditorInput) editorInput).getFile();
+			final IProject project = file.getProject();
+			IMosilabProject adapter = (IMosilabProject) project
+					.getAdapter(IModelicaResource.class);
+			if (adapter != null)
+				return adapter;
 		}
-		
+
+		return null;
+	}
+
+	private final void addProposalForSourceFolder(int start, int end,
+			String lhsValue, String rhsValue,
+			ArrayList<ICompletionProposal> proposals, IMosilabSource source) {
+
+		for (IModelicaPackage pkg : source.getPackages()) {
+			addProposalsForPackage(start, end, lhsValue, rhsValue, proposals,
+					pkg);
+		}
+
 		for (IResource res : source.getContents())
 			if (res instanceof IFile) {
-				IFile srcFile = (IFile)res;
-				addProposalForFile(start, end, lhsValue, rhsValue, proposals, srcFile);
-			}		
+				IFile srcFile = (IFile) res;
+				addProposalForFile(start, end, lhsValue, rhsValue, proposals,
+						srcFile);
+			}
 	}
 
 	private void addProposalsForPackage(int start, int end, String lhsValue,
 			String rhsValue, ArrayList<ICompletionProposal> proposals,
 			IModelicaPackage pkg) {
-		if (pkg.getFullName().startsWith(lhsValue) && pkg.getFullName().endsWith(rhsValue))
-			proposals.add(new PartialNameCompletionProposal(start, end - start, pkg));
+		if (pkg.getFullName().startsWith(lhsValue)
+				&& pkg.getFullName().endsWith(rhsValue))
+			proposals.add(new PartialNameCompletionProposal(start, end - start,
+					pkg));
 	}
 
 	private final void addProposalForFile(int start, int end, String lhsValue,
@@ -147,11 +182,14 @@ public class ModelicaContentAssistProcessor implements IContentAssistProcessor {
 			IFile srcFile) {
 		Model modelForFile = ModelRepository.getModelForFileUnblocking(srcFile);
 		if (modelForFile == null)
-			return; //synchronizer not yet done
-		
+			return; // synchronizer not yet done
+
 		for (String child : modelForFile.getRootNode().getChildren().keySet())
-			if (child.startsWith(lhsValue) && child.endsWith(rhsValue) && modelForFile.getRootNode().getChildren().get(child) instanceof IClassNode)
-				proposals.add(new IDECompletionProposal(start, end - start, modelForFile.getRootNode().getChild(child)));
+			if (child.startsWith(lhsValue)
+					&& child.endsWith(rhsValue)
+					&& modelForFile.getRootNode().getChildren().get(child) instanceof IClassNode)
+				proposals.add(new IDECompletionProposal(start, end - start,
+						modelForFile.getRootNode().getChild(child)));
 	}
 
 	@Override

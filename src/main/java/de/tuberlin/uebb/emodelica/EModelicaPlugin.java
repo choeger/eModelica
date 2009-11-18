@@ -12,6 +12,8 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
@@ -210,5 +212,18 @@ public class EModelicaPlugin extends AbstractUIPlugin {
 		for (IMosilabEnvironment env : this.mosilabEnvironments) {
 			
 		}
+	}
+
+	public static Composite getActiveWorkbenchShell() {
+		IWorkbenchWindow window = getActiveWorkbenchWindow();
+		if (window != null) {
+		        return window.getShell();
+		}
+		return null;
+
+	}
+
+	public static IWorkbenchWindow getActiveWorkbenchWindow() {
+		return getDefault().getWorkbench().getActiveWorkbenchWindow();
 	}
 }

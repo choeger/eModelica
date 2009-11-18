@@ -11,6 +11,7 @@ import org.eclipse.core.runtime.QualifiedName;
 import de.tuberlin.uebb.emodelica.EModelicaPlugin;
 import de.tuberlin.uebb.emodelica.model.experiments.IExperimentContainer;
 import de.tuberlin.uebb.emodelica.model.experiments.impl.ExperimentContainer;
+import de.tuberlin.uebb.modelica.im.nodes.IClassNode;
 
 /**
  * @author choeger
@@ -107,4 +108,11 @@ public interface IMosilabProject extends IModelicaResource {
 	 * write back properties directly
 	 */
 	void writeBackProperties();
+
+	/**
+	 * Get the classnode for each of the identifiers in its name
+	 * @param split
+	 * @return the matching class node or none if none exists
+	 */
+	public IClassNode lookUpClassNode(String[] split);
 }

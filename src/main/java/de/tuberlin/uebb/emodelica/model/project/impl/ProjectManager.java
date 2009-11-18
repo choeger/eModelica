@@ -40,7 +40,6 @@ public class ProjectManager implements IProjectManager, IResourceChangeListener 
 		public boolean visit(IResourceDelta delta) throws CoreException {
 
 			if (delta.getResource().getType() == IResource.PROJECT) {
-				System.err.println("delta for project! " + delta.getKind());
 				IProject project = (IProject) delta.getResource();
 				String path = project.getFullPath().toOSString();
 
@@ -48,12 +47,10 @@ public class ProjectManager implements IProjectManager, IResourceChangeListener 
 					if (project.isOpen()) {
 						/* new opened MOSILAB project */
 						if (project.getNature(MOSILAB_PROJECT_NATURE) != null) {
-							System.err.println("adding newly opened " + path);
 							projects.put(path, new MosilabProject(project));
 						}
 					} else {
 						/* closed MOSILAB project */
-						System.err.println("removing closed " + path);
 						projects.remove(path);
 					}
 					/* new or closed - our job is done */
@@ -65,8 +62,6 @@ public class ProjectManager implements IProjectManager, IResourceChangeListener 
 			while (resource != null) {
 				IModelicaResource modelicaResource = (IModelicaResource) delta
 						.getResource().getAdapter(IModelicaResource.class);
-				System.err.println("For: " + delta.getResource() + "Resource: "
-						+ modelicaResource);
 				if (modelicaResource != null)
 					modelicaResource.markAsDirty();
 
@@ -94,8 +89,6 @@ public class ProjectManager implements IProjectManager, IResourceChangeListener 
 	@Override
 	public void resourceChanged(IResourceChangeEvent event) {
 		try {
-			System.err.println("Resource changed! " + event.getSource() + " "
-					+ event.getType());
 			if (event.getType() == IResourceChangeEvent.PRE_CLOSE) {
 				IProject project = (IProject) event.getResource();
 				if (project.getNature(MOSILAB_PROJECT_NATURE) != null) {
@@ -131,11 +124,9 @@ public class ProjectManager implements IProjectManager, IResourceChangeListener 
 
 		for (IMosilabProject project : projects.values()) {
 			if (project.getProject().exists() && project.getProject().isOpen()) {
-				System.err.println("[REFRESH] " + " refreshing: " + project.getProject().getName());
 				project.refresh();
 				project.syncChildren();
 			} else {
-				System.err.println("[REFRESH] " + " deleting: " + project.getProject().getName());
 				toDelete.add(project);
 			}
 		}

@@ -140,12 +140,7 @@ public class ModelicaModelManager implements IModelManager {
 		}
 	}
 
-	private void incrementalParseModel(Stack<Terminal> inputStack, Range changed) {
-		System.err.print("CHANGED region: " + changed);
-		for (int i = changed.getStartToken(); i < changed.getEndToken(); i++)
-			System.err.print(lexer.getCachedInput().get(i));
-		System.err.println();
-		
+	private void incrementalParseModel(Stack<Terminal> inputStack, Range changed) {		
 		IIncrementalParser iParser = new IncrementalParser();
 		
 		Set<ParseError> preserved = new HashSet<ParseError>();

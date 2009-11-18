@@ -47,6 +47,7 @@ import de.tuberlin.uebb.emodelica.model.project.IMosilabProject;
 import de.tuberlin.uebb.emodelica.model.project.IMosilabSource;
 import de.tuberlin.uebb.emodelica.preferences.PreferenceConstants;
 import de.tuberlin.uebb.emodelica.util.ResourcesToModelicaAdapterFactory;
+import de.tuberlin.uebb.modelica.im.nodes.IClassNode;
 
 /**
  * @author choeger
@@ -520,5 +521,10 @@ public class MosilabProject extends ModelicaResource implements IMosilabProject 
 	@Override
 	public void setParent(IModelicaResource newParent) {
 		// Projects don't have parents
+	}
+
+	@Override
+	public IClassNode lookUpClassNode(String[] split) {
+		return null;
 	}
 }

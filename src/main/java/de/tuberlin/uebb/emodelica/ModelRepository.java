@@ -179,7 +179,10 @@ public class ModelRepository {
 	}
 	
 	public static void updateModel(IFile file, Model model) {
-		repository.put(file.getFullPath().toString(), model);
+		synchronized(repository) {
+			repository.put(file.getFullPath().toString(), model);
+			synchronizer.sources.remove(file);
+		}
 	}
 	
 	/**

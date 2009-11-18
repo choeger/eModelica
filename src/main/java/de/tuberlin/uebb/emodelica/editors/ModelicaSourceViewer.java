@@ -6,6 +6,7 @@ package de.tuberlin.uebb.emodelica.editors;
 import java.util.ArrayList;
 
 import org.eclipse.jface.text.ITextPresentationListener;
+import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.IOverviewRuler;
 import org.eclipse.jface.text.source.IVerticalRuler;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
@@ -31,7 +32,6 @@ public class ModelicaSourceViewer extends ProjectionViewer {
 		this.editorInput = iEditorInput;
 	}
 
-	
 	public IEditorInput getEditorInput() {
 		return editorInput;
 	}
@@ -40,7 +40,6 @@ public class ModelicaSourceViewer extends ProjectionViewer {
 	public IModelManager getModelManager() {
 		return modelManager;
 	}
-
 
 	/* taken from jdts JavaSourceViewer, should probably go into ITextViewerExtension ... */
 	/**

@@ -2,12 +2,15 @@ package de.tuberlin.uebb.emodelica.editors;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.ResourceBundle;
 import java.util.TreeMap;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.ISourceViewer;
@@ -27,6 +30,7 @@ import org.eclipse.ui.texteditor.ContentAssistAction;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
+import de.tuberlin.uebb.emodelica.Constants;
 import de.tuberlin.uebb.emodelica.editors.outline.ModelicaOutline;
 import de.tuberlin.uebb.emodelica.editors.presentation.ModelicaModelPresentation;
 import de.tuberlin.uebb.emodelica.model.IModelChangedListener;
@@ -87,6 +91,7 @@ public class ModelicaEditor extends TextEditor implements IModelChangedListener 
 				getOverviewRuler(), isOverviewRulerVisible(), styles, modelManager, this.getEditorInput());
 		
 		// ensure decoration support has been created and configured.
+		getSourceViewerDecorationSupport(viewer);
 		modelPresentation = new ModelicaModelPresentation(viewer);
 
 		return viewer;
@@ -228,11 +233,29 @@ public class ModelicaEditor extends TextEditor implements IModelChangedListener 
 
 	private void addErrorMarker(FileEditorInput input, ParseError parseError,
 			int startOffset, int endOffset) throws CoreException {
-		IMarker errorMarker = input.getFile().createMarker(IMarker.PROBLEM);
+		IMarker errorMarker = input.getFile().createMarker(Constants.PARSE_ERROR_MARKERS);
 		errorMarker.setAttribute(IMarker.MESSAGE, parseError.getDescription());
 		errorMarker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
 		errorMarker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
 		errorMarker.setAttribute(IMarker.CHAR_START, startOffset);
 		errorMarker.setAttribute(IMarker.CHAR_END, endOffset);
+
+		IDocument document = getDocument();
+		try {
+			final int lineStart = document.getLineOfOffset(startOffset) + 1;
+			
+			final int lineEnd = document.getLineOfOffset(endOffset) + 1;
+			if (lineEnd > lineStart)
+				errorMarker.setAttribute(IMarker.LOCATION, "line " + lineStart + " - " + lineEnd);
+			else
+				errorMarker.setAttribute(IMarker.LOCATION, "line " + lineStart);
+			errorMarker.setAttribute(IMarker.LINE_NUMBER, lineStart);
+		} catch (BadLocationException e) {
+			errorMarker.setAttribute(IMarker.LOCATION, "unknown");
+		}
+	}
+
+	private IDocument getDocument() {
+		return getDocumentProvider().getDocument(getEditorInput());
 	}
 }
