@@ -14,6 +14,7 @@ import org.eclipse.jface.viewers.Viewer;
 import de.tuberlin.uebb.emodelica.ModelRepository;
 import de.tuberlin.uebb.modelica.im.ILocation;
 import de.tuberlin.uebb.modelica.im.impl.nodes.Node;
+import de.tuberlin.uebb.modelica.im.nodes.IClassNode;
 import de.tuberlin.uebb.modelica.im.nodes.INode;
 import de.tuberlin.uebb.modelica.im.nodes.IStoredDefinitionNode;
 
@@ -73,6 +74,24 @@ public class ModelTreeContentProvider implements IStructuredContentProvider, ITr
 				return model.getRootNode().getChildren().values().toArray();
 		}		
 		
+		if (parent instanceof IClassNode) {
+			final IClassNode classNode = (IClassNode)parent;
+			ILocation[] children;
+			int size = classNode.getChildren().size();
+			if(classNode.getImports() != null)
+				size++;
+			if(classNode.getExtends() != null)
+				size++;
+			children = new ILocation[size];
+			int index = 0;
+			if(classNode.getImports() != null)
+				children[index++] = classNode.getImports();
+			if(classNode.getExtends() != null)
+				children[index++] = classNode.getExtends();
+			for(String nodeName : classNode.getChildrenInOrder())
+				children[index++] = classNode.getChild(nodeName);
+			return children;
+		}
 		if (parent instanceof IStoredDefinitionNode) {
 			final IStoredDefinitionNode storedDefinitionNode = (IStoredDefinitionNode) parent;
 			ILocation[] children;
@@ -108,6 +127,13 @@ public class ModelTreeContentProvider implements IStructuredContentProvider, ITr
 			if (model != null)
 				return model.getRootNode().getChildren().size() > 0;
 		}
+		
+		if (parent instanceof IClassNode) {
+			final IClassNode classNode = (IClassNode) parent;
+			return ((classNode.getImports() != null && !classNode.getImports().getChildren().isEmpty()) ||
+					!classNode.getChildren().isEmpty());
+		}
+			
 		
 		if (parent instanceof IStoredDefinitionNode) {
 			final IStoredDefinitionNode storedDefinitionNode = (IStoredDefinitionNode) parent;
