@@ -6,6 +6,7 @@ package de.tuberlin.uebb.emodelica.editors;
 import java.util.ArrayList;
 
 import org.eclipse.jface.text.ITextPresentationListener;
+import org.eclipse.jface.text.ITextViewerExtension;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.IOverviewRuler;
 import org.eclipse.jface.text.source.IVerticalRuler;
@@ -19,7 +20,7 @@ import de.tuberlin.uebb.emodelica.model.IModelManager;
  * @author choeger
  * 
  */
-public class ModelicaSourceViewer extends ProjectionViewer {
+public class ModelicaSourceViewer extends ProjectionViewer implements ITextViewerExtension {
 
 	private IModelManager modelManager;
 	private IEditorInput editorInput;

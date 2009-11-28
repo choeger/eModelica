@@ -2,7 +2,6 @@ package de.tuberlin.uebb.emodelica.editors;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.ResourceBundle;
 import java.util.TreeMap;
 
@@ -11,6 +10,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.ISourceViewer;
@@ -19,6 +19,7 @@ import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.eclipse.jface.text.source.projection.ProjectionSupport;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
@@ -84,6 +85,16 @@ public class ModelicaEditor extends TextEditor implements IModelChangedListener 
 		markAsStateDependentAction("ContentAssistProposal", true);
 	}
 
+	
+	public boolean isMultilineSelection() {
+        ISelection selection= getSelectionProvider().getSelection();
+        if (selection instanceof ITextSelection) {
+                ITextSelection ts= (ITextSelection) selection;
+                return  ts.getStartLine() != ts.getEndLine();
+        }
+        return false;
+	}
+	
 	@Override
 	protected ISourceViewer createSourceViewer(Composite parent,
 			IVerticalRuler ruler, int styles) {
@@ -94,6 +105,8 @@ public class ModelicaEditor extends TextEditor implements IModelChangedListener 
 		getSourceViewerDecorationSupport(viewer);
 		modelPresentation = new ModelicaModelPresentation(viewer);
 
+		viewer.appendVerifyKeyListener(new ModelicaKeyLister(this, viewer));
+		
 		return viewer;
 	}
 
@@ -138,9 +151,9 @@ public class ModelicaEditor extends TextEditor implements IModelChangedListener 
 		super();
 		this.modelManager = new ModelicaModelManager(this);
 		this.modelManager.registerListener(this);
-		this
-				.setSourceViewerConfiguration(new ModelicaSourceViewerConfiguration(
+		this.setSourceViewerConfiguration(new ModelicaSourceViewerConfiguration(
 						this));
+		
 	}
 
 	@SuppressWarnings("unchecked")

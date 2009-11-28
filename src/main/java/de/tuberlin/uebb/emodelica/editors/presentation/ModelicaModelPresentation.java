@@ -3,8 +3,18 @@
  */
 package de.tuberlin.uebb.emodelica.editors.presentation;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Queue;
+import java.util.Set;
 
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IExtension;
+import org.eclipse.core.runtime.IExtensionPoint;
+import org.eclipse.core.runtime.IExtensionRegistry;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.BadPositionCategoryException;
 import org.eclipse.jface.text.DefaultPositionUpdater;
@@ -17,14 +27,12 @@ import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.TextPresentation;
 import org.eclipse.jface.text.source.ISourceViewer;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Display;
 
 import de.tuberlin.uebb.emodelica.editors.ModelicaPresentationReconciler;
 import de.tuberlin.uebb.emodelica.editors.ModelicaSourceViewer;
 import de.tuberlin.uebb.emodelica.model.Model;
-import de.tuberlin.uebb.modelica.im.impl.generated.moparser.NT_Component_Reference;
-import de.tuberlin.uebb.modelica.im.impl.generated.moparser.NT_String_Comment;
+import de.tuberlin.uebb.modelica.im.nodes.INode;
+import de.tuberlin.uebb.modelica.im.nodes.IStoredDefinitionNode;
 import de.tuberlin.uebb.page.grammar.symbols.Terminal;
 import de.tuberlin.uebb.page.parser.symbols.IAbsy;
 
@@ -34,14 +42,41 @@ import de.tuberlin.uebb.page.parser.symbols.IAbsy;
  */
 public class ModelicaModelPresentation implements ITextPresentationListener, ITextInputListener {	
 	private static final String HIGHLIGHTED_POSITIONS = "de.tuberlin.uebb.emodelica.categories.HIGHLIGHTED_POSITIONS";
+	private static final String SEMANTIC_HIGHLIGHTING_EXTENSION = "de.tuberlin.uebb.emodelica.semanticHighlighter";
 	
 	class ModelPresenter implements Runnable {
 		
 		private Model model;
 		private ISourceViewer sourceViewer;
+		private List<ISemanticHighlighter> highlighters = new ArrayList<ISemanticHighlighter>();
 		
 		public ModelPresenter(Model model, ISourceViewer sourceViewer) {
 			super();
+			
+			IExtensionRegistry reg = Platform.getExtensionRegistry();
+			
+			IExtensionPoint point = reg.getExtensionPoint(SEMANTIC_HIGHLIGHTING_EXTENSION);
+			
+			for (IExtension extension : point.getExtensions()) {
+				
+				for (IConfigurationElement element : extension.getConfigurationElements()) {
+					if (element.getName().equals("Highlighter")) {
+						
+						String className = element.getAttribute("Class");
+						try {
+							Class<?> cls = Class.forName(className);
+							highlighters.add((ISemanticHighlighter) cls.newInstance());
+						} catch (ClassNotFoundException e) {
+							e.printStackTrace();
+						} catch (InstantiationException e) {
+							e.printStackTrace();
+						} catch (IllegalAccessException e) {
+							e.printStackTrace();
+						}
+					}
+				}	
+			}
+			
 			this.model = model;
 			this.sourceViewer = sourceViewer;
 		}
@@ -60,7 +95,9 @@ public class ModelicaModelPresentation implements ITextPresentationListener, ITe
 				}
 			highlighted.clear();
 			
-			recalculateHighlighting(model.getChild());
+			Set<ISemanticHighlighter> allHighlighters = new HashSet<ISemanticHighlighter>();
+			allHighlighters.addAll(highlighters);
+			recalculateHighlighting(model.getRootNode(), allHighlighters);
 			TextPresentation presentation = getTextPresentation(new Region(0, document.getLength()));
 			
 			for (HighlightingPosition pos : highlighted) {
@@ -76,9 +113,7 @@ public class ModelicaModelPresentation implements ITextPresentationListener, ITe
 				}
 			}
 			
-			System.err.println("[Async] Applying style...");
 			sourceViewer.changeTextPresentation(presentation, true);
-			System.err.println("[Async] Applying style done.");
 		}
 
 		private TextPresentation getTextPresentation(IRegion damage) {
@@ -90,31 +125,30 @@ public class ModelicaModelPresentation implements ITextPresentationListener, ITe
 			return reconciler.createRepairDescription(damage, document);
 		}
 
-		private HighlightingPosition createHighlighting(IAbsy child, TextAttribute textAttribute) { 
-			final Terminal first = model.getInput().get(child.getRange().getStartToken());
-			final int start = first.getStartOffset();			
-			final Terminal last = model.getInput().get(child.getRange().getEndToken());
-			final int length = last.getEndOffset() - start;
+		private void recalculateHighlighting(INode currentNode, Set<ISemanticHighlighter> lastActiveHighlighters) {
+			if (currentNode == null)
+				return;
 			
-			HighlightingPosition pos = new HighlightingPosition(start, length, textAttribute);
+			final Set<ISemanticHighlighter> activeHighlighters = new HashSet<ISemanticHighlighter>();
+			activeHighlighters.addAll(lastActiveHighlighters);
 			
-			return pos;
-		}
-
-		private void recalculateHighlighting(IAbsy start) {
-			if (start != null)
-				for (IAbsy absy : start.getChildren()) {
-					if (absy instanceof NT_String_Comment) {
-						HighlightingPosition pos = createHighlighting(absy, ModelicaColors.stringCommentText);
-						highlighted.add(pos);
-					} else if (absy instanceof NT_Component_Reference) {
-						NT_Component_Reference reference = (NT_Component_Reference)absy;
-						TextAttribute attr = new TextAttribute(Display.getCurrent().getSystemColor(SWT.COLOR_DARK_BLUE), null, SWT.ITALIC);
-						IAbsy last = reference.getNt_referencepart().getLastChild();
-						HighlightingPosition pos = createHighlighting(last, attr);
-						highlighted.add(pos);
-					} else recalculateHighlighting(absy);
-				}		
+			for (ISemanticHighlighter highlighter : highlighters)
+				if (activeHighlighters.contains(highlighter)) {
+					boolean active = highlighter.handleNode(currentNode);
+					if (!active)
+						activeHighlighters.remove(highlighter);
+				}
+				
+			if (!activeHighlighters.isEmpty())
+				for (INode child : currentNode.getChildren().values())
+					recalculateHighlighting(child, activeHighlighters);
+					
+			for (ISemanticHighlighter highlighter : highlighters) {
+				highlighter.nodeHandled(currentNode);
+			}							
+			
+			for (ISemanticHighlighter highlighter : highlighters)
+				highlighted.addAll(highlighter.getHighlightingPositions());
 		}
 	}
 

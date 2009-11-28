@@ -59,7 +59,7 @@ Require-Bundle: org.eclipse.jface.text,							org.eclipse.text,
  rkbench,							org.eclipse.core.runtime,							org.eclipse.ui.navigat
  or,							org.eclipse.ui.console
 Build-Jdk: 1.6.0_0
-Bundle-Version: 0.1.7
+Bundle-Version: 0.1.8
 Bnd-LastModified: 1257691733989
 Embed-Transitive: true
 Bundle-Activator: de.tuberlin.uebb.emodelica.EModelicaPlugin
@@ -87,6 +87,6 @@ Import-Package: javax.swing,javax.swing.event,javax.swing.text,javax.s
  s,org.eclipse.ui.wizards.newresource,org.osgi.framework;version="1.4"
  ,org.w3c.dom,org.xml.sax
 Bundle-ClassPath: .,
- im-0.0.6.jar,
- page-runtime-0.1.7.jar,
+ im-0.0.7.jar,
+ page-runtime-0.1.8.jar,
  getopt-1.0.12.jar

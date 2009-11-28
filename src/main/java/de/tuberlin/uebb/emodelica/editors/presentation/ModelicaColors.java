@@ -19,7 +19,7 @@ public class ModelicaColors {
 	public static Color stringColor = Display.getCurrent().getSystemColor(SWT.COLOR_BLUE);
 	public static Color kwTokenColor = Display.getCurrent().getSystemColor(SWT.COLOR_DARK_RED);
 	public static Color stringCommentColor = Display.getCurrent().getSystemColor(SWT.COLOR_DARK_GRAY);
-	public static Color identifierColor = Display.getCurrent().getSystemColor(SWT.COLOR_DARK_BLUE);
+	public static Color identifierColor = new Color(Display.getCurrent(), 0,0,220);
 
 	
 	public static TextAttribute stringCommentText = new TextAttribute(stringCommentColor);

@@ -2,6 +2,7 @@
 <?eclipse version="3.2"?>
 <plugin>
    <extension-point id="de.tuberlin.uebb.emodelica.experimentView" name="MOSILAB Experiment View" schema="xml/schema/de.tuberlin.uebb.emodelica.experimentView.exsd"/>
+   <extension-point id="de.tuberlin.uebb.emodelica.semanticHighlighter" name="Semantic Highlighting Classes" schema="xml/schema/de.tuberlin.uebb.emodelica.semanticHighlighter.exsd"/>
    <extension
          point="org.eclipse.core.runtime.adapters">
       <factory
@@ -447,5 +448,11 @@
       <persistent
             value="true">
       </persistent>
+   </extension>
+   <extension
+         point="de.tuberlin.uebb.emodelica.semanticHighlighter">
+      <Highlighter
+            Class="de.tuberlin.uebb.emodelica.editors.presentation.LocalIdentifierHighlighter">
+      </Highlighter>
    </extension>
 </plugin>
