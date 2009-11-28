@@ -141,7 +141,7 @@ public class ModelicaPackage extends ModelicaResource  implements IModelicaPacka
 
 	private void setPackageDef(Model packageModel) {
 		//parsing successfull?
-		if (packageModel.getRootNode() == null) return;
+		if (packageModel == null || packageModel.getRootNode() == null) return;
 		final INode child = packageModel.getRootNode().getChild(shortName);
 		if (child instanceof IClassNode) {
 			packageDef = (IClassNode) child;

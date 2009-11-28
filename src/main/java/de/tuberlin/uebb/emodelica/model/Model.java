@@ -60,11 +60,11 @@ public class Model {
 			if (mapping == null) {
 				mapping = new StoredDefinitionMapping();
 				mapping.init((NT_Stored_Definition) rootAbsy);
-				rootAbsy.addAdapter(StoredDefinitionMapping.class, mapping);
 			}
-
+			
 			mapping.update();
 			rootNode = mapping.getResultIM();
+			
 			
 //			for (INode node : rootNode.getChildren().values())
 //				if (node instanceof ClassNode)
@@ -92,8 +92,8 @@ public class Model {
 	public void updateFromAbsy(IAbsy child, ILexer lexer) {
 		this.child = child;
 		updateIM(lexer, child);
-	}
-
+	} 
+	
 	public void setInput(List<Terminal> input) {
 		this.input = input;
 	}
@@ -174,6 +174,7 @@ public class Model {
 		if (!compacted) {
 			this.input=null;
 			this.child=null;
+			this.document = null;
 			compacted=true;
 		}
 	}
