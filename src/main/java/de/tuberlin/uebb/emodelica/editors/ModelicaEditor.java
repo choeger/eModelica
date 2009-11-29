@@ -8,6 +8,7 @@ import java.util.TreeMap;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
@@ -28,10 +29,12 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.ContentAssistAction;
+import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
 import de.tuberlin.uebb.emodelica.Constants;
+import de.tuberlin.uebb.emodelica.actions.ModelicaRefactoringActionGroup;
 import de.tuberlin.uebb.emodelica.editors.outline.ModelicaOutline;
 import de.tuberlin.uebb.emodelica.editors.presentation.ModelicaModelPresentation;
 import de.tuberlin.uebb.emodelica.model.IModelChangedListener;
@@ -58,6 +61,7 @@ public class ModelicaEditor extends TextEditor implements IModelChangedListener 
 	private ProjectionAnnotationModel annotationModel;
 	private TreeMap<Integer, Annotation> oldAnnotations = new TreeMap<Integer, Annotation>();
 	private ModelicaModelPresentation modelPresentation;
+	private ModelicaRefactoringActionGroup group;
 
 	/* Methods for code folding support */
 	@Override
@@ -83,9 +87,17 @@ public class ModelicaEditor extends TextEditor implements IModelChangedListener 
 		action.setActionDefinitionId(id);
 		setAction("ContentAssistProposal", action); 
 		markAsStateDependentAction("ContentAssistProposal", true);
+		
+		group = new ModelicaRefactoringActionGroup(this, ITextEditorActionConstants.GROUP_EDIT );
+	}
+	
+	@Override
+	protected void editorContextMenuAboutToShow(IMenuManager menu) {
+		super.editorContextMenuAboutToShow(menu);
+		if (group != null)
+			group.fillContextMenu(menu);
 	}
 
-	
 	public boolean isMultilineSelection() {
         ISelection selection= getSelectionProvider().getSelection();
         if (selection instanceof ITextSelection) {
@@ -104,7 +116,7 @@ public class ModelicaEditor extends TextEditor implements IModelChangedListener 
 		// ensure decoration support has been created and configured.
 		getSourceViewerDecorationSupport(viewer);
 		modelPresentation = new ModelicaModelPresentation(viewer);
-
+		
 		viewer.appendVerifyKeyListener(new ModelicaKeyLister(this, viewer));
 		
 		return viewer;

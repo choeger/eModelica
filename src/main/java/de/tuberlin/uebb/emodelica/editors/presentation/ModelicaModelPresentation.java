@@ -113,6 +113,7 @@ public class ModelicaModelPresentation implements ITextPresentationListener, ITe
 				}
 			}
 			
+			System.err.println("Setting text presentation");
 			sourceViewer.changeTextPresentation(presentation, true);
 		}
 

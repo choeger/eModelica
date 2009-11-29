@@ -62,7 +62,7 @@ public class ModelicaScannerRules {
 		String[] modelicaKeywords =  {
 				"within","final","encapsulated","partial","class","model","record",
 				"block","expandable","connector","type","package","function","end",
-				"enumeration","der","extends","public protected","external","redeclare",
+				"enumeration","der","extends","public", "protected","external","redeclare",
 				"final","inner","outer","replaceable","import","constrainedby","flow",
 				"discrete","parameter","constant","input","output","if","each","initial",
 				"equation","algorithm","break","rerturn","then","elseif","else","for",

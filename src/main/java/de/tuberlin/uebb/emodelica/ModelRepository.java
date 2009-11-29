@@ -24,6 +24,8 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 import de.tuberlin.uebb.emodelica.model.Model;
 import de.tuberlin.uebb.emodelica.util.ParserFactory;
 import de.tuberlin.uebb.modelica.im.impl.generated.moparser.LexerDefs;
+import de.tuberlin.uebb.modelica.im.nodes.INode;
+import de.tuberlin.uebb.modelica.im.nodes.IStoredDefinitionNode;
 import de.tuberlin.uebb.page.exceptions.ParserException;
 import de.tuberlin.uebb.page.grammar.symbols.Terminal;
 import de.tuberlin.uebb.page.lexer.ILexer;
@@ -234,6 +236,14 @@ public class ModelRepository {
 			synchronizer.sources.add(file);
 			synchronizer.schedule();
 		}
+	}
+
+	public static Model getModelForNode(INode node) {
+		IStoredDefinitionNode store = node.getRoot();
+		for (Model model : repository.values())
+			if(model.getRootNode() == store)
+				return model;
+		return null;
 	}
 	
 	

@@ -8,15 +8,14 @@ import org.eclipse.core.runtime.IExtension;
 import org.eclipse.core.runtime.IExtensionPoint;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchSite;
 import org.eclipse.ui.actions.ActionGroup;
-import org.osgi.framework.Bundle;
 
 import de.tuberlin.uebb.emodelica.EModelicaPlugin;
 import de.tuberlin.uebb.emodelica.model.experiments.IExperiment;
@@ -53,6 +52,10 @@ public class ViewExperimentActionGroup extends ActionGroup {
 	
 	public ViewExperimentActionGroup(IViewPart viewPart) {
 		this(viewPart.getSite());
+	}
+	
+	public ViewExperimentActionGroup(IEditorPart editorPart) {
+		this(editorPart.getSite());
 	}
 
 	public void fillContextMenu(IMenuManager menu) {

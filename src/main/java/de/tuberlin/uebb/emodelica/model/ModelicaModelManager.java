@@ -139,7 +139,7 @@ public class ModelicaModelManager implements IModelManager {
 		} else {
 			lastChanged = applyDiff(lastParsedInput, lexer.getCachedInput());
 			long endTime = System.currentTimeMillis();
-			System.err.println("CHANGE: Lexing finished after " + (endTime - startTime) + "ms");
+			System.err.println("CHANGE: Lexing finished after " + (endTime - startTime) + "ms " + lastChanged);
 			if (lastChanged != null && lastChanged.getStartToken() < lexer.getCachedInput().size())
 				incrementalParseModel(inputStack, lastChanged);
 			else
@@ -292,7 +292,7 @@ public class ModelicaModelManager implements IModelManager {
 	private void parsingDone(IAbsy rootAbsy) {
 		IEditorInput input = modelicaEditor.getEditorInput();
 		IFile file = ((FileEditorInput) input).getFile();
-		//System.err.println("Parsing finished. Got: " + rootAbsy + " " + rootAbsy.getClass().getCanonicalName());
+
 		if (rootAbsy instanceof NT_Stored_Definition) {
 			Model newModel = new Model(contentProvider.getDocument(), lexer, rootAbsy);
 			for (IModelChangedListener l : listeners)

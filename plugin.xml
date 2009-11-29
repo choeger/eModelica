@@ -3,6 +3,7 @@
 <plugin>
    <extension-point id="de.tuberlin.uebb.emodelica.experimentView" name="MOSILAB Experiment View" schema="xml/schema/de.tuberlin.uebb.emodelica.experimentView.exsd"/>
    <extension-point id="de.tuberlin.uebb.emodelica.semanticHighlighter" name="Semantic Highlighting Classes" schema="xml/schema/de.tuberlin.uebb.emodelica.semanticHighlighter.exsd"/>
+   <extension-point id="de.tuberlin.uebb.emodelica.refactoring" name="Refactorings" schema="xml/schema/de.tuberlin.uebb.emodelica.refactoring.exsd"/>
    <extension
          point="org.eclipse.core.runtime.adapters">
       <factory
@@ -17,6 +18,7 @@
          point="org.eclipse.ui.editors">
       <editor
             class="de.tuberlin.uebb.emodelica.editors.ModelicaEditor"
+            contributorClass="de.tuberlin.uebb.emodelica.editors.ModelicaEditorActionContributor"
             default="false"
             filenames="*.mo"
             icon="icons/modelica_file_obj.png"
@@ -454,5 +456,13 @@
       <Highlighter
             Class="de.tuberlin.uebb.emodelica.editors.presentation.LocalIdentifierHighlighter">
       </Highlighter>
+   </extension>
+   <extension
+         point="de.tuberlin.uebb.emodelica.refactoring">
+      <RefactoringGroup
+            Descriptor="de.tuberlin.uebb.emodelica.refactoring.ChangeFlagsRefactoringDescriptor"
+            Refactoring="de.tuberlin.uebb.emodelica.refactoring.ChangeFlagsRefactoring"
+            Wizard="de.tuberlin.uebb.emodelica.refactoring.ChangeFlagsRefactoringWizard">
+      </RefactoringGroup>
    </extension>
 </plugin>

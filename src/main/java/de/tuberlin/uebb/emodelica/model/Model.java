@@ -43,6 +43,14 @@ public class Model {
 	private boolean shouldCompact = true;
 	private boolean compacted;
 	
+	public IDocument getDocument() {
+		return document;
+	}
+
+	public void setDocument(IDocument document) {
+		this.document = document;
+	}
+
 	public Model(IDocument document, ILexer lexer, IAbsy rootAbsy) {
 		this.document = document;
 		this.child = rootAbsy;
@@ -189,5 +197,26 @@ public class Model {
 	
 	public void setToCompact(boolean shouldCompact) {
 		this.shouldCompact = shouldCompact; 
+	}
+
+	public ILocation getSurroundingLocation(int offset, int length) {
+		List<IClassNode> lexical = new ArrayList<IClassNode>();
+		getEnclosingLexicalNodes(offset, rootNode, lexical);
+		final int last = lexical.size() - 1;
+		if (last < 0)
+			return Location.getNoLocation();
+		
+		IClassNode lastNode = lexical.get(last);
+		
+		final int end = offset + length;
+		if (end > lastNode.getEndOffset())
+			return Location.getNoLocation();
+		
+		for (INode node : lastNode.getChildren().values())
+			if (node.getStartOffset() <= offset && node.getEndOffset() >= end)
+				return node;
+		
+		//TODO: different location stuff
+		return Location.getNoLocation();
 	}
 }
