@@ -24,7 +24,7 @@ public class PartitionUtils {
 			if (document instanceof IDocumentExtension3) {
 				IDocumentExtension3 extension = (IDocumentExtension3) document;
 				try {
-					region = extension.getPartition(Constants.ModelicaDocumentPartitioner, offset, true);
+					region = extension.getPartition(Constants.MODELICA_DOCUMENT_PARTITIONING, offset, true);
 				} catch (BadPartitioningException e) {
 					// Log the error.
 				}

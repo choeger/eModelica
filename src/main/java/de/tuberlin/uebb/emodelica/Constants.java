@@ -13,7 +13,7 @@ public class Constants {
 	/**
 	 * Modelica Document Partitioner, this should fit the 3.0 API for document partitioning
 	 */
-	public static final String ModelicaDocumentPartitioner = "de.tuberlin.uebb.emodelica.editors.presentation.ModelicaDocumentPartitioner";
+	public static final String MODELICA_DOCUMENT_PARTITIONING = "de.tuberlin.uebb.emodelica.editors.presentation.ModelicaDocumentPartitioner";
 
 	/**
 	 * Modelica Document partion types

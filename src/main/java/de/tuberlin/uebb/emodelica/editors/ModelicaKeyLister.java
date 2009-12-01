@@ -9,17 +9,24 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentExtension;
 import org.eclipse.jface.text.IDocumentListener;
 import org.eclipse.jface.text.IPositionUpdater;
+import org.eclipse.jface.text.ITypedRegion;
 import org.eclipse.jface.text.Position;
+import org.eclipse.jface.text.TextUtilities;
 import org.eclipse.jface.text.link.ILinkedModeListener;
 import org.eclipse.jface.text.link.LinkedModeModel;
 import org.eclipse.jface.text.link.LinkedModeUI;
 import org.eclipse.jface.text.link.LinkedPosition;
 import org.eclipse.jface.text.link.LinkedPositionGroup;
+import org.eclipse.jface.text.link.LinkedModeUI.ExitFlags;
+import org.eclipse.jface.text.link.LinkedModeUI.IExitPolicy;
 import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.VerifyKeyListener;
 import org.eclipse.swt.events.VerifyEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.texteditor.link.EditorLinkedModeUI;
+
+import de.tuberlin.uebb.emodelica.Constants;
 
 /**
  * This class handles "smart" inputs it is based upon
@@ -30,6 +37,66 @@ import org.eclipse.ui.texteditor.link.EditorLinkedModeUI;
  */
 public class ModelicaKeyLister implements VerifyKeyListener,
 		ILinkedModeListener {
+
+	private class ExitPolicy implements IExitPolicy {
+
+		final char fExitCharacter;
+		final char fEscapeCharacter;
+		final Stack fStack;
+		final int fSize;
+
+		public ExitPolicy(char exitCharacter, char escapeCharacter, Stack stack) {
+			fExitCharacter = exitCharacter;
+			fEscapeCharacter = escapeCharacter;
+			fStack = stack;
+			fSize = fStack.size();
+		}
+
+		/*
+		 * @see
+		 * org.eclipse.jdt.internal.ui.text.link.LinkedPositionUI.ExitPolicy
+		 * #doExit(org.eclipse.jdt.internal.ui.text.link.LinkedPositionManager,
+		 * org.eclipse.swt.events.VerifyEvent, int, int)
+		 */
+		public ExitFlags doExit(LinkedModeModel model, VerifyEvent event,
+				int offset, int length) {
+
+			if (fSize == fStack.size() && !isMasked(offset)) {
+				if (event.character == fExitCharacter) {
+					BracketLevel level = (BracketLevel) fStack.peek();
+					if (level.fFirstPosition.offset > offset
+							|| level.fSecondPosition.offset < offset)
+						return null;
+					if (level.fSecondPosition.offset == offset && length == 0)
+						// don't enter the character if if its the closing peer
+						return new ExitFlags(ILinkedModeListener.UPDATE_CARET,
+								false);
+				}
+				// when entering an anonymous class between the parenthesis', we
+				// don't want
+				// to jump after the closing parenthesis when return is pressed
+				if (event.character == SWT.CR && offset > 0) {
+					IDocument document = fSourceViewer.getDocument();
+					try {
+						if (document.getChar(offset - 1) == '{')
+							return new ExitFlags(ILinkedModeListener.EXIT_ALL,
+									true);
+					} catch (BadLocationException e) {
+					}
+				}
+			}
+			return null;
+		}
+
+		private boolean isMasked(int offset) {
+			IDocument document = fSourceViewer.getDocument();
+			try {
+				return fEscapeCharacter == document.getChar(offset - 1);
+			} catch (BadLocationException e) {
+			}
+			return false;
+		}
+	}
 
 	private ModelicaEditor fModelicaEditor;
 	private final ISourceViewer fSourceViewer;
@@ -65,18 +132,25 @@ public class ModelicaKeyLister implements VerifyKeyListener,
 		}
 
 		final ISourceViewer sourceViewer = fSourceViewer;
-		IDocument document = sourceViewer.getDocument();
+		final IDocument document = sourceViewer.getDocument();
 
 		final Point selection = sourceViewer.getSelectedRange();
 		final int offset = selection.x;
 		final int length = selection.y;
-
-		final char character = event.character;
-		final char closingCharacter = getPeerCharacter(character);
-		final StringBuffer buffer = new StringBuffer();
-		buffer.append(character);
-		buffer.append(closingCharacter);
 		try {
+
+			ITypedRegion partition = TextUtilities.getPartition(document,
+					Constants.MODELICA_DOCUMENT_PARTITIONING, offset, true);
+
+			if (!IDocument.DEFAULT_CONTENT_TYPE.equals(partition.getType()))
+				return;
+
+			final char character = event.character;
+			final char closingCharacter = getPeerCharacter(character);
+			final StringBuffer buffer = new StringBuffer();
+			buffer.append(character);
+			buffer.append(closingCharacter);
+
 			document.replace(offset, length, buffer.toString());
 
 			BracketLevel level = new BracketLevel();
@@ -106,7 +180,8 @@ public class ModelicaKeyLister implements VerifyKeyListener,
 
 			level.fUI = new EditorLinkedModeUI(model, sourceViewer);
 			level.fUI.setSimpleMode(true);
-
+			level.fUI.setExitPolicy(new ExitPolicy(closingCharacter,
+					getEscapeCharacter(closingCharacter), fBracketLevelStack));
 			level.fUI.setExitPosition(sourceViewer, offset + 2, 0,
 					Integer.MAX_VALUE);
 			level.fUI.setCyclingMode(LinkedModeUI.CYCLE_NEVER);
@@ -121,6 +196,16 @@ public class ModelicaKeyLister implements VerifyKeyListener,
 		} catch (BadPositionCategoryException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+	}
+
+	private char getEscapeCharacter(char character) {
+		switch (character) {
+		case '"':
+		case '\'':
+			return '\\';
+		default:
+			return 0;
 		}
 	}
 

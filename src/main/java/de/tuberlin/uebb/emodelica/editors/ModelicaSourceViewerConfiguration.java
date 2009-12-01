@@ -85,7 +85,7 @@ public class ModelicaSourceViewerConfiguration extends
 
 	@Override
 	public String getConfiguredDocumentPartitioning(ISourceViewer sourceViewer) {
-	    return Constants.ModelicaDocumentPartitioner;
+	    return Constants.MODELICA_DOCUMENT_PARTITIONING;
 	}
 	
 	@Override

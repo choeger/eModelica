@@ -20,8 +20,8 @@ public class DocumentSetupParticipant implements IDocumentSetupParticipant {
 	}
 
 	public static void setupPartitioner(IDocument document) {
-	    if (PartitionUtils.getPartitioner(document, Constants.ModelicaDocumentPartitioner) == null)
-	        PartitionUtils.setDocumentPartitioning(document, Constants.ModelicaDocumentPartitioner, createMyPartitioner());
+	    if (PartitionUtils.getPartitioner(document, Constants.MODELICA_DOCUMENT_PARTITIONING) == null)
+	        PartitionUtils.setDocumentPartitioning(document, Constants.MODELICA_DOCUMENT_PARTITIONING, createMyPartitioner());
 		}
 
 	private static IDocumentPartitioner createMyPartitioner() {

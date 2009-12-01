@@ -23,7 +23,7 @@ public class ModelicaPresentationReconciler extends PresentationReconciler {
 	public static ModelicaPresentationReconciler getInstance() {
 		//TODO: test Singleton Pattern
 		ModelicaPresentationReconciler recon = new ModelicaPresentationReconciler();
-		recon.setDocumentPartitioning(Constants.ModelicaDocumentPartitioner);
+		recon.setDocumentPartitioning(Constants.MODELICA_DOCUMENT_PARTITIONING);
 		return recon;
 	}
 

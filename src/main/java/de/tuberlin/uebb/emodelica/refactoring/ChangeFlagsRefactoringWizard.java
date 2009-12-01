@@ -29,7 +29,7 @@ public class ChangeFlagsRefactoringWizard extends RefactoringWizard {
 		// TODO Auto-generated method stub
 		this.addPage(new ChangeFlagsWizardPage("Set Flags", refactoring));
 	}
-
+	
 	@Override
 	public boolean performCancel() {
 		return super.performCancel();
